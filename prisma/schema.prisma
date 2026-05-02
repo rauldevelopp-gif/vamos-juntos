@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  reservations Reservation[]
+}
+
+model Driver {
+  id           Int      @id @default(autoincrement())
+  name         String
+  license      String
+  phone        String
+  availability Boolean  @default(true)
+  taxis        Taxi[]
+}
+
+model Taxi {
+  id           Int      @id @default(autoincrement())
+  type         String
+  capacity     Int
+  basePrice    Float
+  availability Boolean  @default(true)
+  driverId     Int
+  driver       Driver   @relation(fields: [driverId], references: [id])
+  reservations ReservationService[]
+}
+
+model Yacht {
+  id           Int      @id @default(autoincrement())
+  name         String
+  capacity     Int
+  hourlyPrice  Float
+  availability Boolean  @default(true)
+  reservations ReservationService[]
+}
+
+model Place {
+  id           Int      @id @default(autoincrement())
+  name         String
+  category     String
+  reservations ReservationService[]
+}
+
+model Restaurant {
+  id           Int      @id @default(autoincrement())
+  name         String
+  type         String
+  location     String
+  rating       Float
+  menu         String?
+  reservations ReservationService[]
+}
+
+model Reservation {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  date        DateTime @default(now())
+  totalAmount Float
+  status      String   @default("PENDING")
+  services    ReservationService[]
+}
+
+model ReservationService {
+  id            Int      @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  
+  serviceType   String
+  
+  taxiId        Int?
+  taxi          Taxi?    @relation(fields: [taxiId], references: [id])
+  
+  yachtId       Int?
+  yacht         Yacht?   @relation(fields: [yachtId], references: [id])
+  
+  placeId       Int?
+  place         Place?   @relation(fields: [placeId], references: [id])
+  
+  restaurantId  Int?
+  restaurant    Restaurant? @relation(fields: [restaurantId], references: [id])
+  
+  quantity      Int      @default(1)
+  price         Float
+}
