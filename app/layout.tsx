@@ -14,8 +14,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header style={{ 
-          borderBottom: '1px solid var(--border-color)', 
+        <header style={{
+          borderBottom: '1px solid var(--border-color)',
           background: 'var(--bg-card)',
           position: 'sticky',
           top: 0,
@@ -25,7 +25,7 @@ export default function RootLayout({
             <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }} className="text-gradient">VamosJuntos</h1>
             <nav style={{ display: 'flex', gap: '1.5rem' }}>
               <a href="/">Home</a>
-              <a href="/packages">Build Package</a>
+              <a href="/packages">Paquetes</a>
               <a href="/admin">Admin Hub</a>
             </nav>
           </div>

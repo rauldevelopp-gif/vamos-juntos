@@ -1,9 +1,25 @@
 import { PrismaClient } from '@prisma/client'
+import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
 async function main() {
     console.log('Seeding initial data...')
+
+    // Hash password for Admin
+    const adminPassword = crypto.createHash('sha256').update('@dmin').digest('hex');
+
+    // Admin User
+    await prisma.user.upsert({
+        where: { username: 'Admin' },
+        update: { password: adminPassword },
+        create: {
+            username: 'Admin',
+            password: adminPassword,
+            role: 'ADMIN',
+            name: 'System Administrator'
+        }
+    })
 
     // Drivers
     const driver1 = await prisma.driver.create({
