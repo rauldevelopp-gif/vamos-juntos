@@ -2,6 +2,7 @@ const https = require('https');
 
 const TOKEN = process.env.VERCEL_TOKEN;
 const TEAM_ID = 'team_YEQVwSWyTNfalmtA7lrShuvp';
+
 const DOMAIN = 'your-travel-confort.vercel.app';
 
 function api(path, method = 'GET', body = null) {
