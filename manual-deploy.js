@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 const TOKEN = process.env.VERCEL_TOKEN;
 const TEAM_ID = 'team_YEQVwSWyTNfalmtA7lrShuvp';
-const PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_C6dIycuodnENa1O9Hbpn12dxT5Cr';
+const PROJECT_NAME = 'confort-travel-public';
 
 
 // Patterns to skip entirely
@@ -55,7 +55,7 @@ async function main() {
     });
     console.log(`Found ${files.length} source files.`);
 
-    const payload = { projectId: PROJECT_ID, files: files.map(f => ({ file: f.rel, sha: f.sha, size: f.size })), projectSettings: { framework: 'nextjs' } };
+    const payload = { name: PROJECT, files: files.map(f => ({ file: f.rel, sha: f.sha, size: f.size })), projectSettings: { framework: 'nextjs' } };
     let result = await req({ hostname: 'api.vercel.com', port: 443, path: `/v13/deployments?teamId=${TEAM_ID}`, method: 'POST', headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' } }, payload);
 
     if (result.error?.code === 'missing_files') {
