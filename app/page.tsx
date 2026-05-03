@@ -20,7 +20,7 @@ export default function Home() {
             </Link>
           </div>
           <h1 className="heading-1 float-animation" style={{ fontSize: '3.5rem', marginBottom: '1.5rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)', lineHeight: '1.1' }}>
-            Diseña tu Experiencia de <br /><span className="text-gradient">Lujo a Medida</span>
+            Experiencia de <br /><span className="text-gradient">Lujo a la Medida</span>
           </h1>
           <p style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto', textShadow: '0 2px 10px rgba(0,0,0,0.5)', lineHeight: '1.6' }}>
             Accede a la selección más exclusiva de yates, transporte VIP y gastronomía premium. Creamos momentos inolvidables diseñados solo para ti.
