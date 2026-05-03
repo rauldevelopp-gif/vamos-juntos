@@ -1,3 +1,4 @@
+"use client";
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -18,11 +19,11 @@ export default function Home() {
               Ver Paquetes
             </Link>
           </div>
-          <h1 className="heading-1 float-animation" style={{ fontSize: '3rem', marginBottom: '1rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-            Vive la experiencia <span className="text-gradient">Premium</span>
+          <h1 className="heading-1 float-animation" style={{ fontSize: '3.5rem', marginBottom: '1.5rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)', lineHeight: '1.1' }}>
+            Diseña tu Experiencia de <br /><span className="text-gradient">Lujo a Medida</span>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.9)', maxWidth: '600px', margin: '0 auto', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-            Descubre paquetes exclusivos de yates, hoteles y experiencias diseñadas para los más exigentes.
+          <p style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto', textShadow: '0 2px 10px rgba(0,0,0,0.5)', lineHeight: '1.6' }}>
+            Accede a la selección más exclusiva de yates, transporte VIP y gastronomía premium. Creamos momentos inolvidables diseñados solo para ti.
           </p>
         </div>
       </section>
