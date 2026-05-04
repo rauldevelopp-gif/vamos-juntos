@@ -37,27 +37,31 @@ export default function Home() {
               <h2 className="heading-2">Paquetes Destacados</h2>
               <p style={{ color: 'var(--text-muted)' }}>Selecciones exclusivas para tu próximo viaje</p>
             </div>
-            <Link href="/packages" className="link-action">
+            <Link href="/admin/package" className="link-action">
               Ver todos los destinos <span>&rarr;</span>
             </Link>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2rem' }}>
-            {/* Sample Package Cards */}
-            {[1, 2, 3].map((i) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+            {[
+              { name: 'Escapada de Lujo - Cancún', price: '$1,200', image: '/cancun_luxury_resort_1777913412420.png', desc: 'Resort 5 estrellas, transporte VIP y experiencias exclusivas frente al mar.' },
+              { name: 'Aventura en la Selva', price: '$850', image: '/jungle_adventure_cenote_1777913424869.png', desc: 'Exploración de cenotes, guías certificados y equipo de aventura premium.' },
+              { name: 'Tour Gastronómico VIP', price: '$600', image: '/vip_gastronomy_tour_1777913439696.png', desc: 'Cata de vinos, menú degustación de autor y los mejores chefs de México.' }
+            ].map((pkg, i) => (
               <div key={i} className="glass-card" style={{ overflow: 'hidden' }}>
-                <div style={{ height: '200px', background: 'rgba(255,255,255,0.05)', position: 'relative' }}>
+                <div style={{ height: '220px', background: 'rgba(255,255,255,0.05)', position: 'relative' }}>
+                  <img src={pkg.image} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem' }}>
                     Populares
                   </div>
                 </div>
                 <div style={{ padding: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Escapada de Lujo {i}</h3>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{pkg.name}</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                    Incluye transporte VIP, estadía en hotel 5 estrellas y tour privado en yate.
+                    {pkg.desc}
                   </p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1,200</span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>{pkg.price}</span>
                     <button className="btn-premium" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Detalles</button>
                   </div>
                 </div>
@@ -70,16 +74,7 @@ export default function Home() {
       {/* Admin Quick Access (Floating FAB) */}
       <Link href="/login" className="admin-fab">
         <div className="fab-icon-container">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
             <circle cx="12" cy="12" r="3" />
           </svg>

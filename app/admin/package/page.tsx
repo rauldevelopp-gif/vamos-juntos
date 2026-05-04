@@ -5,9 +5,9 @@ import Link from 'next/link';
 export default function PackagesPage() {
     // Sample data for the list
     const packages = [
-        { id: 1, name: 'Escapada de Lujo - Cancún', status: 'Activo', price: 1200, sales: 45, date: '2025-06-15' },
-        { id: 2, name: 'Aventura en la Selva', status: 'Borrador', price: 850, sales: 0, date: '2025-07-20' },
-        { id: 3, name: 'Tour Gastronómico VIP', status: 'Activo', price: 600, sales: 128, date: '2025-05-10' },
+        { id: 1, name: 'Escapada de Lujo - Cancún', status: 'Activo', price: 1200, sales: 45, date: '2025-06-15', image: '/cancun_luxury_resort_1777913412420.png' },
+        { id: 2, name: 'Aventura en la Selva', status: 'Borrador', price: 850, sales: 0, date: '2025-07-20', image: '/jungle_adventure_cenote_1777913424869.png' },
+        { id: 3, name: 'Tour Gastronómico VIP', status: 'Activo', price: 600, sales: 128, date: '2025-05-10', image: '/vip_gastronomy_tour_1777913439696.png' },
     ];
 
     return (
@@ -48,8 +48,15 @@ export default function PackagesPage() {
                         {packages.map((pkg) => (
                             <tr key={pkg.id} style={{ borderBottom: '1px solid var(--border-glass)', transition: 'var(--transition-smooth)' }} className="hover-row">
                                 <td style={{ padding: '1.2rem' }}>
-                                    <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{pkg.name}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Creado el {pkg.date}</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <div style={{ width: '50px', height: '50px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border-glass)' }}>
+                                            <img src={pkg.image} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{pkg.name}</div>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Creado el {pkg.date}</div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td style={{ padding: '1.2rem' }}>
                                     <span style={{ 
