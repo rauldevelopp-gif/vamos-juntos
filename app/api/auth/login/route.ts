@@ -7,12 +7,20 @@ export async function POST(request: Request) {
     try {
         const { username, password } = await request.json();
 
-        const user = await prisma.user.findUnique({
-            where: { username },
+        // Try to find user with case-insensitive match if possible, 
+        // or just find first and check manually
+        const user = await prisma.user.findFirst({
+            where: { 
+                username: {
+                    equals: username,
+                    mode: 'insensitive' 
+                }
+            },
         });
 
         if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 401 });
+            console.error(`Login attempt failed: User "${username}" not found.`);
+            return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 401 });
         }
 
         const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
@@ -29,14 +37,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true });
         }
 
-        return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+        return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
     } catch (error: any) {
-        console.error('Login error:', error);
+        console.error('CRITICAL: Login error:', error);
         return NextResponse.json({
-            error: 'Internal server error',
-            details: error.message,
-            stack: error.stack,
-            env: process.env.DATABASE_URL
+            error: 'Error de conexión con la base de datos',
+            message: error.message
         }, { status: 500 });
     }
 }
