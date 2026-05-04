@@ -2,6 +2,22 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { 
+    ArrowLeft, 
+    Plus, 
+    User, 
+    Users, 
+    Briefcase, 
+    X, 
+    Star, 
+    Music, 
+    Wind, 
+    Dog, 
+    Cigarette, 
+    GlassWater, 
+    Wifi, 
+    Smartphone 
+} from 'lucide-react';
 
 interface Driver {
     id: number;
@@ -60,8 +76,8 @@ export default function TaxisPage() {
         <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontSize: '1.2rem', textDecoration: 'none' }}>
-                        ←
+                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
+                        <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
@@ -73,9 +89,9 @@ export default function TaxisPage() {
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.8rem' }}>
+                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Nuevo Vehículo</span>
-                    <span style={{ fontSize: '1.2rem' }}>🚕</span>
                 </button>
             </div>
 
@@ -109,19 +125,20 @@ export default function TaxisPage() {
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                        <span title="Capacidad de Pasajeros">👥 {taxi.passengers}</span>
-                                        <span title="Capacidad de Equipaje">🧳 {taxi.luggage}</span>
+                                        <span title="Capacidad de Pasajeros" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {taxi.passengers}</span>
+                                        <span title="Capacidad de Equipaje" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Briefcase size={14} /> {taxi.luggage}</span>
                                     </div>
                                 </td>
                                 <td style={{ padding: '1.2rem' }}>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
                                         {taxi.amenities.map((amenity, idx) => {
-                                            const icons: { [key: string]: string } = {
-                                                'Música': '🎵', 'A/C': '❄️', 'Mascotas': '🐾', 'Fumar': '🚬', 'Bar': '🥂', 'Bebidas': '🥂', 'WiFi': '📶', 'Equipaje Extra': '🧳'
+                                            const IconsMap: { [key: string]: any } = {
+                                                'Música': Music, 'A/C': Wind, 'Mascotas': Dog, 'Fumar': Cigarette, 'Bar': GlassWater, 'Bebidas': GlassWater, 'WiFi': Wifi, 'Equipaje Extra': Briefcase
                                             };
+                                            const Icon = IconsMap[amenity] || Smartphone;
                                             return (
-                                                <span key={idx} style={{ fontSize: '1.1rem', cursor: 'help' }} title={amenity}>
-                                                    {icons[amenity] || '✨'}
+                                                <span key={idx} style={{ color: 'var(--text-muted)' }} title={amenity}>
+                                                    <Icon size={16} strokeWidth={2} />
                                                 </span>
                                             );
                                         })}
@@ -144,10 +161,10 @@ export default function TaxisPage() {
                                     <button 
                                         onClick={() => setSelectedDriver(taxi.driver)}
                                         className="btn-glass-nav" 
-                                        style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.2rem' }}
+                                        style={{ padding: '0.5rem', borderRadius: '10px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         title="Ver Ficha del Chofer"
                                     >
-                                        👤
+                                        <User size={20} strokeWidth={2} />
                                     </button>
                                 </td>
                             </tr>
@@ -161,7 +178,9 @@ export default function TaxisPage() {
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
                         <div style={{ position: 'relative', height: '120px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', borderTopLeftRadius: '25px', borderTopRightRadius: '25px' }}>
-                            <button onClick={closeModal} style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.2)', border: 'none', color: 'white', fontSize: '1.2rem', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer' }}>×</button>
+                            <button onClick={closeModal} style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.2)', border: 'none', color: 'white', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <X size={18} strokeWidth={2} />
+                            </button>
                         </div>
                         
                         <div style={{ textAlign: 'center', marginTop: '-60px', padding: '0 2rem 2rem 2rem', position: 'relative', zIndex: 10 }}>
@@ -180,8 +199,10 @@ export default function TaxisPage() {
                             </div>
                             
                             <h2 style={{ fontSize: '1.5rem', margin: '1rem 0 0.25rem 0' }}>{selectedDriver.name}</h2>
-                            <div style={{ color: '#f59e0b', fontSize: '1.1rem', marginBottom: '1.5rem' }}>
-                                {'★'.repeat(Math.floor(selectedDriver.rating))} 
+                             <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', marginBottom: '1.5rem' }}>
+                                {Array(5).fill(0).map((_, i) => (
+                                    <Star key={i} size={14} fill={i < Math.floor(selectedDriver.rating) ? '#f59e0b' : 'none'} color={i < Math.floor(selectedDriver.rating) ? '#f59e0b' : 'var(--text-muted)'} strokeWidth={2} />
+                                ))}
                                 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginLeft: '5px' }}>({selectedDriver.rating})</span>
                             </div>
 

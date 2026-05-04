@@ -2,6 +2,24 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { 
+    ArrowLeft, 
+    Plus, 
+    Users, 
+    Bed, 
+    Anchor, 
+    MapPin, 
+    X, 
+    Star, 
+    Utensils, 
+    GlassWater, 
+    Waves, 
+    Wifi, 
+    Music, 
+    Bath, 
+    Film, 
+    Phone 
+} from 'lucide-react';
 
 interface CrewMember {
     name: string;
@@ -68,8 +86,8 @@ export default function YachtsPage() {
         <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontSize: '1.2rem', textDecoration: 'none' }}>
-                        ←
+                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
+                        <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
@@ -81,9 +99,9 @@ export default function YachtsPage() {
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.8rem' }}>
+                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Registrar Yate</span>
-                    <span style={{ fontSize: '1.2rem' }}>🚤</span>
                 </button>
             </div>
 
@@ -117,19 +135,20 @@ export default function YachtsPage() {
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                        <span title="Pasajeros">👥 {yacht.passengers}</span>
-                                        <span title="Camarotes">🛏️ {yacht.cabins}</span>
+                                        <span title="Pasajeros" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {yacht.passengers}</span>
+                                        <span title="Camarotes" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Bed size={14} /> {yacht.cabins}</span>
                                     </div>
                                 </td>
                                 <td style={{ padding: '1.2rem' }}>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
                                         {yacht.amenities.map((amenity, idx) => {
-                                            const icons: { [key: string]: string } = {
-                                                'Chef': '👨‍🍳', 'Bar': '🥂', 'Jet Ski': '🌊', 'WiFi': '📶', 'Snorkel': '🤿', 'Música': '🎵', 'Jacuzzi': '🛁', 'Cine': '🎬'
+                                            const IconsMap: { [key: string]: any } = {
+                                                'Chef': Utensils, 'Bar': GlassWater, 'Jet Ski': Waves, 'WiFi': Wifi, 'Snorkel': Waves, 'Música': Music, 'Jacuzzi': Bath, 'Cine': Film
                                             };
+                                            const Icon = IconsMap[amenity] || Anchor;
                                             return (
-                                                <span key={idx} style={{ fontSize: '1.1rem', cursor: 'help' }} title={amenity}>
-                                                    {icons[amenity] || '✨'}
+                                                <span key={idx} style={{ color: 'var(--text-muted)' }} title={amenity}>
+                                                    <Icon size={16} strokeWidth={2} />
                                                 </span>
                                             );
                                         })}
@@ -153,18 +172,18 @@ export default function YachtsPage() {
                                         <button 
                                             onClick={() => setSelectedCrew(yacht.crew)}
                                             className="btn-glass-nav" 
-                                            style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.2rem' }}
+                                            style={{ padding: '0.5rem', borderRadius: '10px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                             title="Ver Tripulación"
                                         >
-                                            ⚓
+                                            <Anchor size={20} strokeWidth={2} />
                                         </button>
                                         <button 
                                             onClick={() => setSelectedLoc(yacht.coordinates)}
                                             className="btn-glass-nav" 
-                                            style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.1rem' }}
+                                            style={{ padding: '0.5rem', borderRadius: '10px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                             title="Ver Marina / Puerto"
                                         >
-                                            📍
+                                            <MapPin size={20} strokeWidth={2} />
                                         </button>
                                     </div>
                                 </td>
@@ -179,8 +198,10 @@ export default function YachtsPage() {
                 <div className="modal-overlay" onClick={closeModals}>
                     <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', padding: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <h2 style={{ fontSize: '1.5rem', margin: 0 }}>🚢 Tripulación a Bordo</h2>
-                            <button onClick={closeModals} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                            <h2 style={{ fontSize: '1.5rem', margin: 0 }}>🚢 Tripulación</h2>
+                            <button onClick={closeModals} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
+                                <X size={24} strokeWidth={1.5} />
+                            </button>
                         </div>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -190,10 +211,16 @@ export default function YachtsPage() {
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{member.name}</div>
                                         <div style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 600 }}>{member.role}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📞 {member.phone}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                            <Phone size={12} /> {member.phone}
+                                        </div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <div style={{ color: '#f59e0b' }}>{'★'.repeat(Math.floor(member.rating))}</div>
+                                        <div style={{ display: 'flex', gap: '2px', justifyContent: 'flex-end', marginBottom: '0.2rem' }}>
+                                            {Array(5).fill(0).map((_, i) => (
+                                                <Star key={i} size={12} fill={i < Math.floor(member.rating) ? '#f59e0b' : 'none'} color={i < Math.floor(member.rating) ? '#f59e0b' : 'var(--text-muted)'} strokeWidth={1.5} />
+                                            ))}
+                                        </div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{member.rating} Rating</div>
                                     </div>
                                 </div>
@@ -209,8 +236,10 @@ export default function YachtsPage() {
                 <div className="modal-overlay" onClick={closeModals}>
                     <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '850px' }}>
                         <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 style={{ fontSize: '1.2rem', margin: 0 }}>📍 Punto de Atraque / Marina</h2>
-                            <button onClick={closeModals} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                            <h2 style={{ fontSize: '1.2rem', margin: 0 }}>📍 Marina / Puerto</h2>
+                            <button onClick={closeModals} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
+                                <X size={24} strokeWidth={1.5} />
+                            </button>
                         </div>
                         <div style={{ width: '100%', height: '450px', background: '#05070a' }}>
                             <iframe

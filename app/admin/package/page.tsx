@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ArrowLeft, Plus, Edit2, Trash2, Calendar } from 'lucide-react';
 
 export default function PackagesPage() {
     // Sample data for the list
@@ -14,8 +15,8 @@ export default function PackagesPage() {
         <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontSize: '1.2rem', textDecoration: 'none' }}>
-                        ←
+                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
+                        <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
@@ -27,9 +28,9 @@ export default function PackagesPage() {
                     </div>
                 </div>
                 
-                <Link href="/admin/build" className="btn-premium" style={{ padding: '0.8rem 1.8rem' }}>
+                <Link href="/admin/build" className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Nuevo Paquete</span>
-                    <span style={{ fontSize: '1.2rem' }}>➕</span>
                 </Link>
             </div>
 
@@ -54,7 +55,9 @@ export default function PackagesPage() {
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{pkg.name}</div>
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Creado el {pkg.date}</div>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <Calendar size={12} strokeWidth={2} /> Creado el {pkg.date}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -73,9 +76,13 @@ export default function PackagesPage() {
                                 <td style={{ padding: '1.2rem', fontWeight: 600 }}>${pkg.price}</td>
                                 <td style={{ padding: '1.2rem', color: 'var(--text-muted)' }}>{pkg.sales} unid.</td>
                                 <td style={{ padding: '1.2rem' }}>
-                                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                        <button className="btn-glass-nav" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Editar</button>
-                                        <button className="btn-glass-nav" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', color: 'var(--accent)' }}>Eliminar</button>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px' }} title="Editar">
+                                            <Edit2 size={16} strokeWidth={2} />
+                                        </button>
+                                        <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', color: 'var(--accent)' }} title="Eliminar">
+                                            <Trash2 size={16} strokeWidth={2} />
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

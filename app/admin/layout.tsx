@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Sidebar from './Sidebar';
 import Link from 'next/link';
+import { LogOut } from 'lucide-react';
 
 export default function AdminLayout({
     children,
@@ -45,8 +46,8 @@ export default function AdminLayout({
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <form action="/api/auth/logout" method="POST" style={{ margin: 0 }}>
-                        <button type="submit" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem', padding: '5px' }} title="Cerrar Sesión">
-                            🚪
+                        <button type="submit" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '5px' }} title="Cerrar Sesión">
+                            <LogOut size={20} strokeWidth={2} />
                         </button>
                     </form>
                     {/* The Hamburger button is inside the Sidebar component but we can adjust its position */}

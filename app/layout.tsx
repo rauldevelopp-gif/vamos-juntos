@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import "./globals.css";
 import PWARegistration from "./PWARegistration";
+import { Home, Package, LogOut, User } from 'lucide-react';
 
 export const viewport: Viewport = {
   themeColor: "#05070a",
@@ -52,26 +53,26 @@ export default function RootLayout({
               <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }} className="text-gradient">VamosJuntos</h1>
             </Link>
             <nav className="nav-menu" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-              <Link href="/" className="nav-link">
-                <span className="btn-text-mobile-hide">Home</span>
-                <span className="mobile-only-icon" style={{ display: 'none' }}>🏠</span>
+               <Link href="/" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Home size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
+                <span className="btn-text-mobile-hide">Inicio</span>
               </Link>
-              <Link href="/packages" className="nav-link">
+              <Link href="/packages" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Package size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
                 <span className="btn-text-mobile-hide">Paquetes</span>
-                <span className="mobile-only-icon" style={{ display: 'none' }}>📦</span>
               </Link>
               
               {session ? (
                 <form action="/api/auth/logout" method="POST" style={{ margin: 0 }}>
-                  <button type="submit" className="nav-auth-btn">
-                    <span className="btn-text-mobile-hide">Cerrar Sesión</span>
-                    <span style={{ fontSize: '1.2rem' }}>🚪</span>
+                  <button type="submit" className="nav-auth-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <LogOut size={18} strokeWidth={2} />
+                    <span className="btn-text-mobile-hide">Salir</span>
                   </button>
                 </form>
               ) : (
-                <Link href="/login" className="nav-link" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                <Link href="/login" className="nav-link" style={{ color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <User size={18} strokeWidth={2} />
                   <span className="btn-text-mobile-hide">Entrar</span>
-                  <span className="mobile-only-icon" style={{ display: 'none', fontSize: '1.2rem' }}>🔑</span>
                 </Link>
               )}
             </nav>
@@ -94,7 +95,10 @@ export default function RootLayout({
             .nav-menu {
               gap: 1.2rem !important;
             }
-            .mobile-only-icon {
+            .btn-text-mobile-hide {
+              display: none !important;
+            }
+            .mobile-only-icon-lucide {
               display: inline-block !important;
             }
             h1 {

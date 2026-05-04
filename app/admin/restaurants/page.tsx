@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ArrowLeft, Plus, MapPin, X, Utensils } from 'lucide-react';
 
 interface Restaurant {
     id: number;
@@ -36,8 +37,8 @@ export default function RestaurantsPage() {
         <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontSize: '1.2rem', textDecoration: 'none' }}>
-                        ←
+                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
+                        <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
@@ -49,9 +50,9 @@ export default function RestaurantsPage() {
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.8rem' }}>
+                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Nuevo Restaurante</span>
-                    <span style={{ fontSize: '1.2rem' }}>🍴</span>
                 </button>
             </div>
 
@@ -98,10 +99,10 @@ export default function RestaurantsPage() {
                                     <button 
                                         onClick={() => setSelectedRestaurant(restaurant)}
                                         className="btn-glass-nav" 
-                                        style={{ padding: '0.5rem', borderRadius: '50%', width: '36px', height: '36px' }}
+                                        style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         title="Ver Ubicación Gourmet"
                                     >
-                                        🍴
+                                        <MapPin size={16} strokeWidth={2} />
                                     </button>
                                 </td>
                             </tr>
@@ -119,7 +120,9 @@ export default function RestaurantsPage() {
                                 <h2 style={{ fontSize: '1.2rem', margin: 0 }}>🍴 Ubicación: {selectedRestaurant.name}</h2>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>{selectedRestaurant.city} - {selectedRestaurant.cuisine}</p>
                             </div>
-                            <button onClick={closeModal} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                            <button onClick={closeModal} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
+                                <X size={24} strokeWidth={1.5} />
+                            </button>
                         </div>
                         <div style={{ width: '100%', height: '450px', borderRadius: '15px', overflow: 'hidden', background: '#05070a' }}>
                             <iframe
