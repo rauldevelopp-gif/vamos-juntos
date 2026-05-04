@@ -14,9 +14,10 @@ export default function Home() {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
         />
         <div className="container" style={{ position: 'relative', zIndex: 10, padding: '4rem 2rem 5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '60vh' }}>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3rem' }}>
-            <Link href="/packages" className="btn-premium" style={{ padding: '1rem 3rem' }}>
-              Ver Paquetes
+          <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3rem' }}>
+            <Link href="/packages" className="btn-premium">
+              <span>Explorar Paquetes</span>
+              <span style={{ fontSize: '1.2rem' }}>✨</span>
             </Link>
           </div>
           <h1 className="heading-1 float-animation" style={{ fontSize: '3.5rem', marginBottom: '1.5rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)', lineHeight: '1.1' }}>
@@ -36,8 +37,8 @@ export default function Home() {
               <h2 className="heading-2">Paquetes Destacados</h2>
               <p style={{ color: 'var(--text-muted)' }}>Selecciones exclusivas para tu próximo viaje</p>
             </div>
-            <Link href="/packages" style={{ color: 'var(--primary)', fontWeight: 500 }}>
-              Ver todos &rarr;
+            <Link href="/packages" className="link-action">
+              Ver todos los destinos <span>&rarr;</span>
             </Link>
           </div>
 
@@ -66,9 +67,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Admin Quick Access (Floating Fixed) */}
-      <Link href="/login" style={{ position: 'fixed', bottom: '2rem', right: '2rem', width: '3rem', height: '3rem', borderRadius: '50%', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)', zIndex: 100 }}>
-        ⚙️
+      {/* Admin Quick Access (Floating FAB) */}
+      <Link href="/login" className="admin-fab">
+        <div className="fab-icon-container">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+        <span className="fab-text">Acceso Admin</span>
       </Link>
     </main>
   );

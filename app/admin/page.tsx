@@ -6,7 +6,7 @@ export default function AdminDashboard() {
                 <p style={{ color: 'var(--text-muted)' }}>Bienvenido, Administrador. Gestiona tu plataforma desde aquí.</p>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+            <div className="dashboard-stats-grid">
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ventas Totales</p>
                     <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>$12,450</div>
@@ -32,7 +32,10 @@ export default function AdminDashboard() {
             <section style={{ marginTop: '3rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h2 style={{ fontSize: '1.5rem' }}>Reservas Recientes</h2>
-                    <button className="btn-premium" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Ver todas</button>
+                    <button className="btn-premium" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                        <span className="btn-text-mobile-hide">Ver todas</span>
+                        <span>📑</span>
+                    </button>
                 </div>
                 <div className="glass-panel" style={{ overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
