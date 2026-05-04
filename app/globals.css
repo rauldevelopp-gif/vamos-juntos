@@ -379,7 +379,21 @@ body {
 @media (max-width: 1024px) {
   .glass-panel {
     margin: 0.5rem !important;
-    padding: 1rem !important;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.75rem !important;
+  }
+  
+  .glass-panel {
+    margin: 0 !important;
+    padding: 0.5rem !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 }
 
@@ -395,8 +409,21 @@ body {
   }
 
   .main-content {
-    padding: 1rem !important;
+    padding: 0.75rem !important;
     width: 100% !important;
+  }
+
+  .main-content > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Collapse layout grids on mobile */
+  .main-content div[style*="grid-template-columns: 1fr 380px"],
+  .main-content div[style*="grid-template-columns:1fr 380px"] {
+    grid-template-columns: 1fr !important;
   }
 
   .btn-premium {
@@ -477,13 +504,14 @@ table::-webkit-scrollbar-thumb {
   }
 
   .glass-panel tr {
-    background: rgba(255, 255, 255, 0.03) !important;
-    margin: 1rem !important;
-    border-radius: 20px !important;
+    background: var(--bg-card) !important;
+    margin: 0.75rem 0 !important;
+    border-radius: 16px !important;
     border: 1px solid var(--border-glass) !important;
-    padding: 1rem !important;
+    padding: 1.25rem !important;
     position: relative !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    box-shadow: var(--shadow-lg) !important;
+    width: 100% !important;
   }
 
   .glass-panel td {
