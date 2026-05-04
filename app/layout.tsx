@@ -1,11 +1,26 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import "./globals.css";
+import PWARegistration from "./PWARegistration";
+
+export const viewport: Viewport = {
+  themeColor: "#05070a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
-  title: "VamosJuntos - Travel Packages",
-  description: "Create and book dynamic travel packages effortlessly.",
+  title: "VamosJuntos Luxury Travel",
+  description: "Premium travel packages, yachts, and VIP transport.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "VamosJuntos",
+  },
 };
 
 export default function RootLayout({
@@ -16,8 +31,12 @@ export default function RootLayout({
   const session = cookies().get('session');
 
   return (
-    <html lang="en">
+    <html lang="es">
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      </head>
       <body>
+        <PWARegistration />
         <header style={{
           borderBottom: '1px solid var(--border-glass)',
           background: 'rgba(5, 7, 10, 0.8)',
