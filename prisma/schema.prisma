@@ -23,16 +23,26 @@ model Driver {
   name         String
   license      String
   phone        String
+  expiration   String?
+  rating       Float    @default(5.0)
+  photo        String?
   availability Boolean  @default(true)
   taxis        Taxi[]
+  packages     Package[]
 }
 
 model Taxi {
   id           Int      @id @default(autoincrement())
+  plate        String   @unique
+  brand        String
+  model        String
+  year         Int
+  color        String
   type         String
-  capacity     Int
-  basePrice    Float
-  availability Boolean  @default(true)
+  passengers   Int
+  luggage      Int
+  amenities    String[] @default([])
+  status       String   @default("Disponible")
   driverId     Int
   driver       Driver   @relation(fields: [driverId], references: [id])
   reservations ReservationService[]
@@ -41,10 +51,29 @@ model Taxi {
 model Yacht {
   id           Int      @id @default(autoincrement())
   name         String
+  brand        String
+  model        String
+  year         Int
+  length       String
   capacity     Int
-  hourlyPrice  Float
+  price_day    Float
+  status       String   @default("Disponible")
+  location     String
+  coordinates  String
   availability Boolean  @default(true)
+  crew         Crew[]
   reservations ReservationService[]
+}
+
+model Crew {
+  id           Int      @id @default(autoincrement())
+  name         String
+  role         String
+  experience   String
+  phone        String?
+  photo        String?
+  yachtId      Int
+  yacht        Yacht    @relation(fields: [yachtId], references: [id])
 }
 
 model Place {
@@ -54,13 +83,63 @@ model Place {
   reservations ReservationService[]
 }
 
-model Restaurant {
+model Airport {
+  id           Int      @id @default(autoincrement())
+  name         String
+  location     String
+  iata         String   @unique
+  city         String
+  state        String
+  status       String   @default("Operativo")
+  coordinates  String
+  reservations ReservationService[]
+}
+
+model Hotel {
+  id           Int      @id @default(autoincrement())
+  name         String
+  location     String
+  stars        Int      @default(5)
+  city         String
+  state        String
+  status       String   @default("Disponible")
+  coordinates  String
+  reservations ReservationService[]
+}
+
+model Beach {
   id           Int      @id @default(autoincrement())
   name         String
   type         String
-  location     String
-  rating       Float
-  menu         String?
+  city         String
+  state        String
+  status       String   @default("Abierta")
+  coordinates  String
+  popularity   String   @default("Media")
+  reservations ReservationService[]
+}
+
+model Attraction {
+  id              Int      @id @default(autoincrement())
+  name            String
+  category        String
+  city            String
+  state           String
+  status          String   @default("Abierto")
+  coordinates     String
+  recommendedTime String   @default("2 Horas")
+  reservations    ReservationService[]
+}
+
+model Restaurant {
+  id           Int      @id @default(autoincrement())
+  name         String
+  cuisine      String
+  city         String
+  state        String
+  status       String   @default("Abierto")
+  coordinates  String
+  priceRange   String   @default("$$")
   reservations ReservationService[]
 }
 
@@ -92,7 +171,35 @@ model ReservationService {
   
   restaurantId  Int?
   restaurant    Restaurant? @relation(fields: [restaurantId], references: [id])
+
+  airportId     Int?
+  airport       Airport?    @relation(fields: [airportId], references: [id])
+
+  hotelId       Int?
+  hotel         Hotel?      @relation(fields: [hotelId], references: [id])
+
+  beachId       Int?
+  beach         Beach?      @relation(fields: [beachId], references: [id])
+
+  attractionId  Int?
+  attraction    Attraction?    @relation(fields: [attractionId], references: [id])
   
   quantity      Int      @default(1)
   price         Float
+}
+
+model Package {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  status      String   @default("Borrador")
+  price       Float
+  sales       Int      @default(0)
+  date        String
+  image       String?
+  items       Json?    // Stores the itinerary items
+  driverId    Int?     // Stores the assigned driver
+  driver      Driver?  @relation(fields: [driverId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
