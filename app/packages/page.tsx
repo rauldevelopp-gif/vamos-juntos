@@ -274,7 +274,7 @@ export default function PackagesCatalogPage() {
                             <h2>¿Buscas algo totalmente único?</h2>
                             <p>Usa nuestro constructor personalizado para armar el viaje de tus sueños paso a paso.</p>
                         </div>
-                        <Link href="/custom" className="btn-premium promo-btn">
+                        <Link href="/build" className="btn-premium promo-btn">
                             Armar Tour Personalizado
                         </Link>
                     </div>
