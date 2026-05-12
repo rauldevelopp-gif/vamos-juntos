@@ -4,12 +4,13 @@ import Sidebar from './Sidebar';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
 
-export default function AdminLayout({
+export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const session = cookies().get('session');
+    const cookieStore = await cookies();
+    const session = cookieStore.get('session');
 
     if (!session || session.value !== 'admin_session_token') {
         redirect('/login');

@@ -5,6 +5,7 @@ import prisma from '@/lib/db';
 export async function getPackages() {
     try {
         let packages = await prisma.package.findMany({
+            where: { clientId: null },
             include: {
                 driver: {
                     include: {
@@ -18,6 +19,7 @@ export async function getPackages() {
         if (packages.length < 8) {
             await seedPremiumPackages();
             packages = await prisma.package.findMany({
+                where: { clientId: null },
                 include: {
                     driver: {
                         include: {
@@ -38,24 +40,82 @@ export async function getPackages() {
 
 export async function createPackage(data: any) {
     try {
+        console.log('Attempting to create package with data:', JSON.stringify(data, null, 2));
         const newPackage = await prisma.package.create({
             data: {
                 name: data.name,
                 description: data.description,
-                price: data.total,
-                status: 'Activo',
-                date: new Date().toISOString().split('T')[0], // Default today
+                price: Number(data.total) || 0,
+                status: data.clientId ? 'Pendiente' : 'Activo',
+                date: data.date || new Date().toISOString().split('T')[0], // Use provided date or today
                 image: data.image,
                 start_time: data.startTime || "08:00",
                 items: data.items, // JSON
-                driverId: data.driverId,
+                driverId: data.driverId ? Number(data.driverId) : null,
+                clientId: data.clientId || null,
                 sales: 0
             }
         });
         return { success: true, data: newPackage };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating package:', error);
-        return { success: false, error: 'Error al guardar el paquete' };
+        return { success: false, error: 'Error al guardar el paquete: ' + (error.message || 'Error desconocido') };
+    }
+}
+
+export async function getClientRequests() {
+    try {
+        const requests = await prisma.package.findMany({
+            where: { NOT: { clientId: null } },
+            include: {
+                driver: {
+                    include: {
+                        taxis: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, data: requests };
+    } catch (error) {
+        console.error('Error fetching client requests:', error);
+        return { success: false, error: 'Error al cargar las solicitudes' };
+    }
+}
+
+export async function getPackagesByClientId(clientId: string) {
+    try {
+        const packages = await prisma.package.findMany({
+            where: { clientId },
+            include: {
+                driver: {
+                    include: {
+                        taxis: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, data: packages };
+    } catch (error) {
+        console.error('Error fetching client packages:', error);
+        return { success: false, error: 'Error al cargar tus solicitudes' };
+    }
+}
+
+export async function confirmPackage(id: number, driverId: number) {
+    try {
+        const updated = await prisma.package.update({
+            where: { id },
+            data: {
+                status: 'Confirmado',
+                driverId: driverId
+            }
+        });
+        return { success: true, data: updated };
+    } catch (error) {
+        console.error('Error confirming package:', error);
+        return { success: false, error: 'Error al confirmar el paquete' };
     }
 }
 

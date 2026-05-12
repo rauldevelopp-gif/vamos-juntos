@@ -27,7 +27,8 @@ export async function POST(request: Request) {
 
         if (hashedPassword === user.password) {
             // Set session cookie (Simplified for demo)
-            cookies().set('session', 'admin_session_token', {
+            const cookieStore = await cookies();
+            cookieStore.set('session', 'admin_session_token', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
         console.error('CRITICAL: Login error:', error);
         return NextResponse.json({
             error: 'Error de conexión con la base de datos',
-            message: error.message
+            message: 'No se pudo establecer comunicación con el servidor de base de datos.'
         }, { status: 500 });
     }
 }

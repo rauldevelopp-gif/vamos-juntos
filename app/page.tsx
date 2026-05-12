@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Loader2 } from 'lucide-react';
+import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Loader2, Plus } from 'lucide-react';
 import { getPackages } from './admin/package/actions';
+import { useLanguage } from '../context/LanguageContext';
 
 const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
     switch (type) {
@@ -17,6 +18,7 @@ const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
 };
 
 const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
+    const { t } = useLanguage();
     const displayPkg = {
         ...pkg,
         total: pkg.price || pkg.total || 0,
@@ -34,20 +36,20 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                         <div className="hero-placeholder"><ImageIcon size={64} opacity={0.2} /></div>
                     )}
                     <div className="hero-overlay">
-                        <div className="flyer-badge">EXPERIENCIA EXCLUSIVA</div>
-                        <h1 className="flyer-title">{displayPkg.name || 'Sin nombre'}</h1>
-                        <div className="flyer-meta"><span>VAMOS JUNTOS • LUXURY TRAVEL</span></div>
+                        <div className="flyer-badge">{t('custom_package_flyer')}</div>
+                        <h1 className="flyer-title">{displayPkg.name || '---'}</h1>
+                        <div className="flyer-meta"><span>VAMOS JUNTOS • {t('client_request_flyer')}</span></div>
                     </div>
                 </div>
                 <div className="flyer-body">
                     <div className="flyer-description">
-                        <p>{displayPkg.description || 'Este paquete ha sido diseñado meticulosamente para ofrecer una experiencia inolvidable.'}</p>
+                        <p>{displayPkg.description || '...'}</p>
                     </div>
                     <div className="flyer-itinerary">
-                        <h3>ITINERARIO SELECTO</h3>
+                        <h3>{t('selected_itinerary')}</h3>
                         <div className="flyer-items">
                             {displayPkg.items.length === 0 ? (
-                                <p className="empty-msg">Paquete promocional directo.</p>
+                                <p className="empty-msg">{t('package_promotional')}</p>
                             ) : (
                                 displayPkg.items.map((item: any, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
@@ -65,12 +67,12 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
                     {displayPkg.driver && (
                         <div className="flyer-driver-section">
-                            <div className="driver-label">CHOFER ASIGNADO</div>
+                            <div className="driver-label">{t('assigned_driver')}</div>
                             <div className="driver-flyer-card">
                                 <img src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" />
                                 <div className="driver-flyer-info">
                                     <div className="driver-flyer-name">{displayPkg.driver.name}</div>
-                                    <div className="driver-flyer-role">Driver VIP • {displayPkg.driver.taxis?.[0]?.model || 'Luxury Van'}</div>
+                                    <div className="driver-flyer-role">{t('driver_vip')} • {displayPkg.driver.taxis?.[0]?.model || 'Luxury Van'}</div>
                                 </div>
                             </div>
                         </div>
@@ -78,11 +80,11 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
                     <div className="flyer-footer">
                         <div className="price-box">
-                            <span className="label">INVERSIÓN TOTAL</span>
+                            <span className="label">{t('total_investment')}</span>
                             <span className="value">${displayPkg.total.toLocaleString()} <small>USD</small></span>
                         </div>
                         <div className="contact-info">
-                            <p>Reserva con tu Concierge</p>
+                            <p>{t('brand_footer_note')}</p>
                             <div className="brand-logo">VAMOS JUNTOS</div>
                         </div>
                     </div>
@@ -123,6 +125,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 };
 
 export default function Home() {
+  const { t } = useLanguage();
   const [packages, setPackages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewPkg, setPreviewPkg] = useState<any>(null);
@@ -151,15 +154,19 @@ export default function Home() {
           <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3rem' }}>
             <Link href="/packages" className="btn-premium" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <Compass size={20} strokeWidth={2} />
-              <span>Explorar Paquetes</span>
+              <span>{t('btn_explore')}</span>
               <Sparkles size={16} strokeWidth={2} />
+            </Link>
+            <Link href="/build" className="btn-glass-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.8rem 1.5rem', borderRadius: '1rem', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)' }}>
+              <Plus size={20} strokeWidth={2} />
+              <span>{t('btn_build')}</span>
             </Link>
           </div>
           <h1 className="heading-1 float-animation" style={{ fontSize: '3.5rem', marginBottom: '1.5rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)', lineHeight: '1.1' }}>
-            Experiencia de <br /><span className="text-gradient">Lujo a la Medida</span>
+            {t('hero_title_1')} <br /><span className="text-gradient">{t('hero_title_2')}</span>
           </h1>
           <p style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto', textShadow: '0 2px 10px rgba(0,0,0,0.5)', lineHeight: '1.6' }}>
-            Accede a la selección más exclusiva de yates, transporte VIP y gastronomía premium. Creamos momentos inolvidables diseñados solo para ti.
+            {t('hero_subtitle')}
           </p>
         </div>
       </section>
@@ -169,11 +176,11 @@ export default function Home() {
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
             <div>
-              <h2 className="heading-2">Paquetes Destacados</h2>
-              <p style={{ color: 'var(--text-muted)' }}>Selecciones exclusivas para tu próximo viaje</p>
+              <h2 className="heading-2">{t('featured_packages')}</h2>
+              <p style={{ color: 'var(--text-muted)' }}>{t('featured_subtitle')}</p>
             </div>
             <Link href="/packages" className="link-action" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Ver todos los destinos <ArrowRight size={16} />
+              {t('view_all_destinations')} <ArrowRight size={16} />
             </Link>
           </div>
 
@@ -195,13 +202,13 @@ export default function Home() {
                     </div>
                   )}
                   <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 700 }}>
-                    Exclusivo
+                    {t('exclusive')}
                   </div>
                 </div>
                 <div style={{ padding: '1.5rem' }}>
                   <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pkg.name}</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', height: '3rem', overflow: 'hidden' }}>
-                    {pkg.description || 'Vive una experiencia inigualable con nuestro servicio de lujo personalizado.'}
+                    {pkg.description || '...'}
                   </p>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>${pkg.price?.toLocaleString()} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>USD</small></span>
@@ -211,7 +218,7 @@ export default function Home() {
                       style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                     >
                       <Info size={16} />
-                      Detalles
+                      {t('details')}
                     </button>
                   </div>
                 </div>
@@ -234,7 +241,7 @@ export default function Home() {
         <div className="fab-icon-container">
           <Settings size={22} strokeWidth={2.5} />
         </div>
-        <span className="fab-text">Acceso Admin</span>
+        <span className="fab-text">{t('admin_access')}</span>
       </Link>
     </main>
   );

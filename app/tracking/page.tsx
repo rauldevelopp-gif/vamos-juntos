@@ -2,8 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Loader2, Eye, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Info, Check } from 'lucide-react';
-import { getPackages, confirmPackage } from './actions';
+import { 
+    ArrowLeft, 
+    Calendar, 
+    Loader2, 
+    Eye, 
+    X, 
+    Plane, 
+    Hotel, 
+    Utensils, 
+    Palmtree, 
+    Camera, 
+    Anchor, 
+    Info,
+    CheckCircle2,
+    Clock,
+    AlertCircle,
+    Bell
+} from 'lucide-react';
+import { getPackagesByClientId } from '../admin/package/actions';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface Package {
     id: number;
@@ -18,7 +36,7 @@ interface Package {
     driverId?: number;
     total?: number;
     driver?: any;
-    start_time?: string;
+    createdAt: Date;
 }
 
 const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
@@ -33,8 +51,32 @@ const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
     }
 };
 
+const StatusBadge = ({ status }: { status: string }) => {
+    const { t } = useLanguage();
+    const isConfirmed = status === 'Confirmado';
+    const isPending = status === 'Pendiente';
+    
+    return (
+        <span style={{ 
+            padding: '0.4rem 0.8rem', 
+            borderRadius: '10px', 
+            fontSize: '0.75rem', 
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            background: isConfirmed ? 'rgba(16, 185, 129, 0.15)' : (isPending ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.05)'),
+            color: isConfirmed ? '#10b981' : (isPending ? '#f59e0b' : 'var(--text-muted)'),
+            border: `1px solid ${isConfirmed ? 'rgba(16, 185, 129, 0.2)' : (isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.1)')}`
+        }}>
+            {isConfirmed ? <CheckCircle2 size={14} /> : (isPending ? <Clock size={14} /> : <AlertCircle size={14} />)}
+            {isConfirmed ? t('status_confirmed') : (isPending ? t('status_pending') : status)}
+        </span>
+    );
+};
+
 const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
-    // Standardize total for flyer
+    const { t } = useLanguage();
     const displayPkg = {
         ...pkg,
         total: pkg.price || pkg.total || 0,
@@ -46,33 +88,33 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
             <div className="flyer-container" onClick={e => e.stopPropagation()}>
                 <button className="flyer-close" onClick={onClose}><X size={24} /></button>
                 
-                <div className="flyer-hero">
-                    {displayPkg.image ? (
-                        <img src={displayPkg.image} alt={displayPkg.name} className="hero-img" />
-                    ) : (
-                        <div className="hero-placeholder">
-                            <ImageIcon size={64} opacity={0.2} />
-                        </div>
-                    )}
-                    <div className="hero-overlay">
-                        <div className="flyer-badge">PAQUETE EXCLUSIVO</div>
-                        <h1 className="flyer-title">{displayPkg.name || 'Sin nombre'}</h1>
+                <div className="flyer-hero" style={{ height: 'auto', padding: '3rem 2rem 1.5rem' }}>
+                    <div className="hero-overlay" style={{ position: 'relative', background: 'transparent', padding: 0 }}>
+                        <div className="flyer-badge">{t('custom_package_flyer')}</div>
+                        <h1 className="flyer-title">{displayPkg.name || '---'}</h1>
                         <div className="flyer-meta">
-                            <span>VAMOS JUNTOS • LUXURY TRAVEL</span>
+                            <span>{t('brand_name')} • {t('client_request_flyer')}</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="flyer-body">
+                    <div className="flyer-status-section" style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('current_status')}</div>
+                            <StatusBadge status={displayPkg.status} />
+                        </div>
+                    </div>
+
                     <div className="flyer-description">
-                        <p>{displayPkg.description || 'Este paquete ha sido diseñado meticulosamente para ofrecer una experiencia inolvidable en el Caribe Mexicano.'}</p>
+                        <p>{displayPkg.description || '...'}</p>
                     </div>
 
                     <div className="flyer-itinerary">
-                        <h3>ITINERARIO SELECTO</h3>
+                        <h3>{t('itinerary_flyer')}</h3>
                         <div className="flyer-items">
                             {displayPkg.items.length === 0 ? (
-                                <p className="empty-msg">Este paquete es promocional directo.</p>
+                                <p className="empty-msg">...</p>
                             ) : (
                                 displayPkg.items.map((item: any, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
@@ -90,7 +132,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
                     {displayPkg.driver && (
                         <div className="flyer-driver-section">
-                            <div className="driver-label">CHOFER ASIGNADO</div>
+                            <div className="driver-label">{t('driver_confirmed_flyer')}</div>
                             <div className="driver-flyer-card">
                                 <img src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" />
                                 <div className="driver-flyer-info">
@@ -98,8 +140,8 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                                     <div className="driver-flyer-role">
                                         Driver VIP • <span style={{ color: 'white' }}>{displayPkg.driver.taxis?.[0]?.model || 'Taxi Asignado'}</span>
                                     </div>
-                                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.2rem' }}>
-                                        Placas: {displayPkg.driver.taxis?.[0]?.plate || '---'}
+                                    <div style={{ fontSize: '0.65rem', color: '#10b981', fontWeight: 700, marginTop: '0.2rem' }}>
+                                        {t('request_approved_flyer')}
                                     </div>
                                 </div>
                             </div>
@@ -108,11 +150,11 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
                     <div className="flyer-footer">
                         <div className="price-box">
-                            <span className="label">PRECIO TOTAL</span>
+                            <span className="label">{t('estimated_price')}</span>
                             <span className="value">${displayPkg.total.toLocaleString()} <small>USD</small></span>
                         </div>
                         <div className="contact-info">
-                            <p>Reserva con tu Concierge VIP</p>
+                            <p>{t('brand_footer_note')}</p>
                             <div className="brand-logo">VAMOS JUNTOS</div>
                         </div>
                     </div>
@@ -167,7 +209,6 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                     cursor: pointer;
                     transition: all 0.3s;
                 }
-                .flyer-close:hover { background: #ef4444; border-color: #ef4444; transform: rotate(90deg); }
                 
                 .flyer-hero { height: 260px; position: relative; overflow: hidden; }
                 .hero-img { width: 100%; height: 100%; object-fit: cover; }
@@ -196,7 +237,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                 .driver-flyer-card img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #8b5cf6; }
                 .driver-flyer-name { font-size: 0.9rem; font-weight: 700; color: white; }
                 .driver-flyer-role { font-size: 0.7rem; color: #8b5cf6; font-weight: 600; }
-
+                
                 .flyer-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; }
                 .price-box .label { font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.2); }
                 .price-box .value { font-size: 1.6rem; font-weight: 900; color: white; }
@@ -208,17 +249,31 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
     );
 };
 
-export default function PackagesPage() {
+export default function TrackingPage() {
+    const { t } = useLanguage();
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
+    const [hasNewConfirmed, setHasNewConfirmed] = useState(false);
 
     useEffect(() => {
         const fetchPackages = async () => {
-            const result = await getPackages();
+            const clientId = localStorage.getItem('vamosJuntos_clientId');
+            if (!clientId) {
+                setLoading(false);
+                return;
+            }
+
+            const result = await getPackagesByClientId(clientId);
             if (result.success && result.data) {
                 // @ts-ignore
                 setPackages(result.data);
+                
+                // Check if any package is confirmed
+                const confirmed = result.data.some((p: any) => p.status === 'Confirmado');
+                if (confirmed) {
+                    setHasNewConfirmed(true);
+                }
             }
             setLoading(false);
         };
@@ -226,123 +281,111 @@ export default function PackagesPage() {
     }, []);
 
     return (
-        <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto' }}>
+            {hasNewConfirmed && (
+                <div style={{ 
+                    background: 'rgba(16, 185, 129, 0.1)', 
+                    border: '1px solid rgba(16, 185, 129, 0.2)', 
+                    padding: '1.25rem', 
+                    borderRadius: '1.25rem', 
+                    marginBottom: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    animation: 'slideDown 0.5s ease-out'
+                }}>
+                    <div style={{ background: '#10b981', color: 'white', padding: '0.6rem', borderRadius: '50%', display: 'flex' }}>
+                        <Bell size={20} />
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1.1rem' }}>{t('request_confirmed_title')}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('request_confirmed_desc')}</div>
+                    </div>
+                </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
+                    <Link href="/" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Paquetes Premium
+                            {t('my_requests')}
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestiona el catálogo de experiencias exclusivas disponibles para todos los clientes.
+                            {t('tracking_subtitle')}
                         </p>
                     </div>
                 </div>
-                
-                <Link href="/admin/build" className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Nuevo Paquete</span>
-                </Link>
             </div>
 
-            <div className="glass-panel" style={{ overflow: 'hidden', borderRadius: '20px' }}>
+            <div className="glass-panel" style={{ padding: '1rem', borderRadius: '25px', minHeight: '400px' }}>
                 {loading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem', color: 'var(--text-muted)' }}>
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-                        <p>Cargando paquetes...</p>
+                        <p>{t('syncing_status')}</p>
+                    </div>
+                ) : packages.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Clock size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>{t('no_active_requests')}</h3>
+                        <p style={{ color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto 2rem' }}>{t('no_requests_desc')}</p>
+                        <Link href="/build" className="btn-premium" style={{ display: 'inline-block' }}>
+                            {t('btn_build')}
+                        </Link>
                     </div>
                 ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Nombre del Paquete</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Precio Base</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Ventas</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {packages.map((pkg) => (
-                                <tr key={pkg.id} style={{ borderBottom: '1px solid var(--border-glass)', transition: 'var(--transition-smooth)' }} className="hover-row">
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                            <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
-                                                {pkg.image ? (
-                                                    <img src={pkg.image} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Calendar size={20} color="var(--text-muted)" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{pkg.name}</div>
-                                                <div style={{ fontSize: '0.8rem', color: 'rgba(139, 92, 246, 0.8)', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
-                                                    <Clock size={12} /> Inicio: {pkg.start_time || '08:00'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <span style={{ 
-                                            padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700,
-                                            background: pkg.status === 'Activo' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                                            color: pkg.status === 'Activo' ? '#10b981' : 'var(--text-muted)'
-                                        }}>
-                                            {pkg.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '1.1rem' }}>
-                                            ${pkg.price.toLocaleString()}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ fontWeight: 600 }}>{pkg.sales} unid.</div>
-                                    </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            {pkg.status === 'Pendiente' && (
-                                                <button 
-                                                    onClick={async () => {
-                                                        if (confirm('¿Confirmar esta solicitud de cliente?')) {
-                                                            const res = await confirmPackage(pkg.id, 1); // Asignando driver ID 1 por defecto
-                                                            if (res.success) {
-                                                                location.reload();
-                                                            }
-                                                        }
-                                                    }} 
-                                                    className="btn-premium" 
-                                                    style={{ padding: '0.5rem', borderRadius: '10px', background: '#10b981', borderColor: '#10b981' }} 
-                                                    title="Confirmar Solicitud"
-                                                >
-                                                    <Check size={16} />
-                                                </button>
-                                            )}
-                                            <button onClick={() => setPreviewPkg(pkg)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px' }} title="Ver Detalles">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px' }}>
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', color: '#ef4444' }}>
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {packages.map((pkg) => (
+                            <div key={pkg.id} className="tracking-card" onClick={() => setPreviewPkg(pkg)} style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '1.25rem', 
+                                padding: '1.25rem', 
+                                background: 'rgba(255,255,255,0.02)', 
+                                border: '1px solid var(--border-glass)', 
+                                borderRadius: '1.25rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s'
+                            }}>
+
+                                
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{pkg.name}</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                        {t('created_at')} {new Date(pkg.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
+
+                                <div style={{ textAlign: 'right' }}>
+                                    <StatusBadge status={pkg.status} />
+                                    <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>
+                                        ${pkg.price.toLocaleString()} USD
+                                    </div>
+                                </div>
+                                
+                                <div style={{ color: 'var(--text-muted)' }}>
+                                    <Eye size={20} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
 
             <style jsx>{`
-                .hover-row:hover { background: rgba(255, 255, 255, 0.02); }
+                .tracking-card:hover {
+                    background: rgba(255,255,255,0.05) !important;
+                    border-color: var(--primary) !important;
+                    transform: translateX(5px);
+                }
+                @keyframes slideDown {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
             `}</style>
 
             {/* Preview Flyer Modal */}
