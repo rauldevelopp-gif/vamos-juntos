@@ -46,6 +46,7 @@ export async function createPackage(data: any) {
                 status: 'Activo',
                 date: new Date().toISOString().split('T')[0], // Default today
                 image: data.image,
+                start_time: data.startTime || "08:00",
                 items: data.items, // JSON
                 driverId: data.driverId,
                 sales: 0
@@ -71,6 +72,7 @@ export async function seedPremiumPackages() {
                 status: 'Activo',
                 date: '2024-07-15',
                 image: '/yacht_luxury_gastronomy_1778014471617.png',
+                start_time: '09:00',
                 driverId: dId,
                 sales: 12,
                 items: [

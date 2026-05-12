@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Loader2, Eye, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Clock, Loader2, Eye, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Info } from 'lucide-react';
 import { getPackages } from './actions';
 
 interface Package {
@@ -18,6 +18,7 @@ interface Package {
     driverId?: number;
     total?: number;
     driver?: any;
+    start_time?: string;
 }
 
 const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
@@ -280,8 +281,8 @@ export default function PackagesPage() {
                                             </div>
                                             <div>
                                                 <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{pkg.name}</div>
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                                    <Calendar size={12} /> Próximo: {pkg.date}
+                                                <div style={{ fontSize: '0.8rem', color: 'rgba(139, 92, 246, 0.8)', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                                                    <Clock size={12} /> Inicio: {pkg.start_time || '08:00'}
                                                 </div>
                                             </div>
                                         </div>

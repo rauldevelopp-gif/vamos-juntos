@@ -67,6 +67,7 @@ interface Package {
     items: PackageItem[];
     total: number;
     driverId?: number;
+    startTime: string;
 }
 
 // --- MOCK DATA ---
@@ -555,7 +556,8 @@ export default function PackageBuilderPage() {
         image: null,
         items: [],
         total: 0,
-        driverId: undefined
+        driverId: undefined,
+        startTime: '08:00'
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -716,6 +718,15 @@ export default function PackageBuilderPage() {
                                                 </div>
                                             )}
                                         </div>
+                                    </div>
+                                    <div className="field-group">
+                                        <label className="field-label">Hora de Salida (Default)</label>
+                                        <input 
+                                            type="time" 
+                                            value={pkg.startTime}
+                                            onChange={(e) => setPkg(prev => ({ ...prev, startTime: e.target.value }))}
+                                            style={{ fontSize: '1rem' }}
+                                        />
                                     </div>
                                 </div>
                                 <div className="image-field">
