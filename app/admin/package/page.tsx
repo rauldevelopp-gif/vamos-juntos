@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Loader2, Eye, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Info, Check } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Clock, Loader2, Eye, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Info, Check } from 'lucide-react';
 import { getPackages, confirmPackage } from './actions';
 
 interface Package {

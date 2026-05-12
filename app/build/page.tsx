@@ -65,6 +65,7 @@ interface Package {
     name: string;
     description: string;
     image: string | null;
+    items: PackageItem[];
     total: number;
     driverId?: number;
     clientId?: string;
