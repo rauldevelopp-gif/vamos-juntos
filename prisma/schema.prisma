@@ -200,6 +200,7 @@ model Package {
   items       Json?    // Stores the itinerary items
   driverId    Int?     // Stores the assigned driver
   driver      Driver?  @relation(fields: [driverId], references: [id])
+  clientId    String?  // UUID to track custom packages in session
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

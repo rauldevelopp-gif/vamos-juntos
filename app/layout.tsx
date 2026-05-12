@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import "./globals.css";
 import PWARegistration from "./PWARegistration";
-import { Home, Package, LogOut, User } from 'lucide-react';
+import { Home, Package, LogOut, User, Search } from 'lucide-react';
 
 export const viewport: Viewport = {
   themeColor: "#05070a",
@@ -24,12 +24,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = cookies().get('session');
+  const cookieStore = await cookies();
+  const session = cookieStore.get('session');
 
   return (
     <html lang="es">
@@ -60,6 +61,10 @@ export default function RootLayout({
               <Link href="/packages" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Package size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
                 <span className="btn-text-mobile-hide">Paquetes</span>
+              </Link>
+              <Link href="/tracking" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Search size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
+                <span className="btn-text-mobile-hide">Seguimiento</span>
               </Link>
               
               {session ? (

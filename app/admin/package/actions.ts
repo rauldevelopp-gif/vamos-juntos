@@ -38,23 +38,61 @@ export async function getPackages() {
 
 export async function createPackage(data: any) {
     try {
+        console.log('Attempting to create package with data:', JSON.stringify(data, null, 2));
         const newPackage = await prisma.package.create({
             data: {
                 name: data.name,
                 description: data.description,
-                price: data.total,
-                status: 'Activo',
+                price: Number(data.total) || 0,
+                status: data.clientId ? 'Pendiente' : 'Activo',
                 date: new Date().toISOString().split('T')[0], // Default today
                 image: data.image,
                 items: data.items, // JSON
-                driverId: data.driverId,
+                driverId: data.driverId ? Number(data.driverId) : null,
+                clientId: data.clientId || null,
                 sales: 0
             }
         });
         return { success: true, data: newPackage };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating package:', error);
-        return { success: false, error: 'Error al guardar el paquete' };
+        return { success: false, error: 'Error al guardar el paquete: ' + (error.message || 'Error desconocido') };
+    }
+}
+
+export async function getPackagesByClientId(clientId: string) {
+    try {
+        const packages = await prisma.package.findMany({
+            where: { clientId },
+            include: {
+                driver: {
+                    include: {
+                        taxis: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, data: packages };
+    } catch (error) {
+        console.error('Error fetching client packages:', error);
+        return { success: false, error: 'Error al cargar tus solicitudes' };
+    }
+}
+
+export async function confirmPackage(id: number, driverId: number) {
+    try {
+        const updated = await prisma.package.update({
+            where: { id },
+            data: {
+                status: 'Confirmado',
+                driverId: driverId
+            }
+        });
+        return { success: true, data: updated };
+    } catch (error) {
+        console.error('Error confirming package:', error);
+        return { success: false, error: 'Error al confirmar el paquete' };
     }
 }
 

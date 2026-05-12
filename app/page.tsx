@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Loader2 } from 'lucide-react';
+import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Loader2, Plus } from 'lucide-react';
 import { getPackages } from './admin/package/actions';
 
 const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
@@ -153,6 +153,10 @@ export default function Home() {
               <Compass size={20} strokeWidth={2} />
               <span>Explorar Paquetes</span>
               <Sparkles size={16} strokeWidth={2} />
+            </Link>
+            <Link href="/build" className="btn-glass-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.8rem 1.5rem', borderRadius: '1rem', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)' }}>
+              <Plus size={20} strokeWidth={2} />
+              <span>Construir Paquete</span>
             </Link>
           </div>
           <h1 className="heading-1 float-animation" style={{ fontSize: '3.5rem', marginBottom: '1.5rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)', lineHeight: '1.1' }}>
