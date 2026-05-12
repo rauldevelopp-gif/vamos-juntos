@@ -20,6 +20,7 @@ import {
 
 const MENU_ITEMS = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Solicitudes', href: '/admin/requests', icon: Clock },
     { name: 'Paquetes', href: '/admin/package', icon: Package },
     { name: 'Aeropuerto', href: '/admin/airports', icon: Plane },
     { name: 'Hoteles', href: '/admin/hotels', icon: Hotel },

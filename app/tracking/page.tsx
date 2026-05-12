@@ -8,7 +8,6 @@ import {
     Loader2, 
     Eye, 
     X, 
-    Image as ImageIcon, 
     Plane, 
     Hotel, 
     Utensils, 
@@ -22,6 +21,7 @@ import {
     Bell
 } from 'lucide-react';
 import { getPackagesByClientId } from '../admin/package/actions';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface Package {
     id: number;
@@ -52,6 +52,7 @@ const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
 };
 
 const StatusBadge = ({ status }: { status: string }) => {
+    const { t } = useLanguage();
     const isConfirmed = status === 'Confirmado';
     const isPending = status === 'Pendiente';
     
@@ -69,12 +70,13 @@ const StatusBadge = ({ status }: { status: string }) => {
             border: `1px solid ${isConfirmed ? 'rgba(16, 185, 129, 0.2)' : (isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.1)')}`
         }}>
             {isConfirmed ? <CheckCircle2 size={14} /> : (isPending ? <Clock size={14} /> : <AlertCircle size={14} />)}
-            {status}
+            {isConfirmed ? t('status_confirmed') : (isPending ? t('status_pending') : status)}
         </span>
     );
 };
 
 const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
+    const { t } = useLanguage();
     const displayPkg = {
         ...pkg,
         total: pkg.price || pkg.total || 0,
@@ -86,19 +88,12 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
             <div className="flyer-container" onClick={e => e.stopPropagation()}>
                 <button className="flyer-close" onClick={onClose}><X size={24} /></button>
                 
-                <div className="flyer-hero">
-                    {displayPkg.image ? (
-                        <img src={displayPkg.image} alt={displayPkg.name} className="hero-img" />
-                    ) : (
-                        <div className="hero-placeholder">
-                            <ImageIcon size={64} opacity={0.2} />
-                        </div>
-                    )}
-                    <div className="hero-overlay">
-                        <div className="flyer-badge">TU PAQUETE PERSONALIZADO</div>
-                        <h1 className="flyer-title">{displayPkg.name || 'Sin nombre'}</h1>
+                <div className="flyer-hero" style={{ height: 'auto', padding: '3rem 2rem 1.5rem' }}>
+                    <div className="hero-overlay" style={{ position: 'relative', background: 'transparent', padding: 0 }}>
+                        <div className="flyer-badge">{t('custom_package_flyer')}</div>
+                        <h1 className="flyer-title">{displayPkg.name || '---'}</h1>
                         <div className="flyer-meta">
-                            <span>VAMOS JUNTOS • SOLICITUD DE CLIENTE</span>
+                            <span>{t('brand_name')} • {t('client_request_flyer')}</span>
                         </div>
                     </div>
                 </div>
@@ -106,20 +101,20 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                 <div className="flyer-body">
                     <div className="flyer-status-section" style={{ marginBottom: '1.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>Estado actual:</div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('current_status')}</div>
                             <StatusBadge status={displayPkg.status} />
                         </div>
                     </div>
 
                     <div className="flyer-description">
-                        <p>{displayPkg.description || 'Detalles de tu solicitud personalizada.'}</p>
+                        <p>{displayPkg.description || '...'}</p>
                     </div>
 
                     <div className="flyer-itinerary">
-                        <h3>TU ITINERARIO</h3>
+                        <h3>{t('itinerary_flyer')}</h3>
                         <div className="flyer-items">
                             {displayPkg.items.length === 0 ? (
-                                <p className="empty-msg">No hay items en el itinerario.</p>
+                                <p className="empty-msg">...</p>
                             ) : (
                                 displayPkg.items.map((item: any, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
@@ -137,7 +132,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
                     {displayPkg.driver && (
                         <div className="flyer-driver-section">
-                            <div className="driver-label">CHOFER CONFIRMADO</div>
+                            <div className="driver-label">{t('driver_confirmed_flyer')}</div>
                             <div className="driver-flyer-card">
                                 <img src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" />
                                 <div className="driver-flyer-info">
@@ -146,7 +141,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                                         Driver VIP • <span style={{ color: 'white' }}>{displayPkg.driver.taxis?.[0]?.model || 'Taxi Asignado'}</span>
                                     </div>
                                     <div style={{ fontSize: '0.65rem', color: '#10b981', fontWeight: 700, marginTop: '0.2rem' }}>
-                                        ✓ Solicitud Aprobada
+                                        {t('request_approved_flyer')}
                                     </div>
                                 </div>
                             </div>
@@ -155,11 +150,11 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
                     <div className="flyer-footer">
                         <div className="price-box">
-                            <span className="label">PRECIO ESTIMADO</span>
+                            <span className="label">{t('estimated_price')}</span>
                             <span className="value">${displayPkg.total.toLocaleString()} <small>USD</small></span>
                         </div>
                         <div className="contact-info">
-                            <p>Vamos Juntos Luxury</p>
+                            <p>{t('brand_footer_note')}</p>
                             <div className="brand-logo">VAMOS JUNTOS</div>
                         </div>
                     </div>
@@ -242,7 +237,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                 .driver-flyer-card img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #8b5cf6; }
                 .driver-flyer-name { font-size: 0.9rem; font-weight: 700; color: white; }
                 .driver-flyer-role { font-size: 0.7rem; color: #8b5cf6; font-weight: 600; }
-
+                
                 .flyer-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; }
                 .price-box .label { font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.2); }
                 .price-box .value { font-size: 1.6rem; font-weight: 900; color: white; }
@@ -255,6 +250,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 };
 
 export default function TrackingPage() {
+    const { t } = useLanguage();
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
@@ -302,8 +298,8 @@ export default function TrackingPage() {
                         <Bell size={20} />
                     </div>
                     <div>
-                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1.1rem' }}>¡Solicitud Confirmada!</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Un conductor ha aceptado tu paquete. Revisa los detalles abajo.</div>
+                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1.1rem' }}>{t('request_confirmed_title')}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('request_confirmed_desc')}</div>
                     </div>
                 </div>
             )}
@@ -315,10 +311,10 @@ export default function TrackingPage() {
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Mis Solicitudes
+                            {t('my_requests')}
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Seguimiento en tiempo real de tus paquetes personalizados.
+                            {t('tracking_subtitle')}
                         </p>
                     </div>
                 </div>
@@ -328,17 +324,17 @@ export default function TrackingPage() {
                 {loading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem', color: 'var(--text-muted)' }}>
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-                        <p>Sincronizando estado...</p>
+                        <p>{t('syncing_status')}</p>
                     </div>
                 ) : packages.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '6rem' }}>
                         <div style={{ background: 'rgba(255,255,255,0.03)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Clock size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No tienes solicitudes activas</h3>
-                        <p style={{ color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto 2rem' }}>Empieza por construir tu primer paquete personalizado.</p>
+                        <h3>{t('no_active_requests')}</h3>
+                        <p style={{ color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto 2rem' }}>{t('no_requests_desc')}</p>
                         <Link href="/build" className="btn-premium" style={{ display: 'inline-block' }}>
-                            Construir Paquete
+                            {t('btn_build')}
                         </Link>
                     </div>
                 ) : (
@@ -355,20 +351,12 @@ export default function TrackingPage() {
                                 cursor: 'pointer',
                                 transition: 'all 0.3s'
                             }}>
-                                <div style={{ width: '60px', height: '60px', borderRadius: '15px', overflow: 'hidden', flexShrink: 0 }}>
-                                    {pkg.image ? (
-                                        <img src={pkg.image} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}>
-                                            <ImageIcon size={24} color="var(--text-muted)" />
-                                        </div>
-                                    )}
-                                </div>
+
                                 
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{pkg.name}</div>
                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                        Creado el {new Date(pkg.createdAt).toLocaleDateString()}
+                                        {t('created_at')} {new Date(pkg.createdAt).toLocaleDateString()}
                                     </div>
                                 </div>
 

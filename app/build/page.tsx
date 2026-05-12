@@ -12,7 +12,6 @@ import {
     Trash2, 
     GripVertical, 
     Image as ImageIcon, 
-    Upload, 
     Search,
     ArrowLeft,
     CheckCircle2,
@@ -35,6 +34,7 @@ import { getYachts } from '../admin/yachts/actions';
 import { createPackage } from '../admin/package/actions';
 import { getTaxis } from '../admin/taxis/actions';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '../../context/LanguageContext';
 
 // --- TYPES ---
 
@@ -65,21 +65,22 @@ interface Package {
     name: string;
     description: string;
     image: string | null;
-    items: PackageItem[];
     total: number;
     driverId?: number;
     clientId?: string;
+    startDate: string;
+    startTime: string;
 }
 
 // --- MOCK DATA ---
 
 const CATEGORIES = [
-    { type: 'aeropuerto', label: 'Vuelos/Aeropuertos', icon: <Plane size={24} /> },
-    { type: 'hotel', label: 'Hoteles', icon: <Hotel size={24} /> },
-    { type: 'restaurante', label: 'Restaurantes', icon: <Utensils size={24} /> },
-    { type: 'playa', label: 'Playas', icon: <Palmtree size={24} /> },
-    { type: 'atraccion', label: 'Atracciones', icon: <Camera size={24} /> },
-    { type: 'yate', label: 'Yates/Marina', icon: <Anchor size={24} /> },
+    { type: 'aeropuerto', labelKey: 'airports', icon: <Plane size={24} /> },
+    { type: 'hotel', labelKey: 'hotels', icon: <Hotel size={24} /> },
+    { type: 'restaurante', labelKey: 'restaurants', icon: <Utensils size={24} /> },
+    { type: 'playa', labelKey: 'beaches', icon: <Palmtree size={24} /> },
+    { type: 'atraccion', labelKey: 'attractions', icon: <Camera size={24} /> },
+    { type: 'yate', labelKey: 'yachts', icon: <Anchor size={24} /> },
 ] as const;
 
 const MOCK_DRIVERS = [
@@ -135,6 +136,7 @@ const CatalogModal = ({
     onClose: () => void, 
     onAddItem: (item: CatalogItem) => void 
 }) => {
+    const { t } = useLanguage();
     const [search, setSearch] = useState('');
     const [items, setItems] = useState<CatalogItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -189,6 +191,8 @@ const CatalogModal = ({
         );
     }, [items, search]);
 
+    const categoryLabel = t(CATEGORIES.find(c => c.type === type)?.labelKey || 'items');
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content glass-panel" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
@@ -198,8 +202,8 @@ const CatalogModal = ({
                             <TypeIcon type={type} size={24} />
                         </div>
                         <div>
-                            <h2 className="modal-title">{CATEGORIES.find(c => c.type === type)?.label}</h2>
-                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Explora el catálogo de {type}s</p>
+                            <h2 className="modal-title">{categoryLabel}</h2>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>{t('catalog_explore')} {categoryLabel}</p>
                         </div>
                     </div>
                     <button className="close-btn" onClick={onClose}>
@@ -212,7 +216,7 @@ const CatalogModal = ({
                         <Search className="input-icon" size={16} />
                         <input 
                             type="text" 
-                            placeholder={`Buscar ${type}...`} 
+                            placeholder={`${t('search')} ${categoryLabel}...`} 
                             value={search}
                             autoFocus
                             onChange={(e) => setSearch(e.target.value)}
@@ -224,11 +228,11 @@ const CatalogModal = ({
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: '3rem' }}>
                             <Loader2 className="animate-spin" size={32} style={{ color: '#8b5cf6', margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Sincronizando catálogo...</p>
+                            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>{t('syncing_catalog')}</p>
                         </div>
                     ) : filteredItems.length === 0 ? (
                         <div className="no-results" style={{ padding: '3rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '1rem' }}>
-                            No se encontraron {type}s disponibles
+                            {t('no_items_found')} {categoryLabel}
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -264,6 +268,7 @@ const CatalogModal = ({
 };
 
 const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
+    const { t } = useLanguage();
     return (
         <div className="modal-overlay" onClick={onClose} style={{ zIndex: 2000 }}>
             <div className="flyer-container" onClick={e => e.stopPropagation()}>
@@ -278,24 +283,24 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
                         </div>
                     )}
                     <div className="hero-overlay">
-                        <div className="flyer-badge">PREVIEW EXCLUSIVO</div>
-                        <h1 className="flyer-title">{pkg.name || 'Sin nombre'}</h1>
+                        <div className="flyer-badge">{t('custom_package_flyer')}</div>
+                        <h1 className="flyer-title">{pkg.name || '---'}</h1>
                         <div className="flyer-meta">
-                            <span>VAMOS JUNTOS • LUXURY TRAVEL</span>
+                            <span>VAMOS JUNTOS • {t('client_request_flyer')}</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="flyer-body">
                     <div className="flyer-description">
-                        <p>{pkg.description || 'Este paquete ha sido diseñado meticulosamente para ofrecer una experiencia inolvidable en el Caribe Mexicano.'}</p>
+                        <p>{pkg.description || '...'}</p>
                     </div>
 
                     <div className="flyer-itinerary">
-                        <h3>ITINERARIO SELECTO</h3>
+                        <h3>{t('itinerary_flyer')}</h3>
                         <div className="flyer-items">
                             {pkg.items.length === 0 ? (
-                                <p className="empty-msg">No se han añadido servicios aún.</p>
+                                <p className="empty-msg">...</p>
                             ) : (
                                 pkg.items.map((item, idx) => (
                                     <div key={item.id} className="flyer-item-row">
@@ -505,59 +510,21 @@ const PackageItemCard = ({
     );
 };
 
-const ImageUploader = ({ value, onChange }: { value: string | null, onChange: (v: string | null) => void }) => {
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                onChange(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    return (
-        <div className="uploader-container">
-            <label className="field-label">Imagen de Portada</label>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden-input" 
-                accept="image/*"
-                onChange={handleFileChange}
-            />
-            <div 
-                className="drop-zone"
-                onClick={() => fileInputRef.current?.click()}
-            >
-                {value ? (
-                    <div className="preview-wrap">
-                        <img src={value} alt="Preview" />
-                        <div className="overlay"><Upload size={24} /></div>
-                    </div>
-                ) : (
-                    <div className="empty-zone">
-                        <ImageIcon size={32} />
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
 
 // --- MAIN PAGE COMPONENT ---
 
 export default function PackageBuilderPage() {
+    const { t } = useLanguage();
     const [pkg, setPkg] = useState<Package>({
         name: '',
         description: '',
         image: null,
         items: [],
         total: 0,
-        driverId: undefined
+        driverId: undefined,
+        startDate: new Date().toISOString().split('T')[0],
+        startTime: '12:00'
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -626,7 +593,7 @@ export default function PackageBuilderPage() {
     }, [pkg.items]);
 
     const handleSave = async () => {
-        if (!pkg.name) return alert('Asigna un nombre al paquete');
+        if (!pkg.name) return alert(t('alert_assign_name'));
         setIsSaving(true);
         try {
             // Obtener o generar ID de cliente para seguimiento
@@ -636,12 +603,13 @@ export default function PackageBuilderPage() {
                 localStorage.setItem('vamosJuntos_clientId', clientId);
             }
 
-            const result = await createPackage({ ...pkg, clientId });
+            const combinedDate = `${pkg.startDate} ${pkg.startTime}`;
+            const result = await createPackage({ ...pkg, clientId, date: combinedDate });
             if (result.success) {
                 // Success feedback
                 const notification = document.createElement('div');
                 notification.className = 'save-badge';
-                notification.innerHTML = '✨ ¡Paquete Guardado!';
+                notification.innerHTML = `✨ ${t('package_saved_notif')}`;
                 notification.style.position = 'fixed';
                 notification.style.top = '2rem';
                 notification.style.right = '2rem';
@@ -656,12 +624,12 @@ export default function PackageBuilderPage() {
             }
         } catch (error) {
             console.error(error);
-            alert('Error crítico al guardar');
+            alert(t('alert_critical_error'));
             setIsSaving(false);
         }
     };
 
-    if (!mounted) return <div className="loader">Cargando...</div>;
+    if (!mounted) return <div className="loader">{t('loading')}</div>;
 
     return (
         <div className="builder-wrapper">
@@ -673,11 +641,11 @@ export default function PackageBuilderPage() {
                             <ArrowLeft size={24} />
                         </Link>
                         <div>
-                            <h1 className="text-gradient">Package Builder</h1>
-                            <p>Diseña experiencias únicas compuestas por múltiples servicios</p>
+                            <h1 className="text-gradient">{t('package_builder_title')}</h1>
+                            <p>{t('package_builder_desc')}</p>
                         </div>
                     </div>
-                    {isSaving && <div className="save-badge"><Loader2 size={16} className="animate-spin" /> Guardando...</div>}
+                    {isSaving && <div className="save-badge"><Loader2 size={16} className="animate-spin" /> {t('saving')}</div>}
                 </header>
 
                 <div className="builder-layout">
@@ -689,7 +657,7 @@ export default function PackageBuilderPage() {
                             <div className="info-grid">
                                 <div className="fields">
                                     <div className="field-group">
-                                        <label className="field-label">Confirmación de Chofer</label>
+                                        <label className="field-label">{t('driver_confirmation_label')}</label>
                                         <div style={{ 
                                             padding: '1.2rem', 
                                             background: 'rgba(255,255,255,0.02)', 
@@ -703,42 +671,58 @@ export default function PackageBuilderPage() {
                                                 <Clock size={20} />
                                             </div>
                                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                                                Al ser un paquete personalizado, quedará <strong style={{ color: '#f59e0b' }}>pendiente de confirmación</strong> por parte de un conductor profesional una vez que lo guardes.
+                                                {t('driver_confirmation_note_1')} <strong style={{ color: '#f59e0b' }}>{t('driver_confirmation_note_2')}</strong> {t('driver_confirmation_note_3')}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="field-group">
-                                        <label className="field-label">Nombre del Paquete</label>
+                                        <label className="field-label">{t('package_name_label')}</label>
                                         <input 
                                             type="text" 
-                                            placeholder="Ej: Luxury Cancun Experience" 
+                                            placeholder={t('package_name_placeholder')} 
                                             value={pkg.name}
                                             onChange={(e) => setPkg(prev => ({ ...prev, name: e.target.value }))}
                                         />
                                     </div>
                                     <div className="field-group">
-                                        <label className="field-label">Descripción</label>
+                                        <label className="field-label">{t('description_label')}</label>
                                         <textarea 
-                                            placeholder="Detalla qué incluye este paquete..." 
+                                            placeholder={t('description_placeholder')} 
                                             rows={3}
                                             value={pkg.description}
                                             onChange={(e) => setPkg(prev => ({ ...prev, description: e.target.value }))}
                                         />
                                     </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                        <div className="field-group">
+                                            <label className="field-label">{t('start_date_label')}</label>
+                                            <input 
+                                                type="date" 
+                                                value={pkg.startDate}
+                                                onChange={(e) => setPkg(prev => ({ ...prev, startDate: e.target.value }))}
+                                            />
+                                        </div>
+                                        <div className="field-group">
+                                            <label className="field-label">{t('start_time_label')}</label>
+                                            <input 
+                                                type="time" 
+                                                value={pkg.startTime}
+                                                onChange={(e) => setPkg(prev => ({ ...prev, startTime: e.target.value }))}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="image-field">
-                                    <ImageUploader value={pkg.image} onChange={(v) => setPkg(prev => ({ ...prev, image: v }))} />
-                                </div>
+
                             </div>
                         </div>
 
                         <div className="itinerary-section">
                             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <div>
-                                    <h3 style={{ margin: 0 }}>Itinerario del Paquete</h3>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Gestiona la secuencia de servicios</p>
+                                    <h3 style={{ margin: 0 }}>{t('package_itinerary_title')}</h3>
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>{t('package_itinerary_desc')}</p>
                                 </div>
-                                <span className="counter" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', padding: '0.4rem 1rem', borderRadius: '10px', fontWeight: 800 }}>{pkg.items.length} Servicios</span>
+                                <span className="counter" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', padding: '0.4rem 1rem', borderRadius: '10px', fontWeight: 800 }}>{pkg.items.length} {t('services_count')}</span>
                             </div>
 
                             {/* Category Quick Triggers */}
@@ -750,7 +734,7 @@ export default function PackageBuilderPage() {
                                         onClick={() => setActiveCatalogType(cat.type)}
                                     >
                                         <div className="cat-icon">{cat.icon}</div>
-                                        <span className="cat-label">{cat.label.split('/')[0]}</span>
+                                        <span className="cat-label">{t(cat.labelKey)}</span>
                                     </button>
                                 ))}
                             </div>
@@ -761,7 +745,7 @@ export default function PackageBuilderPage() {
                                         <div style={{ padding: '2rem', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.1)', marginBottom: '1rem' }}>
                                             <Plus size={48} />
                                         </div>
-                                        <p style={{ color: 'var(--text-muted)', fontWeight: 500 }}>Selecciona una categoría arriba para empezar a construir</p>
+                                        <p style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{t('builder_empty_state')}</p>
                                     </div>
                                 ) : (
                                     pkg.items.map((item, index) => (
@@ -782,7 +766,7 @@ export default function PackageBuilderPage() {
                         <div className="summary-section">
                             <div className="glass-panel summary-card">
                                 <div className="summary-info">
-                                    <div className="total-label">Precio Total</div>
+                                    <div className="total-label">{t('total_price_label')}</div>
                                     <div className="total-value">
                                         <span className="currency">$</span>
                                         {pkg.total.toFixed(2)}
@@ -790,7 +774,7 @@ export default function PackageBuilderPage() {
                                 </div>
                                 <div className="summary-actions" style={{ display: 'flex', gap: '1rem' }}>
                                     <button onClick={() => setIsPreviewOpen(true)} className="btn-glass-nav" style={{ padding: '0.8rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-                                        <Camera size={18} /> Vista Previa
+                                        <Camera size={18} /> {t('btn_preview')}
                                     </button>
                                     <button 
                                         onClick={handleSave} 
@@ -799,7 +783,7 @@ export default function PackageBuilderPage() {
                                         style={{ padding: '0.8rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isSaving ? 0.7 : 1 }}
                                     >
                                         {isSaving ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
-                                        {isSaving ? 'Guardando...' : 'Guardar Paquete'}
+                                        {isSaving ? t('saving') : t('btn_save_package')}
                                     </button>
                                 </div>
                             </div>
@@ -993,7 +977,6 @@ export default function PackageBuilderPage() {
                 .cat-label {
                     font-size: 0.75rem;
                     font-weight: 700;
-                    text-transform: uppercase;
                     letter-spacing: 0.05em;
                 }
                 @media (max-width: 900px) {
@@ -1086,7 +1069,7 @@ export default function PackageBuilderPage() {
                 }
                 .info-grid {
                     display: grid;
-                    grid-template-columns: 1fr 200px;
+                    grid-template-columns: 1fr;
                     gap: 2rem;
                 }
                 .field-group {
@@ -1099,7 +1082,6 @@ export default function PackageBuilderPage() {
                     font-size: 0.75rem;
                     font-weight: 700;
                     color: rgba(255,255,255,0.3);
-                    text-transform: uppercase;
                 }
                 .hidden-input {
                     display: none;
@@ -1119,9 +1101,12 @@ export default function PackageBuilderPage() {
                     align-items: center;
                     transition: all 0.2s;
                 }
-                .driver-selector-trigger:hover {
-                    background: rgba(255,255,255,0.08);
+                .field-group input:focus, .field-group textarea:focus {
                     border-color: #8b5cf6;
+                }
+                .field-group input[type="date"],
+                .field-group input[type="time"] {
+                    color-scheme: dark;
                 }
                 .empty-trigger {
                     width: 100%;
@@ -1362,13 +1347,13 @@ export default function PackageBuilderPage() {
                                                 />
                                             ))}
                                         </div>
-                                        <div className="rating-text">{taxi.driver?.rating || 0} Rating</div>
+                                        <div className="rating-text">{taxi.driver?.rating || 0} {t('rating_label')}</div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                         <button className="btn-premium modal-close-action" onClick={() => setIsDriverModalOpen(false)}>
-                            Confirmar Selección
+                            {t('confirm_selection')}
                         </button>
                     </div>
                 </div>

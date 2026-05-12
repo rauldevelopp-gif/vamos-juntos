@@ -5,6 +5,7 @@ import prisma from '@/lib/db';
 export async function getPackages() {
     try {
         let packages = await prisma.package.findMany({
+            where: { clientId: null },
             include: {
                 driver: {
                     include: {
@@ -18,6 +19,7 @@ export async function getPackages() {
         if (packages.length < 8) {
             await seedPremiumPackages();
             packages = await prisma.package.findMany({
+                where: { clientId: null },
                 include: {
                     driver: {
                         include: {
@@ -45,7 +47,7 @@ export async function createPackage(data: any) {
                 description: data.description,
                 price: Number(data.total) || 0,
                 status: data.clientId ? 'Pendiente' : 'Activo',
-                date: new Date().toISOString().split('T')[0], // Default today
+                date: data.date || new Date().toISOString().split('T')[0], // Use provided date or today
                 image: data.image,
                 items: data.items, // JSON
                 driverId: data.driverId ? Number(data.driverId) : null,
@@ -57,6 +59,26 @@ export async function createPackage(data: any) {
     } catch (error: any) {
         console.error('Error creating package:', error);
         return { success: false, error: 'Error al guardar el paquete: ' + (error.message || 'Error desconocido') };
+    }
+}
+
+export async function getClientRequests() {
+    try {
+        const requests = await prisma.package.findMany({
+            where: { NOT: { clientId: null } },
+            include: {
+                driver: {
+                    include: {
+                        taxis: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, data: requests };
+    } catch (error) {
+        console.error('Error fetching client requests:', error);
+        return { success: false, error: 'Error al cargar las solicitudes' };
     }
 }
 

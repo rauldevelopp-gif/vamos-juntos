@@ -233,10 +233,10 @@ export default function PackagesPage() {
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Paquetes Turísticos
+                            Paquetes Premium
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestiona y crea nuevas experiencias para tus clientes.
+                            Gestiona el catálogo de experiencias exclusivas disponibles para todos los clientes.
                         </p>
                     </div>
                 </div>
