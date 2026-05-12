@@ -1,9 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed', platform: string }>;
+}
 
 export default function PWARegistration() {
-    const [installPrompt, setInstallPrompt] = useState<any>(null);
+    const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showBanner, setShowBanner] = useState(false);
 
     useEffect(() => {
@@ -15,7 +21,7 @@ export default function PWARegistration() {
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            setInstallPrompt(e);
+            setInstallPrompt(e as BeforeInstallPromptEvent);
             // Show the banner after 3 seconds of browsing
             setTimeout(() => setShowBanner(true), 3000);
         });
@@ -24,7 +30,7 @@ export default function PWARegistration() {
     const handleInstall = () => {
         if (!installPrompt) return;
         installPrompt.prompt();
-        installPrompt.userChoice.then((choice: any) => {
+        installPrompt.userChoice.then((choice) => {
             if (choice.outcome === 'accepted') {
                 console.log('User accepted the install prompt');
             }
@@ -53,8 +59,13 @@ export default function PWARegistration() {
             animation: 'slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: 'var(--primary)' }}>
-                    <img src="/icons/icon-192x192.png" alt="App Icon" style={{ width: '100%', height: '100%' }} />
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: 'var(--primary)', position: 'relative' }}>
+                    <Image 
+                        src="/icons/icon-192x192.png" 
+                        alt="App Icon" 
+                        fill
+                        style={{ objectFit: 'cover' }} 
+                    />
                 </div>
                 <div>
                     <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'white' }}>Instalar VamosJuntos</h4>

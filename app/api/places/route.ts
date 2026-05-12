@@ -6,6 +6,7 @@ export async function GET() {
         const places = await prisma.place.findMany();
         return NextResponse.json(places);
     } catch (error) {
+        console.error('Places API error:', error);
         return NextResponse.json({ error: 'Failed to fetch places' }, { status: 500 });
     }
 }
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
         });
         return NextResponse.json(place);
     } catch (error) {
+        console.error('Places API error:', error);
         return NextResponse.json({ error: 'Failed to create place' }, { status: 500 });
     }
 }

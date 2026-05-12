@@ -15,7 +15,6 @@ import {
     Search,
     ArrowLeft,
     CheckCircle2,
-    Copy,
     Info,
     Plane,
     X,
@@ -25,6 +24,7 @@ import {
     Clock
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAirports } from '../admin/airports/actions';
 import { getHotels } from '../admin/hotels/actions';
 import { getBeaches } from '../admin/beaches/actions';
@@ -46,7 +46,19 @@ interface CatalogItem {
     type: ItemType;
     defaultPrice: number;
     details?: string;
-    raw?: any;
+    raw?: unknown;
+}
+
+interface Taxi {
+    id: number;
+    model: string;
+    plate: string;
+    driver?: {
+        id: number;
+        name: string;
+        photo: string | null;
+        role: string;
+    };
 }
 
 interface PackageItem {
@@ -146,7 +158,7 @@ const CatalogModal = ({
         const fetchData = async () => {
             setLoading(true);
             try {
-                let result: any;
+                let result: { success: boolean; data?: unknown[]; error?: string };
                 switch (type) {
                     case 'aeropuerto': result = await getAirports(); break;
                     case 'hotel': result = await getHotels(); break;
@@ -277,7 +289,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
                 
                 <div className="flyer-hero">
                     {pkg.image ? (
-                        <img src={pkg.image} alt={pkg.name} className="hero-img" />
+                        <Image src={pkg.image} alt={pkg.name} fill className="hero-img" unoptimized />
                     ) : (
                         <div className="hero-placeholder">
                             <ImageIcon size={64} opacity={0.2} />
@@ -321,7 +333,13 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
                         <div className="flyer-driver-section">
                             <div className="driver-label">CHOFER ASIGNADO</div>
                             <div className="driver-flyer-card">
-                                <img src={MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.photo} alt="Driver" />
+                                <Image 
+                                    src={MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.photo || ''} 
+                                    alt="Driver" 
+                                    width={45}
+                                    height={45}
+                                    unoptimized
+                                />
                                 <div className="driver-flyer-info">
                                     <div className="driver-flyer-name">{MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.name}</div>
                                     <div className="driver-flyer-role">{MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.role}</div>
@@ -449,15 +467,13 @@ const PackageItemCard = ({
     index, 
     onRemove, 
     onUpdatePrice,
-    onReorder,
-    onUpdateMetadata
+    onReorder
 }: { 
     item: PackageItem, 
     index: number,
     onRemove: (id: string) => void,
     onUpdatePrice: (id: string, price: number) => void,
-    onReorder: (dragIndex: number, hoverIndex: number) => void,
-    onUpdateMetadata: (id: string, metadata: any) => void
+    onReorder: (dragIndex: number, hoverIndex: number) => void
 }) => {
     const [isDragging, setIsDragging] = useState(false);
 
@@ -535,7 +551,7 @@ export default function PackageBuilderPage() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const router = useRouter();
 
-    const [dbTaxis, setDbTaxis] = useState<any[]>([]);
+    const [dbTaxis, setDbTaxis] = useState<Taxi[]>([]);
 
     useEffect(() => {
         setMounted(true);
@@ -545,10 +561,6 @@ export default function PackageBuilderPage() {
         };
         fetchTaxis();
     }, []);
-
-    const selectedTaxi = useMemo(() => 
-        dbTaxis.find(t => t.driver?.id === pkg.driverId)
-    , [dbTaxis, pkg.driverId]);
 
     useEffect(() => {
         const total = pkg.items.reduce((sum, item) => sum + item.price, 0);
@@ -578,13 +590,6 @@ export default function PackageBuilderPage() {
         }));
     }, []);
 
-    const handleUpdateMetadata = useCallback((id: string, metadata: any) => {
-        setPkg(prev => ({
-            ...prev,
-            items: prev.items.map(i => i.id === id ? { ...i, metadata } : i)
-        }));
-    }, []);
-
     const handleReorder = useCallback((dragIndex: number, hoverIndex: number) => {
         const newItems = [...pkg.items];
         const dragItem = newItems[dragIndex];
@@ -597,7 +602,6 @@ export default function PackageBuilderPage() {
         if (!pkg.name) return alert(t('alert_assign_name'));
         setIsSaving(true);
         try {
-            // Obtener o generar ID de cliente para seguimiento
             let clientId = localStorage.getItem('vamosJuntos_clientId');
             if (!clientId) {
                 clientId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -607,7 +611,6 @@ export default function PackageBuilderPage() {
             const combinedDate = `${pkg.startDate} ${pkg.startTime}`;
             const result = await createPackage({ ...pkg, clientId, date: combinedDate });
             if (result.success) {
-                // Success feedback
                 const notification = document.createElement('div');
                 notification.className = 'save-badge';
                 notification.innerHTML = `✨ ${t('package_saved_notif')}`;
@@ -635,7 +638,6 @@ export default function PackageBuilderPage() {
     return (
         <div className="builder-wrapper">
             <div className="builder-container">
-                {/* Header */}
                 <header className="builder-header">
                     <div className="header-left">
                         <Link href="/" className="back-btn">
@@ -650,9 +652,6 @@ export default function PackageBuilderPage() {
                 </header>
 
                 <div className="builder-layout">
-                    {/* Catalog Removed from aside */}
-
-                    {/* Main Workspace */}
                     <main className="workspace-side">
                         <div className="glass-panel main-info-card">
                             <div className="info-grid">
@@ -713,7 +712,6 @@ export default function PackageBuilderPage() {
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
@@ -726,7 +724,6 @@ export default function PackageBuilderPage() {
                                 <span className="counter" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', padding: '0.4rem 1rem', borderRadius: '10px', fontWeight: 800 }}>{pkg.items.length} {t('services_count')}</span>
                             </div>
 
-                            {/* Category Quick Triggers */}
                             <div className="category-triggers-bar">
                                 {CATEGORIES.map(cat => (
                                     <button 
@@ -757,7 +754,6 @@ export default function PackageBuilderPage() {
                                             onRemove={handleRemoveItem}
                                             onUpdatePrice={handleUpdatePrice}
                                             onReorder={handleReorder}
-                                            onUpdateMetadata={handleUpdateMetadata}
                                         />
                                     ))
                                 )}
@@ -793,512 +789,47 @@ export default function PackageBuilderPage() {
                 </div>
             </div>
 
-            {/* Global Style for Custom Scrollbar */}
             <style dangerouslySetInnerHTML={{ __html: `
-                .builder-wrapper {
-                    min-height: 100vh;
-                    padding-bottom: 3rem;
-                }
-                .builder-container {
-                    max-width: 1400px;
-                    margin: 0 auto;
-                    padding: 2rem;
-                }
-                .builder-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 3rem;
-                }
-                .header-left {
-                    display: flex;
-                    align-items: center;
-                    gap: 1.5rem;
-                }
-                .header-left h1 {
-                    font-size: 2.5rem;
-                    font-weight: 800;
-                    margin: 0;
-                    line-height: 1;
-                }
-                .header-left p {
-                    color: rgba(255,255,255,0.4);
-                    margin: 0.5rem 0 0 0;
-                }
-                .back-btn {
-                    padding: 0.75rem;
-                    background: rgba(255,255,255,0.05);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 1rem;
-                    color: white;
-                    display: flex;
-                    transition: all 0.2s;
-                }
-                .back-btn:hover {
-                    background: rgba(255,255,255,0.1);
-                    transform: translateX(-3px);
-                }
-                .save-badge {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.5rem 1rem;
-                    background: rgba(16, 185, 129, 0.1);
-                    color: #10b981;
-                    border-radius: 999px;
-                    font-weight: 700;
-                    font-size: 0.85rem;
-                    animation: bounce 1s infinite;
-                }
-                @keyframes bounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-5px); }
-                }
-
-                .builder-layout {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 2rem;
-                    align-items: start;
-                }
-
-                /* Catalog Panel */
-                .catalog-side {
-                    position: sticky;
-                    top: 2rem;
-                    height: calc(100vh - 150px);
-                }
-                .catalog-container {
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    padding: 0;
-                    border-radius: 1.5rem;
-                    overflow: hidden;
-                    background: rgba(255, 255, 255, 0.02);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                }
-                .catalog-header {
-                    padding: 1.5rem 1.5rem 1rem;
-                }
-                .title-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    margin-bottom: 0.25rem;
-                }
-                .pulse-icon {
-                    width: 8px;
-                    height: 8px;
-                    background: #8b5cf6;
-                    border-radius: 50%;
-                    box-shadow: 0 0 10px #8b5cf6;
-                    animation: pulse-dot 2s infinite;
-                }
-                @keyframes pulse-dot {
-                    0% { transform: scale(1); opacity: 1; }
-                    50% { transform: scale(1.5); opacity: 0.5; }
-                    100% { transform: scale(1); opacity: 1; }
-                }
-                .catalog-header h2 {
-                    font-size: 1.25rem;
-                    font-weight: 800;
-                    margin: 0;
-                    letter-spacing: -0.02em;
-                    color: white;
-                }
-                .subtitle {
-                    font-size: 0.75rem;
-                    color: rgba(255,255,255,0.3);
-                    margin: 0;
-                }
-                .search-section {
-                    padding: 0 1.5rem 1rem;
-                }
-                .input-with-icon {
-                    position: relative;
-                    margin-bottom: 1rem;
-                }
-                .input-icon {
-                    position: absolute;
-                    left: 1rem;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: rgba(255,255,255,0.2);
-                }
-                .input-with-icon input {
-                    width: 100%;
-                    background: rgba(0,0,0,0.2);
-                    border: 1px solid rgba(255,255,255,0.05);
-                    border-radius: 0.75rem;
-                    padding: 0.65rem 1rem 0.65rem 2.75rem;
-                    color: white !important;
-                    font-size: 0.85rem;
-                    outline: none;
-                    transition: all 0.2s;
-                }
-                .input-with-icon input:focus {
-                    border-color: #8b5cf6;
-                    background: rgba(0,0,0,0.4);
-                    box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
-                }
-                .category-triggers-bar {
-                    display: grid;
-                    grid-template-columns: repeat(6, 1fr);
-                    gap: 1rem;
-                    margin-bottom: 2rem;
-                }
-                .cat-trigger-btn {
-                    background: rgba(255,255,255,0.03);
-                    border: 1px solid rgba(255,255,255,0.05);
-                    border-radius: 1.25rem;
-                    padding: 1.2rem;
-                    color: white;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 0.75rem;
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .cat-trigger-btn:hover {
-                    background: rgba(139, 92, 246, 0.1);
-                    border-color: #8b5cf6;
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.1);
-                }
-                .cat-trigger-btn:hover .cat-icon {
-                    color: #8b5cf6;
-                    transform: scale(1.1);
-                }
-                .cat-icon {
-                    transition: all 0.3s;
-                    color: rgba(255,255,255,0.4);
-                }
-                .cat-label {
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    letter-spacing: 0.05em;
-                }
-                @media (max-width: 900px) {
-                    .category-triggers-bar { grid-template-columns: repeat(3, 1fr); }
-                }
-                @media (max-width: 600px) {
-                    .category-triggers-bar { grid-template-columns: repeat(2, 1fr); }
-                    .cat-trigger-btn { padding: 1rem; }
-                }
-                .catalog-list {
-                    flex: 1;
-                    overflow-y: auto;
-                    padding: 0 1.25rem 1.5rem;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.65rem;
-                }
-                .catalog-item-card {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 0.75rem 1rem;
-                    background: rgba(255,255,255,0.02);
-                    border: 1px solid rgba(255,255,255,0.03);
-                    border-radius: 1rem;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .catalog-item-card:hover {
-                    background: rgba(255,255,255,0.06);
-                    border-color: rgba(255,255,255,0.1);
-                    transform: translateY(-2px);
-                }
-                .item-main {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.85rem;
-                }
-                .icon-wrapper {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 0.75rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: rgba(255,255,255,0.03);
-                    color: rgba(255,255,255,0.6);
-                }
-                .details .name {
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    color: white;
-                }
-                .details .category {
-                    font-size: 0.65rem;
-                    color: rgba(255,255,255,0.3);
-                    text-transform: uppercase;
-                }
-                .item-price-tag {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                    gap: 0.25rem;
-                }
-                .item-price-tag span {
-                    font-size: 0.9rem;
-                    font-weight: 800;
-                    color: #8b5cf6;
-                }
-                .add-plus {
-                    width: 20px;
-                    height: 20px;
-                    border-radius: 50%;
-                    background: rgba(255,255,255,0.05);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: rgba(255,255,255,0.2);
-                }
-
-                /* Workspace Side */
-                .workspace-side {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 2rem;
-                }
-                .main-info-card {
-                    padding: 2rem;
-                    border-radius: 1.5rem;
-                }
-                .info-grid {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 2rem;
-                }
-                .field-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5rem;
-                    margin-bottom: 1.5rem;
-                }
-                .field-label {
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    color: rgba(255,255,255,0.3);
-                }
-                .hidden-input {
-                    display: none;
-                }
-                .field-group input, .field-group textarea, .driver-selector-trigger {
-                    background: rgba(255,255,255,0.05);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 1rem;
-                    padding: 1rem;
-                    color: white;
-                    outline: none;
-                }
-                .driver-selector-trigger {
-                    cursor: pointer;
-                    min-height: 56px;
-                    display: flex;
-                    align-items: center;
-                    transition: all 0.2s;
-                }
-                .field-group input:focus, .field-group textarea:focus {
-                    border-color: #8b5cf6;
-                }
-                .field-group input[type="date"],
-                .field-group input[type="time"] {
-                    color-scheme: dark;
-                }
-                .empty-trigger {
-                    width: 100%;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    color: rgba(255,255,255,0.4);
-                    font-weight: 600;
-                }
-                .selected-driver-mini {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                }
-                .selected-driver-mini img {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 50%;
-                    border: 2px solid #8b5cf6;
-                }
-                .mini-name { font-size: 0.9rem; font-weight: 700; }
-                .mini-role { font-size: 0.7rem; color: #8b5cf6; font-weight: 600; }
-
-                /* Modal Styles */
-                .modal-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0,0,0,0.8);
-                    backdrop-filter: blur(10px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    padding: 1rem;
-                }
-                .modal-content {
-                    width: 100%;
-                    max-width: 500px;
-                    padding: 2rem;
-                    border-radius: 2rem;
-                    border: 1px solid rgba(255,255,255,0.1);
-                    position: relative;
-                }
-                .modal-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 2rem;
-                }
-                .modal-title { font-size: 1.5rem; font-weight: 800; margin: 0; }
-                .close-btn { background: none; border: none; color: white; cursor: pointer; padding: 0.5rem; }
-                
-                .drivers-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 1rem;
-                    max-height: 400px;
-                    overflow-y: auto;
-                    padding-right: 0.5rem;
-                }
-                .driver-card-select {
-                    display: flex;
-                    align-items: center;
-                    gap: 1.25rem;
-                    padding: 1rem;
-                    background: rgba(255,255,255,0.03);
-                    border: 1px solid rgba(255,255,255,0.05);
-                    border-radius: 1.25rem;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .driver-card-select:hover {
-                    background: rgba(255,255,255,0.08);
-                    border-color: #8b5cf6;
-                }
-                .driver-card-select.active {
-                    background: rgba(139, 92, 246, 0.1);
-                    border-color: #8b5cf6;
-                }
-                .driver-photo {
-                    width: 56px;
-                    height: 56px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    border: 2px solid #8b5cf6;
-                }
-                .driver-info-main { flex: 1; }
-                .driver-name-row { display: flex; align-items: center; gap: 0.5rem; }
+                .builder-wrapper { min-height: 100vh; padding-bottom: 3rem; }
+                .builder-container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+                .builder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+                .header-left { display: flex; align-items: center; gap: 1.5rem; }
+                .header-left h1 { font-size: 2.5rem; font-weight: 800; margin: 0; line-height: 1; }
+                .header-left p { color: rgba(255,255,255,0.4); margin: 0.5rem 0 0 0; }
+                .back-btn { padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; color: white; display: flex; transition: all 0.2s; }
+                .back-btn:hover { background: rgba(255,255,255,0.1); transform: translateX(-3px); }
+                .save-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 999px; font-weight: 700; font-size: 0.85rem; animation: bounce 1s infinite; }
+                @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+                .builder-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: start; }
+                .input-with-icon { position: relative; margin-bottom: 1rem; }
+                .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.2); }
+                .input-with-icon input { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 0.65rem 1rem 0.65rem 2.75rem; color: white !important; font-size: 0.85rem; outline: none; }
+                .category-triggers-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; margin-bottom: 2rem; }
+                .cat-trigger-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; padding: 1.2rem; color: white; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.3s; }
+                .cat-trigger-btn:hover { background: rgba(139, 92, 246, 0.1); border-color: #8b5cf6; transform: translateY(-5px); }
+                .cat-icon { transition: all 0.3s; color: rgba(255,255,255,0.4); }
+                .cat-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; }
+                .workspace-side { display: flex; flex-direction: column; gap: 2rem; }
+                .main-info-card { padding: 2rem; border-radius: 1.5rem; }
+                .field-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+                .field-label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.3); }
+                .field-group input, .field-group textarea { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1rem; color: white; outline: none; }
+                .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+                .modal-content { width: 100%; max-width: 500px; padding: 2rem; border-radius: 2rem; border: 1px solid rgba(255,255,255,0.1); }
+                .drivers-list { display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem; }
+                .driver-card-select { display: flex; align-items: center; gap: 1.25rem; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; cursor: pointer; transition: all 0.2s; }
+                .driver-card-select.active { background: rgba(139, 92, 246, 0.1); border-color: #8b5cf6; }
+                .driver-photo { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid #8b5cf6; }
                 .driver-name { font-weight: 700; font-size: 1.1rem; }
-                .active-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
-                .driver-role { color: #8b5cf6; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
-                .driver-phone { font-size: 0.8rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 0.4rem; }
-                
-                .driver-rating-col { text-align: right; }
-                .stars-row { display: flex; gap: 2px; justify-content: flex-end; margin-bottom: 0.25rem; }
-                .rating-text { font-size: 0.8rem; color: rgba(255,255,255,0.4); }
-                .modal-close-action { width: 100%; margin-top: 2rem; padding: 1rem; }
-                .field-group input { font-size: 1.25rem; font-weight: 700; }
-                
-                .drop-zone {
-                    height: 100%;
-                    border: 2px dashed rgba(255,255,255,0.1);
-                    border-radius: 1.5rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    overflow: hidden;
-                }
-                .preview-wrap img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    opacity: 0.6;
-                }
-
-                /* Package Card */
-                .package-card {
-                    padding: 1rem 1.5rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    border-radius: 1rem;
-                    background: rgba(255,255,255,0.03);
-                    border: 1px solid rgba(255,255,255,0.05);
-                }
+                .active-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; }
+                .package-card { padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-radius: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
                 .card-content .name { font-weight: 700; font-size: 1rem; color: white; }
-                .card-content .type { font-size: 0.65rem; color: rgba(255,255,255,0.3); text-transform: uppercase; }
-
-                .price-input input {
-                    width: 100px;
-                    background: rgba(0,0,0,0.2);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 0.75rem;
-                    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-                    color: white;
-                    text-align: right;
-                    font-weight: 700;
-                }
-
+                .card-actions { display: flex; align-items: center; gap: 1.5rem; margin-left: auto; }
+                .price-input input { width: 100px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.5rem; color: white; text-align: right; }
+                .summary-card { padding: 2rem; border-radius: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); margin-top: 2rem; }
                 .total-value { font-size: 2.5rem; font-weight: 900; color: white; }
-                .total-value .currency { color: #8b5cf6; }
-
-                .items-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 1.5rem;
-                    margin-top: 1rem;
-                }
-
-                .delete-btn {
-                    background: rgba(244, 63, 94, 0.1);
-                    border: 1px solid rgba(244, 63, 94, 0.2);
-                    color: #f43f5e;
-                    cursor: pointer;
-                    padding: 0.6rem;
-                    border-radius: 0.75rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.2s;
-                }
-                .delete-btn:hover { 
-                    background: #f43f5e;
-                    color: white;
-                    transform: scale(1.05);
-                }
-
-                .card-actions {
-                    display: flex;
-                    align-items: center;
-                    gap: 1.5rem;
-                    margin-left: auto;
-                }
-
-                .summary-card {
-                    padding: 2rem;
-                    border-radius: 1.5rem;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    background: rgba(255, 255, 255, 0.02);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    margin-top: 2rem;
-                }
-
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
             ` }} />
 
-            {/* Driver Selection Modal */}
             {isDriverModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsDriverModalOpen(false)}>
                     <div className="modal-content glass-panel" onClick={e => e.stopPropagation()}>
@@ -1308,10 +839,9 @@ export default function PackageBuilderPage() {
                                 <X size={24} />
                             </button>
                         </div>
-                        
                         <div className="drivers-list custom-scrollbar">
                             {dbTaxis.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No hay taxis/choferes disponibles en la base de datos</div>
+                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No hay taxis disponibles</div>
                             ) : dbTaxis.map((taxi) => (
                                 <div 
                                     key={taxi.id} 
@@ -1321,13 +851,19 @@ export default function PackageBuilderPage() {
                                         setIsDriverModalOpen(false);
                                     }}
                                 >
-                                    <img src={taxi.driver?.photo} alt={taxi.driver?.name} className="driver-photo" />
+                                    <Image 
+                                        src={taxi.driver?.photo || ''} 
+                                        alt={taxi.driver?.name || 'Driver'} 
+                                        width={40}
+                                        height={40}
+                                        style={{ borderRadius: '50%', border: '2px solid #8b5cf6' }}
+                                        unoptimized
+                                    />
                                     <div className="driver-info-main">
                                         <div className="driver-name-row">
                                             <span className="driver-name">{taxi.driver?.name}</span>
                                             {pkg.driverId === taxi.driver?.id && <div className="active-dot"></div>}
                                         </div>
-                                        <div className="driver-role">{taxi.driver?.role}</div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                                             <Car size={12} color="#8b5cf6" />
                                             <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{taxi.model}</span>

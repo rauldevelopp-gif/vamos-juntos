@@ -1,6 +1,7 @@
 import React from 'react';
 import { TourPackage } from '../types';
 import { Clock, Users, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 interface PackageCardProps {
   pkg: TourPackage;
@@ -13,10 +14,12 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onSelect, onBook 
     <div className="group relative bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-[32px] overflow-hidden hover:border-violet-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/10">
       {/* Image Section */}
       <div className="relative h-64 overflow-hidden">
-        <img 
+        <Image 
           src={pkg.image} 
           alt={pkg.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
         

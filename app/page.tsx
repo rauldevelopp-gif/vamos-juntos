@@ -5,7 +5,39 @@ import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, P
 import { getPackages } from './admin/package/actions';
 import { useLanguage } from '../context/LanguageContext';
 
-const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
+import Image from 'next/image';
+
+interface PackageItem {
+    id: string;
+    itemId: number;
+    type: string;
+    name: string;
+    price: number;
+    order: number;
+}
+
+interface Package {
+    id: number;
+    name: string;
+    description?: string;
+    status: string;
+    price: number;
+    sales: number;
+    date: string;
+    image: string | null;
+    items?: PackageItem[] | string;
+    driverId?: number;
+    total?: number;
+    driver?: {
+        id: number;
+        name: string;
+        photo: string | null;
+        taxis?: { model: string }[];
+    };
+    createdAt: Date;
+}
+
+const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     switch (type) {
         case 'aeropuerto': return <Plane size={size} />;
         case 'hotel': return <Hotel size={size} />;
@@ -17,7 +49,7 @@ const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
     }
 };
 
-const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
+const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
     const { t } = useLanguage();
     const displayPkg = {
         ...pkg,
@@ -31,7 +63,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                 <button className="flyer-close" onClick={onClose}><X size={24} /></button>
                 <div className="flyer-hero">
                     {displayPkg.image ? (
-                        <img src={displayPkg.image} alt={displayPkg.name} className="hero-img" />
+                        <Image src={displayPkg.image} alt={displayPkg.name} fill className="hero-img" style={{ objectFit: 'cover' }} unoptimized />
                     ) : (
                         <div className="hero-placeholder"><ImageIcon size={64} opacity={0.2} /></div>
                     )}
@@ -51,7 +83,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                             {displayPkg.items.length === 0 ? (
                                 <p className="empty-msg">{t('package_promotional')}</p>
                             ) : (
-                                displayPkg.items.map((item: any, idx: number) => (
+                                displayPkg.items.map((item: PackageItem, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
                                         <div className="item-number">{(idx + 1).toString().padStart(2, '0')}</div>
                                         <div className="item-icon-wrap"><TypeIcon type={item.type} size={16} /></div>
@@ -69,7 +101,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                         <div className="flyer-driver-section">
                             <div className="driver-label">{t('assigned_driver')}</div>
                             <div className="driver-flyer-card">
-                                <img src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" />
+                                <Image src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" width={35} height={35} style={{ borderRadius: '50%', border: '2px solid var(--primary)' }} unoptimized />
                                 <div className="driver-flyer-info">
                                     <div className="driver-flyer-name">{displayPkg.driver.name}</div>
                                     <div className="driver-flyer-role">{t('driver_vip')} • {displayPkg.driver.taxis?.[0]?.model || 'Luxury Van'}</div>
@@ -113,7 +145,6 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                 .flyer-driver-section { margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); }
                 .driver-label { font-size: 0.55rem; font-weight: 900; color: rgba(255,255,255,0.2); margin-bottom: 0.5rem; }
                 .driver-flyer-card { display: flex; align-items: center; gap: 0.8rem; }
-                .driver-flyer-card img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary); }
                 .driver-flyer-name { font-size: 0.8rem; font-weight: 700; color: white; }
                 .driver-flyer-role { font-size: 0.65rem; color: var(--primary); font-weight: 600; }
                 .flyer-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; display: flex; justify-content: space-between; align-items: flex-end; }
@@ -126,9 +157,9 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
 
 export default function Home() {
   const { t } = useLanguage();
-  const [packages, setPackages] = useState<any[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
-  const [previewPkg, setPreviewPkg] = useState<any>(null);
+  const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -145,10 +176,12 @@ export default function Home() {
       {/* Hero Section */}
       <section className="hero-banner" style={{ display: 'block', height: 'auto', minHeight: '80vh' }}>
         <div className="hero-overlay"></div>
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=2070&auto=format&fit=crop"
           alt="Luxury Yacht"
+          fill
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+          unoptimized
         />
         <div className="container" style={{ position: 'relative', zIndex: 10, padding: '4rem 2rem 5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '60vh' }}>
           <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3rem' }}>
@@ -195,7 +228,13 @@ export default function Home() {
               <div key={pkg.id} className="glass-card" style={{ overflow: 'hidden' }}>
                 <div style={{ height: '220px', background: 'rgba(255,255,255,0.05)', position: 'relative' }}>
                   {pkg.image ? (
-                    <img src={pkg.image} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image 
+                        src={pkg.image} 
+                        alt={pkg.name} 
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        unoptimized
+                    />
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <ImageIcon size={48} opacity={0.1} />

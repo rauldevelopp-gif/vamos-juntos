@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
     ArrowLeft, 
-    Calendar, 
     Loader2, 
     Eye, 
     X, 
@@ -22,6 +21,16 @@ import {
 } from 'lucide-react';
 import { getPackagesByClientId } from '../admin/package/actions';
 import { useLanguage } from '../../context/LanguageContext';
+import Image from 'next/image';
+
+interface PackageItem {
+    id: string;
+    itemId: number;
+    type: string;
+    name: string;
+    price: number;
+    order: number;
+}
 
 interface Package {
     id: number;
@@ -32,14 +41,19 @@ interface Package {
     sales: number;
     date: string;
     image: string | null;
-    items?: any;
+    items?: PackageItem[] | string;
     driverId?: number;
     total?: number;
-    driver?: any;
+    driver?: {
+        id: number;
+        name: string;
+        photo: string | null;
+        taxis?: { model: string }[];
+    };
     createdAt: Date;
 }
 
-const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
+const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     switch (type) {
         case 'aeropuerto': return <Plane size={size} />;
         case 'hotel': return <Hotel size={size} />;
@@ -75,7 +89,7 @@ const StatusBadge = ({ status }: { status: string }) => {
     );
 };
 
-const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
+const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
     const { t } = useLanguage();
     const displayPkg = {
         ...pkg,
@@ -116,7 +130,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                             {displayPkg.items.length === 0 ? (
                                 <p className="empty-msg">...</p>
                             ) : (
-                                displayPkg.items.map((item: any, idx: number) => (
+                                displayPkg.items.map((item: PackageItem, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
                                         <div className="item-number">{(idx + 1).toString().padStart(2, '0')}</div>
                                         <div className="item-icon-wrap"><TypeIcon type={item.type} size={16} /></div>
@@ -134,7 +148,14 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                         <div className="flyer-driver-section">
                             <div className="driver-label">{t('driver_confirmed_flyer')}</div>
                             <div className="driver-flyer-card">
-                                <img src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" />
+                                <Image 
+                                    src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} 
+                                    alt="Driver" 
+                                    width={40}
+                                    height={40}
+                                    unoptimized
+                                    style={{ borderRadius: '50%', border: '2px solid #8b5cf6' }}
+                                />
                                 <div className="driver-flyer-info">
                                     <div className="driver-flyer-name">{displayPkg.driver.name}</div>
                                     <div className="driver-flyer-role">
@@ -266,11 +287,10 @@ export default function TrackingPage() {
 
             const result = await getPackagesByClientId(clientId);
             if (result.success && result.data) {
-                // @ts-ignore
-                setPackages(result.data);
+                setPackages(result.data as unknown as Package[]);
                 
                 // Check if any package is confirmed
-                const confirmed = result.data.some((p: any) => p.status === 'Confirmado');
+                const confirmed = (result.data as Package[]).some((p) => p.status === 'Confirmado');
                 if (confirmed) {
                     setHasNewConfirmed(true);
                 }

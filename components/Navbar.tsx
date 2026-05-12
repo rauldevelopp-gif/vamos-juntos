@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Home, Package, LogOut, User, Search, Globe } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export const Navbar = ({ session }: { session: any }) => {
+export const Navbar = ({ session }: { session: unknown }) => {
   const { t, language, setLanguage } = useLanguage();
   
   return (
@@ -36,12 +36,11 @@ export const Navbar = ({ session }: { session: any }) => {
             <Search size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
             <span className="btn-text-mobile-hide">{t('nav_tracking')}</span>
           </Link>
-
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
             <Globe size={18} className="text-muted" style={{ opacity: 0.6 }} />
             <select 
               value={language} 
-              onChange={(e) => setLanguage(e.target.value as any)}
+              onChange={(e) => setLanguage(e.target.value as 'es' | 'en')}
               style={{
                 background: 'transparent',
                 color: 'white',

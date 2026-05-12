@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import { cookies } from "next/headers";
 import "./globals.css";
 import PWARegistration from "./PWARegistration";

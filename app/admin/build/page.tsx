@@ -16,7 +16,6 @@ import {
     Search,
     ArrowLeft,
     CheckCircle2,
-    Copy,
     Info,
     Plane,
     X,
@@ -25,6 +24,7 @@ import {
     Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAirports } from '../airports/actions';
 import { getHotels } from '../hotels/actions';
 import { getBeaches } from '../beaches/actions';
@@ -45,7 +45,19 @@ interface CatalogItem {
     type: ItemType;
     defaultPrice: number;
     details?: string;
-    raw?: any;
+    raw?: unknown;
+}
+
+interface Taxi {
+    id: number;
+    model: string;
+    plate: string;
+    driver?: {
+        id: number;
+        name: string;
+        photo: string | null;
+        role: string;
+    };
 }
 
 interface PackageItem {
@@ -142,7 +154,7 @@ const CatalogModal = ({
         const fetchData = async () => {
             setLoading(true);
             try {
-                let result: any;
+                let result: { success: boolean; data?: unknown[]; error?: string };
                 switch (type) {
                     case 'aeropuerto': result = await getAirports(); break;
                     case 'hotel': result = await getHotels(); break;
@@ -270,7 +282,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
                 
                 <div className="flyer-hero">
                     {pkg.image ? (
-                        <img src={pkg.image} alt={pkg.name} className="hero-img" />
+                        <Image src={pkg.image} alt={pkg.name} fill className="hero-img" unoptimized />
                     ) : (
                         <div className="hero-placeholder">
                             <ImageIcon size={64} opacity={0.2} />
@@ -314,7 +326,13 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
                         <div className="flyer-driver-section">
                             <div className="driver-label">CHOFER ASIGNADO</div>
                             <div className="driver-flyer-card">
-                                <img src={MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.photo} alt="Driver" />
+                                <Image 
+                                    src={MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.photo || ''} 
+                                    alt="Driver" 
+                                    width={45}
+                                    height={45}
+                                    unoptimized
+                                />
                                 <div className="driver-flyer-info">
                                     <div className="driver-flyer-name">{MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.name}</div>
                                     <div className="driver-flyer-role">{MOCK_DRIVERS.find(d => d.id === pkg.driverId)?.role}</div>
@@ -442,15 +460,13 @@ const PackageItemCard = ({
     index, 
     onRemove, 
     onUpdatePrice,
-    onReorder,
-    onUpdateMetadata
+    onReorder
 }: { 
     item: PackageItem, 
     index: number,
     onRemove: (id: string) => void,
     onUpdatePrice: (id: string, price: number) => void,
-    onReorder: (dragIndex: number, hoverIndex: number) => void,
-    onUpdateMetadata: (id: string, metadata: any) => void
+    onReorder: (dragIndex: number, hoverIndex: number) => void
 }) => {
     const [isDragging, setIsDragging] = useState(false);
 
@@ -534,7 +550,7 @@ const ImageUploader = ({ value, onChange }: { value: string | null, onChange: (v
             >
                 {value ? (
                     <div className="preview-wrap">
-                        <img src={value} alt="Preview" />
+                        <Image src={value} alt="Preview" fill unoptimized />
                         <div className="overlay"><Upload size={24} /></div>
                     </div>
                 ) : (
@@ -567,7 +583,7 @@ export default function PackageBuilderPage() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const router = useRouter();
 
-    const [dbTaxis, setDbTaxis] = useState<any[]>([]);
+    const [dbTaxis, setDbTaxis] = useState<Taxi[]>([]);
 
     useEffect(() => {
         setMounted(true);
@@ -579,7 +595,7 @@ export default function PackageBuilderPage() {
     }, []);
 
     const selectedTaxi = useMemo(() => 
-        dbTaxis.find(t => t.driver?.id === pkg.driverId)
+        dbTaxis.find((t: Taxi) => t.driver?.id === pkg.driverId)
     , [dbTaxis, pkg.driverId]);
 
     useEffect(() => {
@@ -610,10 +626,10 @@ export default function PackageBuilderPage() {
         }));
     }, []);
 
-    const handleUpdateMetadata = useCallback((id: string, metadata: any) => {
+    const handleUpdateMetadata = useCallback((id: string, metadata: unknown) => {
         setPkg(prev => ({
             ...prev,
-            items: prev.items.map(i => i.id === id ? { ...i, metadata } : i)
+            items: prev.items.map(i => i.id === id ? { ...i, metadata: metadata as any } : i)
         }));
     }, []);
 
@@ -704,7 +720,13 @@ export default function PackageBuilderPage() {
                                         <div className="driver-selector-trigger" onClick={() => setIsDriverModalOpen(true)}>
                                             {selectedTaxi ? (
                                                 <div className="selected-driver-mini">
-                                                    <img src={selectedTaxi.driver?.photo} alt={selectedTaxi.driver?.name} />
+                                                    <Image 
+                                                        src={selectedTaxi.driver?.photo || ''} 
+                                                        alt={selectedTaxi.driver?.name || 'Driver'} 
+                                                        width={32}
+                                                        height={32}
+                                                        unoptimized
+                                                    />
                                                     <div className="mini-info">
                                                         <div className="mini-name">{selectedTaxi.driver?.name}</div>
                                                         <div className="mini-role">{selectedTaxi.driver?.role} • <span style={{ color: 'white' }}>{selectedTaxi.model}</span></div>
@@ -775,7 +797,6 @@ export default function PackageBuilderPage() {
                                             onRemove={handleRemoveItem}
                                             onUpdatePrice={handleUpdatePrice}
                                             onReorder={handleReorder}
-                                            onUpdateMetadata={handleUpdateMetadata}
                                         />
                                     ))
                                 )}

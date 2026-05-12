@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_fallba
 
 export async function POST(req: Request) {
     try {
-        const { services, totalAmount, reservationId } = await req.json();
+        const { services, reservationId } = await req.json();
 
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({

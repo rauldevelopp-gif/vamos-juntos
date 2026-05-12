@@ -1,4 +1,3 @@
-"use client";
 import { useState, useEffect } from "react";
 import { 
     Car, 
@@ -11,15 +10,48 @@ import {
     Plus,
     CheckCircle2
 } from "lucide-react";
-import Link from 'next/link';
+
+interface Taxi {
+    id: number;
+    type: string;
+    capacity: number;
+    basePrice: number;
+}
+
+interface Yacht {
+    id: number;
+    name: string;
+    capacity: number;
+    hourlyPrice: number;
+}
+
+interface Place {
+    id: number;
+    name: string;
+    category: string;
+}
+
+interface Restaurant {
+    id: number;
+    name: string;
+    type: string;
+}
+
+interface SelectedService {
+    id: string;
+    serviceType: string;
+    itemId: number;
+    name: string;
+    price: number;
+}
 
 export default function PackageBuilder() {
-    const [taxis, setTaxis] = useState<any[]>([]);
-    const [yachts, setYachts] = useState<any[]>([]);
-    const [places, setPlaces] = useState<any[]>([]);
-    const [restaurants, setRestaurants] = useState<any[]>([]);
+    const [taxis, setTaxis] = useState<Taxi[]>([]);
+    const [yachts, setYachts] = useState<Yacht[]>([]);
+    const [places, setPlaces] = useState<Place[]>([]);
+    const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
-    const [selectedServices, setSelectedServices] = useState<any[]>([]);
+    const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
 
     useEffect(() => {
         Promise.all([
@@ -35,12 +67,13 @@ export default function PackageBuilder() {
         });
     }, []);
 
-    const addService = (type: string, item: any, price: number) => {
+    const addService = (type: string, item: Taxi | Yacht | Place | Restaurant, price: number) => {
+        const name = 'name' in item ? item.name : (item as Taxi).type;
         setSelectedServices(prev => [...prev, {
-            id: Math.random().toString(36).substr(2, 9),
+            id: Math.random().toString(36).substring(2, 9),
             serviceType: type,
             itemId: item.id,
-            name: item.name || item.type,
+            name: name,
             price: price
         }]);
     };

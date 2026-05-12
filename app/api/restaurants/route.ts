@@ -6,6 +6,7 @@ export async function GET() {
         const restaurants = await prisma.restaurant.findMany();
         return NextResponse.json(restaurants);
     } catch (error) {
+        console.error('Restaurants API error:', error);
         return NextResponse.json({ error: 'Failed to fetch restaurants' }, { status: 500 });
     }
 }
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
         });
         return NextResponse.json(restaurant);
     } catch (error) {
+        console.error('Restaurants API error:', error);
         return NextResponse.json({ error: 'Failed to create restaurant' }, { status: 500 });
     }
 }

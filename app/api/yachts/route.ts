@@ -6,6 +6,7 @@ export async function GET() {
         const yachts = await prisma.yacht.findMany();
         return NextResponse.json(yachts);
     } catch (error) {
+        console.error('Yachts API error:', error);
         return NextResponse.json({ error: 'Failed to fetch yachts' }, { status: 500 });
     }
 }
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
         });
         return NextResponse.json(yacht);
     } catch (error) {
+        console.error('Yachts API error:', error);
         return NextResponse.json({ error: 'Failed to create yacht' }, { status: 500 });
     }
 }

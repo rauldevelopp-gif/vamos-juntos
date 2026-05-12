@@ -32,6 +32,7 @@ export default function LoginPage() {
                 setError('Credenciales inválidas. Intenta de nuevo.');
             }
         } catch (err) {
+            console.error('Login error:', err);
             setError('Algo salió mal. Por favor intenta más tarde.');
         } finally {
             setLoading(false);

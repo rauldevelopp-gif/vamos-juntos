@@ -2,7 +2,6 @@ import React from 'react';
 import { TourPackage } from '../types';
 import { 
   X, 
-  MapPin, 
   Clock, 
   Users, 
   ShieldCheck, 
@@ -11,6 +10,7 @@ import {
   User,
   Star
 } from 'lucide-react';
+import Image from 'next/image';
 
 export const RouteTimeline: React.FC<{ pkg: TourPackage }> = ({ pkg }) => {
   return (
@@ -81,10 +81,13 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
 
         {/* Left: Visuals */}
         <div className="visuals-side">
-          <img 
+          <Image 
             src={pkg.image} 
             alt={pkg.name}
+            fill
             className="hero-img"
+            style={{ objectFit: 'cover' }}
+            unoptimized
           />
           <div className="visuals-overlay" />
           

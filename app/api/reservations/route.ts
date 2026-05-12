@@ -13,6 +13,7 @@ export async function GET() {
         });
         return NextResponse.json(reservations);
     } catch (error) {
+        console.error('Reservations API error:', error);
         return NextResponse.json({ error: 'Failed to fetch reservations' }, { status: 500 });
     }
 }
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(reservation);
     } catch (error) {
+        console.error('Reservations API error:', error);
         return NextResponse.json({ error: 'Failed to create reservation' }, { status: 500 });
     }
 }

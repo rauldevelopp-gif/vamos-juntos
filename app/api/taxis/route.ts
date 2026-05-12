@@ -8,6 +8,7 @@ export async function GET() {
         });
         return NextResponse.json(taxis);
     } catch (error) {
+        console.error('Taxis API error:', error);
         return NextResponse.json({ error: 'Failed to fetch taxis' }, { status: 500 });
     }
 }
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
         });
         return NextResponse.json(taxi);
     } catch (error) {
+        console.error('Taxis API error:', error);
         return NextResponse.json({ error: 'Failed to create taxi' }, { status: 500 });
     }
 }

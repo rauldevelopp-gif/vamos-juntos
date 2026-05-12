@@ -8,7 +8,7 @@ export default function SuccessPage() {
                 <div style={{ fontSize: '4rem', color: 'var(--secondary-color)', marginBottom: '1.5rem' }}>✓</div>
                 <h1 className="heading-1" style={{ fontSize: '2rem', marginBottom: '1rem' }}>Payment Successful!</h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                    Your dynamic travel package has been secured and confirmed. We've sent a confirmation email with all the details.
+                    Your dynamic travel package has been secured and confirmed. We&apos;ve sent a confirmation email with all the details.
                 </p>
 
                 <Link href="/">

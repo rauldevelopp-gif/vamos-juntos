@@ -16,7 +16,7 @@ import {
   Sparkles,
   Home
 } from 'lucide-react';
-import Link from 'next/link';
+import Image from 'next/image';
 
 interface BookingWizardProps {
   pkg: TourPackage;
@@ -24,13 +24,20 @@ interface BookingWizardProps {
   onComplete: (booking: Booking) => void;
 }
 
-export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, date: string, time: string }> = ({ pkg, passengers, date, time }) => {
+export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, date: string }> = ({ pkg, passengers, date }) => {
   return (
     <div className="summary-box">
       <h3>Resumen de Reserva</h3>
       
       <div className="summary-pkg">
-        <img src={pkg.image} alt={pkg.name} />
+        <Image 
+          src={pkg.image} 
+          alt={pkg.name} 
+          width={80}
+          height={80}
+          style={{ borderRadius: '16px', objectFit: 'cover' }}
+          unoptimized
+        />
         <div>
           <h4>{pkg.name}</h4>
           <p>{pkg.duration}</p>
@@ -289,7 +296,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
           </div>
 
           <div className="summary-column">
-            <BookingSummary pkg={pkg} passengers={formData.passengers} date={formData.date} time={pkg.startTime} />
+            <BookingSummary pkg={pkg} passengers={formData.passengers} date={formData.date} />
           </div>
         </div>
       </main>

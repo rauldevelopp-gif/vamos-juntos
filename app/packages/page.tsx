@@ -4,10 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
     Search, 
-    Filter, 
     Sparkles, 
     Info, 
-    X, 
     Image as ImageIcon, 
     Plane, 
     Hotel, 
@@ -15,18 +13,30 @@ import {
     Palmtree, 
     Camera, 
     Anchor, 
-    Loader2,
-    ArrowRight,
-    MessageCircle
+    Loader2
 } from 'lucide-react';
 import { getPackages } from '../admin/package/actions';
 import { TourPackage, Booking } from './types';
 import { PackageDetail } from './components/PackageDetail';
 import { BookingWizard, SuccessStep } from './components/BookingWizard';
+import Image from 'next/image';
 
 // --- HELPERS ---
 
-const mapApiToFrontend = (apiPkg: any): TourPackage => {
+const mapApiToFrontend = (apiPkg: { 
+  id: number; 
+  name?: string; 
+  description?: string; 
+  image?: string; 
+  duration?: string; 
+  start_time?: string; 
+  price?: number; 
+  pickup?: string; 
+  dropoff?: string; 
+  vehicle?: { id: number; model: string; capacity: number }; 
+  driver?: { id: number; name: string }; 
+  items?: unknown; 
+}): TourPackage => {
   const items = Array.isArray(apiPkg.items) 
     ? apiPkg.items 
     : (typeof apiPkg.items === 'string' ? JSON.parse(apiPkg.items) : []);
@@ -60,15 +70,15 @@ const mapApiToFrontend = (apiPkg: any): TourPackage => {
         id: apiPkg.driver?.id || 1,
         name: apiPkg.driver?.name || 'Driver VIP'
     },
-    items: items.map((item: any, idx: number) => ({
+    items: items.map((item: { name?: string; type?: string } | string, idx: number) => ({
         id: idx,
-        name: item.name || item,
-        type: item.type || 'atraccion'
+        name: (typeof item === 'string' ? item : item.name) || 'Item',
+        type: (typeof item === 'string' ? 'atraccion' : item.type) || 'atraccion'
     }))
   };
 };
 
-const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
+const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     switch (type) {
         case 'aeropuerto': return <Plane size={size} />;
         case 'hotel': return <Hotel size={size} />;
@@ -89,10 +99,10 @@ const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
 // --- MAIN PAGE ---
 
 export default function PackagesCatalogPage() {
-    const [packages, setPackages] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [activeCategory, setActiveCategory] = useState<string>('todos');
+  const [packages, setPackages] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('todos');
     
     // UI State for New Flow
     const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
@@ -124,7 +134,7 @@ export default function PackagesCatalogPage() {
                                  pkg.description?.toLowerCase().includes(search.toLowerCase());
             
             const items = Array.isArray(pkg.items) ? pkg.items : (typeof pkg.items === 'string' ? JSON.parse(pkg.items) : []);
-            const hasCategory = activeCategory === 'todos' || items.some((item: any) => item.type === activeCategory);
+            const hasCategory = activeCategory === 'todos' || items.some((item: { type?: string }) => item.type === activeCategory);
             
             return matchesSearch && hasCategory;
         });
@@ -140,10 +150,12 @@ export default function PackagesCatalogPage() {
             <header className="catalog-hero">
                 <div className="hero-bg">
                     <div className="hero-overlay-deep"></div>
-                    <img 
+                    <Image 
                         src="/mexico_luxury_ruins_hero_1778020263723.png" 
                         alt="Luxury Mexico Ruins" 
+                        fill
                         className="hero-img-bg"
+                        unoptimized
                     />
                 </div>
                 <div className="container hero-content-wrap">
@@ -208,7 +220,13 @@ export default function PackagesCatalogPage() {
                             >
                                 <div className="card-image-wrap">
                                     {pkg.image ? (
-                                        <img src={pkg.image} alt={pkg.name} className="card-img" />
+                                        <Image 
+                                            src={pkg.image} 
+                                            alt={pkg.name} 
+                                            fill 
+                                            className="card-img" 
+                                            unoptimized 
+                                        />
                                     ) : (
                                         <div className="card-img-placeholder"><ImageIcon size={40} opacity={0.1} /></div>
                                     )}
@@ -218,7 +236,7 @@ export default function PackagesCatalogPage() {
                                     <div className="card-category-row">
                                         <span className="card-badge">Exclusivo</span>
                                         <div className="item-icons">
-                                            {Array.isArray(pkg.items) && pkg.items.slice(0, 3).map((item: any, i: number) => (
+                                            {Array.isArray(pkg.items) && pkg.items.slice(0, 3).map((item: { type: string }, i: number) => (
                                                 <div key={i} className="mini-type-icon"><TypeIcon type={item.type} size={12} /></div>
                                             ))}
                                         </div>
