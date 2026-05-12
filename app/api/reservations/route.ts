@@ -28,7 +28,15 @@ export async function POST(req: Request) {
             user = await prisma.user.create({ data: { email: body.email } });
         }
 
-        const servicesData = body.services.map((s: any) => ({
+        const servicesData = (body.services as Array<{ 
+            serviceType: string; 
+            taxiId?: number; 
+            yachtId?: number; 
+            placeId?: number; 
+            restaurantId?: number; 
+            quantity?: number; 
+            price: number 
+        }>).map((s) => ({
             serviceType: s.serviceType,
             taxiId: s.taxiId,
             yachtId: s.yachtId,

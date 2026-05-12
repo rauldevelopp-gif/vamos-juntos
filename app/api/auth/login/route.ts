@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('CRITICAL: Login error:', error);
         return NextResponse.json({
             error: 'Error de conexión con la base de datos',

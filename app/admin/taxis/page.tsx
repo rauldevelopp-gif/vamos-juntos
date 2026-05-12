@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
-    ArrowLeft, Plus, User, Users, Briefcase, X, Star, 
+    ArrowLeft, Plus, User, Briefcase, X, Star, 
     Music, Wind, Dog, Cigarette, GlassWater, Wifi, Smartphone, Loader2 
 } from 'lucide-react';
 import { getTaxis } from './actions';
@@ -42,7 +43,7 @@ export default function TaxisPage() {
         const fetchFleet = async () => {
             const result = await getTaxis();
             if (result.success && result.data) {
-                // @ts-ignore
+                // @ts-expect-error - Result data is compatible with Taxi[]
                 setFleet(result.data);
             }
             setLoading(false);
@@ -51,7 +52,7 @@ export default function TaxisPage() {
     }, []);
 
     const getAmenityIcon = (amenity: string) => {
-        const icons: { [key: string]: any } = {
+        const icons: Record<string, React.ElementType> = {
             'Música': Music, 'A/C': Wind, 'Mascotas': Dog, 'Fumar': Cigarette, 
             'Bar': GlassWater, 'Bebidas': GlassWater, 'WiFi': Wifi, 'Equipaje Extra': Briefcase
         };
@@ -114,8 +115,14 @@ export default function TaxisPage() {
                                     <td style={{ padding: '1.5rem 1.2rem' }}>
                                         {taxi.driver ? (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border-glass)' }}>
-                                                    <img src={taxi.driver.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(taxi.driver.name)} alt={taxi.driver.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border-glass)', position: 'relative' }}>
+                                                    <Image 
+                                                        src={taxi.driver.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(taxi.driver.name)} 
+                                                        alt={taxi.driver.name} 
+                                                        fill
+                                                        style={{ objectFit: 'cover' }}
+                                                        unoptimized 
+                                                    />
                                                 </div>
                                                 <div>
                                                     <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{taxi.driver.name}</div>
@@ -181,8 +188,14 @@ export default function TaxisPage() {
 
                                 <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', padding: '1.2rem', marginBottom: '1.2rem', border: '1px solid var(--border-glass)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--primary)' }}>
-                                            <img src={taxi.driver.photo || ''} alt={taxi.driver.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--primary)', position: 'relative' }}>
+                                            <Image 
+                                                src={taxi.driver.photo || ''} 
+                                                alt={taxi.driver.name} 
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                                unoptimized 
+                                            />
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: 700, fontSize: '1rem' }}>{taxi.driver.name}</div>
@@ -224,7 +237,13 @@ export default function TaxisPage() {
                                 width: '120px', height: '120px', borderRadius: '50%', border: '4px solid #05070a', 
                                 overflow: 'hidden', margin: '0 auto', boxShadow: '0 10px 25px rgba(0,0,0,0.6)', position: 'relative', background: '#111'
                             }}>
-                                <img src={selectedTaxi.driver.photo || ''} alt={selectedTaxi.driver.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <Image 
+                                    src={selectedTaxi.driver.photo || ''} 
+                                    alt={selectedTaxi.driver.name} 
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    unoptimized 
+                                />
                             </div>
                             
                             <h2 style={{ fontSize: '1.5rem', margin: '1rem 0 0.25rem 0' }}>{selectedTaxi.driver.name}</h2>

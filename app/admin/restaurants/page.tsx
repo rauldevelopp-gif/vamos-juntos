@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Utensils, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, X, Loader2 } from 'lucide-react';
 import { getRestaurants } from './actions';
 
 interface Restaurant {

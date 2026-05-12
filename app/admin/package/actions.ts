@@ -38,7 +38,17 @@ export async function getPackages() {
     }
 }
 
-export async function createPackage(data: any) {
+export async function createPackage(data: {
+    name: string;
+    description: string;
+    total: number;
+    clientId?: string;
+    date?: string;
+    image: string | null;
+    startTime?: string;
+    items: unknown;
+    driverId?: number;
+}) {
     try {
         console.log('Attempting to create package with data:', JSON.stringify(data, null, 2));
         const newPackage = await prisma.package.create({
@@ -57,9 +67,10 @@ export async function createPackage(data: any) {
             }
         });
         return { success: true, data: newPackage };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error creating package:', error);
-        return { success: false, error: 'Error al guardar el paquete: ' + (error.message || 'Error desconocido') };
+        const message = error instanceof Error ? error.message : 'Error desconocido';
+        return { success: false, error: 'Error al guardar el paquete: ' + message };
     }
 }
 
@@ -113,9 +124,10 @@ export async function confirmPackage(id: number, driverId: number) {
             }
         });
         return { success: true, data: updated };
-    } catch (error) {
-        console.error('Error confirming package:', error);
-        return { success: false, error: 'Error al confirmar el paquete' };
+    } catch (error: unknown) {
+        console.error('Error creating package:', error);
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return { success: false, error: message };
     }
 }
 
@@ -218,7 +230,4 @@ export async function seedPremiumPackages() {
     }
 }
 
-async function seedInitialPackages() {
-    // We'll call the premium seeder instead for better quality
-    await seedPremiumPackages();
-}
+// seedInitialPackages removed

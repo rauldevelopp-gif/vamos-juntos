@@ -1,8 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Clock, Loader2, Eye, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Info, Check } from 'lucide-react';
+import { 
+    Calendar, 
+    Trash2, 
+    Edit2, 
+    Eye, 
+    Image as ImageIcon, 
+    Check, 
+    Clock, 
+    ArrowLeft,
+    Plus,
+    Plane,
+    Hotel,
+    Utensils,
+    Palmtree,
+    Camera,
+    Anchor,
+    Info,
+    X,
+    Loader2
+} from 'lucide-react';
 import { getPackages, confirmPackage } from './actions';
 
 interface Package {
@@ -14,14 +34,19 @@ interface Package {
     sales: number;
     date: string;
     image: string | null;
-    items?: any;
+    items?: unknown;
     driverId?: number;
     total?: number;
-    driver?: any;
+    driver?: {
+        id: number;
+        name: string;
+        photo: string | null;
+        taxis?: Array<{ model: string; plate: string }>;
+    };
     start_time?: string;
 }
 
-const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
+const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     switch (type) {
         case 'aeropuerto': return <Plane size={size} />;
         case 'hotel': return <Hotel size={size} />;
@@ -33,7 +58,7 @@ const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
     }
 };
 
-const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
+const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
     // Standardize total for flyer
     const displayPkg = {
         ...pkg,
@@ -48,7 +73,14 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                 
                 <div className="flyer-hero">
                     {displayPkg.image ? (
-                        <img src={displayPkg.image} alt={displayPkg.name} className="hero-img" />
+                        <Image 
+                            src={displayPkg.image} 
+                            alt={displayPkg.name} 
+                            fill 
+                            className="hero-img" 
+                            style={{ objectFit: 'cover' }}
+                            unoptimized 
+                        />
                     ) : (
                         <div className="hero-placeholder">
                             <ImageIcon size={64} opacity={0.2} />
@@ -74,7 +106,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                             {displayPkg.items.length === 0 ? (
                                 <p className="empty-msg">Este paquete es promocional directo.</p>
                             ) : (
-                                displayPkg.items.map((item: any, idx: number) => (
+                                displayPkg.items.map((item: { id?: string; name: string; type: string }, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
                                         <div className="item-number">{(idx + 1).toString().padStart(2, '0')}</div>
                                         <div className="item-icon-wrap"><TypeIcon type={item.type} size={16} /></div>
@@ -92,7 +124,14 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                         <div className="flyer-driver-section">
                             <div className="driver-label">CHOFER ASIGNADO</div>
                             <div className="driver-flyer-card">
-                                <img src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" />
+                                <Image 
+                                    src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} 
+                                    alt="Driver" 
+                                    width={40}
+                                    height={40}
+                                    style={{ borderRadius: '50%', border: '2px solid #8b5cf6', objectFit: 'cover' }}
+                                    unoptimized
+                                />
                                 <div className="driver-flyer-info">
                                     <div className="driver-flyer-name">{displayPkg.driver.name}</div>
                                     <div className="driver-flyer-role">
@@ -217,8 +256,7 @@ export default function PackagesPage() {
         const fetchPackages = async () => {
             const result = await getPackages();
             if (result.success && result.data) {
-                // @ts-ignore
-                setPackages(result.data);
+                setPackages(result.data as Package[]);
             }
             setLoading(false);
         };
@@ -272,7 +310,14 @@ export default function PackagesPage() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                             <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
                                                 {pkg.image ? (
-                                                    <img src={pkg.image} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    <Image 
+                                                        src={pkg.image} 
+                                                        alt={pkg.name} 
+                                                        width={45} 
+                                                        height={45} 
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                        unoptimized 
+                                                    />
                                                 ) : (
                                                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         <Calendar size={20} color="var(--text-muted)" />

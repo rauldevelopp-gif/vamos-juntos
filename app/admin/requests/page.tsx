@@ -8,18 +8,15 @@ import {
     Loader2, 
     Eye, 
     X, 
-    Image as ImageIcon, 
-    Plane, 
-    Hotel, 
-    Utensils, 
-    Palmtree, 
-    Camera, 
+    Plane,
+    Hotel,
+    Utensils,
+    Palmtree,
+    Camera,
     Anchor, 
     Info, 
     Check,
-    Clock,
-    User,
-    ShieldCheck
+    Clock
 } from 'lucide-react';
 import { getClientRequests, confirmPackage } from '../package/actions';
 import { getTaxis } from '../taxis/actions';
@@ -33,14 +30,19 @@ interface Package {
     sales: number;
     date: string;
     image: string | null;
-    items?: any;
+    items?: unknown;
     driverId?: number;
     total?: number;
-    driver?: any;
-    createdAt: any;
+    driver?: {
+        id: number;
+        name: string;
+        photo: string | null;
+        taxis?: Array<{ model: string; plate: string }>;
+    };
+    createdAt: string;
 }
 
-const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
+const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     switch (type) {
         case 'aeropuerto': return <Plane size={size} />;
         case 'hotel': return <Hotel size={size} />;
@@ -52,7 +54,7 @@ const TypeIcon = ({ type, size = 18 }: { type: any; size?: number }) => {
     }
 };
 
-const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) => {
+const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
     const displayPkg = {
         ...pkg,
         total: pkg.price || pkg.total || 0,
@@ -89,7 +91,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: any, onClose: () => void }) 
                             {displayPkg.items.length === 0 ? (
                                 <p className="empty-msg">No hay servicios en el itinerario.</p>
                             ) : (
-                                displayPkg.items.map((item: any, idx: number) => (
+                                displayPkg.items.map((item: { id?: string; name: string; type: string }, idx: number) => (
                                     <div key={item.id || idx} className="flyer-item-row">
                                         <div className="item-number">{(idx + 1).toString().padStart(2, '0')}</div>
                                         <div className="item-icon-wrap"><TypeIcon type={item.type} size={16} /></div>
@@ -147,7 +149,7 @@ export default function RequestsPage() {
     const [loading, setLoading] = useState(true);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
     const [isConfirming, setIsConfirming] = useState<number | null>(null);
-    const [taxis, setTaxis] = useState<any[]>([]);
+    const [taxis, setTaxis] = useState<Array<{ driver: { id: number; name: string } }>>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -223,7 +225,7 @@ export default function RequestsPage() {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }} className="custom-scrollbar">
-                                    {(Array.isArray(pkg.items) ? pkg.items : []).map((item: any, idx: number) => (
+                                    {(Array.isArray(pkg.items) ? pkg.items : []).map((item: { name: string; type: string }, idx: number) => (
                                         <div key={idx} style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                                             <TypeIcon type={item.type} size={14} />
                                             <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>{item.name}</span>

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            line_items: services.map((s: any) => ({
+            line_items: (services as Array<{ name: string; serviceType: string; price: number }>).map((s) => ({
                 price_data: {
                     currency: 'usd',
                     product_data: {
@@ -33,8 +33,9 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ id: session.id, url: session.url });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Stripe error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

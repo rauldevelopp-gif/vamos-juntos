@@ -32,12 +32,14 @@ export async function getYachts() {
         }
 
         return { success: true, data: JSON.parse(JSON.stringify(yachts)) };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching yachts:", error);
+        const message = error instanceof Error ? error.message : "Desconocido";
+        const stack = error instanceof Error ? error.stack : undefined;
         return { 
             success: false, 
-            error: "Error al obtener yates: " + (error.message || "Desconocido"),
-            details: error.stack
+            error: "Error al obtener yates: " + message,
+            details: stack
         };
     }
 }

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Anchor, Users, X, Star, MapPin, Loader2, Phone } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Plus, Anchor, Users, X, MapPin, Loader2, Phone } from 'lucide-react';
 import { getYachts } from './actions';
 
 interface Crew {
@@ -41,7 +42,7 @@ export default function YachtsPage() {
             const result = await getYachts();
             console.log("YachtsPage: Result received:", result);
             if (result.success && result.data) {
-                // @ts-ignore
+                // @ts-expect-error - Result data is compatible with Yacht[]
                 setYachts(result.data);
             } else if (!result.success) {
                 console.error("YachtsPage Error:", result.error, result.details);
@@ -218,7 +219,14 @@ export default function YachtsPage() {
                                     <div key={member.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid var(--border-glass)' }}>
                                         <div style={{ width: '60px', height: '60px', borderRadius: '14px', overflow: 'hidden', border: '2px solid var(--border-glass)', flexShrink: 0 }}>
                                             {member.photo ? (
-                                                <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <Image 
+                                                    src={member.photo} 
+                                                    alt={member.name} 
+                                                    width={60}
+                                                    height={60}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    unoptimized 
+                                                />
                                             ) : (
                                                 <div style={{ width: '100%', height: '100%', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <Users size={24} color="var(--text-muted)" />

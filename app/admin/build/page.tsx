@@ -165,21 +165,21 @@ const CatalogModal = ({
                 }
 
                 if (result.success && result.data) {
-                    const mapped: CatalogItem[] = result.data.map((item: any) => {
+                    const mapped: CatalogItem[] = (result.data as Array<Record<string, unknown>>).map((item) => {
                         let details = '';
                         switch (type) {
-                            case 'hotel': details = `${item.stars}⭐ • ${item.city}, ${item.state} • ${item.status}`; break;
-                            case 'aeropuerto': details = `${item.iata} • ${item.city} • ${item.status}`; break;
-                            case 'yate': details = `${item.brand} ${item.model} (${item.length}) • Cap: ${item.capacity}p • ${item.location}`; break;
-                            case 'playa': details = `${item.type} • ${item.city} • Pop: ${item.popularity}`; break;
-                            case 'atraccion': details = `${item.category} • ${item.city} • ${item.recommendedTime}`; break;
-                            case 'restaurante': details = `${item.cuisine} • ${item.city} • ${item.priceRange}`; break;
+                            case 'hotel': details = `${String(item.stars)}⭐ • ${String(item.city)}, ${String(item.state)} • ${String(item.status)}`; break;
+                            case 'aeropuerto': details = `${String(item.iata)} • ${String(item.city)} • ${String(item.status)}`; break;
+                            case 'yate': details = `${String(item.brand)} ${String(item.model)} (${String(item.length)}) • Cap: ${String(item.capacity)}p • ${String(item.location)}`; break;
+                            case 'playa': details = `${String(item.type)} • ${String(item.city)} • Pop: ${String(item.popularity)}`; break;
+                            case 'atraccion': details = `${String(item.category)} • ${String(item.city)} • ${String(item.recommendedTime)}`; break;
+                            case 'restaurante': details = `${String(item.cuisine)} • ${String(item.city)} • ${String(item.priceRange)}`; break;
                         }
                         return {
                             id: item.id,
-                            name: item.name,
+                            name: String(item.name),
                             type: type,
-                            defaultPrice: item.price_day || item.price || item.defaultPrice || 0,
+                            defaultPrice: Number(item.price_day || item.price || 0),
                             details,
                             raw: item
                         };
@@ -626,12 +626,7 @@ export default function PackageBuilderPage() {
         }));
     }, []);
 
-    const handleUpdateMetadata = useCallback((id: string, metadata: unknown) => {
-        setPkg(prev => ({
-            ...prev,
-            items: prev.items.map(i => i.id === id ? { ...i, metadata: metadata as any } : i)
-        }));
-    }, []);
+    // handleUpdateMetadata removed
 
     const handleReorder = useCallback((dragIndex: number, hoverIndex: number) => {
         const newItems = [...pkg.items];
@@ -1359,7 +1354,14 @@ export default function PackageBuilderPage() {
                                         setIsDriverModalOpen(false);
                                     }}
                                 >
-                                    <img src={taxi.driver?.photo} alt={taxi.driver?.name} className="driver-photo" />
+                                    <Image 
+                                        src={taxi.driver?.photo || ''} 
+                                        alt={taxi.driver?.name || 'Driver'} 
+                                        width={56}
+                                        height={56}
+                                        className="driver-photo"
+                                        unoptimized
+                                    />
                                     <div className="driver-info-main">
                                         <div className="driver-name-row">
                                             <span className="driver-name">{taxi.driver?.name}</span>
@@ -1411,7 +1413,7 @@ export default function PackageBuilderPage() {
             {isPreviewOpen && (
                 <PreviewFlyerModal 
                     pkg={pkg} 
-                    onClose={() => setIsPreviewOpen(null as any)} 
+                    onClose={() => setIsPreviewOpen(false)} 
                 />
             )}
         </div>

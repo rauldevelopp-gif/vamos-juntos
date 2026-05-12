@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Sidebar from './Sidebar';
-import Link from 'next/link';
 import { LogOut } from 'lucide-react';
 
 export default async function AdminLayout({

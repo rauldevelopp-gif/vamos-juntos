@@ -169,7 +169,7 @@ const CatalogModal = ({
                 }
 
                 if (result.success && result.data) {
-                    const mapped: CatalogItem[] = result.data.map((item: any) => {
+                    const mapped: CatalogItem[] = (result.data as Array<Record<string, unknown>>).map((item) => {
                         let details = '';
                         switch (type) {
                             case 'hotel': details = `${item.stars}⭐ • ${item.city}, ${item.state} • ${item.status}`; break;
@@ -909,7 +909,7 @@ export default function PackageBuilderPage() {
             {isPreviewOpen && (
                 <PreviewFlyerModal 
                     pkg={pkg} 
-                    onClose={() => setIsPreviewOpen(null as any)} 
+                    onClose={() => setIsPreviewOpen(false)} 
                 />
             )}
         </div>
