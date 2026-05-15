@@ -435,7 +435,8 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
   const simulatePayment = async () => {
     setPaymentState('processing');
     
-    const basePrice = booking.totalPrice / 1.05;
+    // We already calculated these in handleSubmit
+    const basePrice = booking.snapshot.price;
     const feeAmount = booking.totalPrice - basePrice;
 
     try {

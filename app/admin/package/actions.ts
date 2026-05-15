@@ -330,7 +330,7 @@ export async function getDashboardStats() {
         const [totals, totalReservations, yachtCount, taxiCount] = await Promise.all([
             prisma.packageReservation.aggregate({
                 where: resWhereClause,
-                _sum: { totalPrice: true, serviceFee: true }
+                _sum: { basePrice: true, serviceFee: true, totalPrice: true }
             }),
             prisma.packageReservation.count({
                 where: resWhereClause
@@ -346,8 +346,9 @@ export async function getDashboardStats() {
         return {
             success: true,
             data: {
-                totalSales: totals._sum.totalPrice || 0,
+                totalSales: totals._sum.basePrice || 0,
                 totalFees: totals._sum.serviceFee || 0,
+                totalRevenue: totals._sum.totalPrice || 0,
                 totalReservations,
                 yachtCount,
                 taxiCount

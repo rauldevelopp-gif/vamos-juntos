@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getCurrentUser } from '@/lib/auth';
 import { getDashboardReservations, getDashboardStats } from './package/actions';
 import Link from 'next/link';

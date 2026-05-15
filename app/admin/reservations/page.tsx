@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllReservations } from '../package/actions';
 import ReservationsList from './ReservationsList';
 
