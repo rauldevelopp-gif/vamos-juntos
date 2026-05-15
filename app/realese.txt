@@ -4,5 +4,14 @@ cambiar contraseña
 poner el identificar de usuario en todas las tablas
 persistnecia de las reservas
 simulacion de pago
+listado de reservas en el front end del usuario 
+funcionalidad de las tarjetas del dashboar del usuario
+mejorar el UX (seleccion de idiomas)
+mejorar el UX (seleccion de tour)
+mejorar el UX (listas vacias)
+Colocar datos del operador en los paquetes
+mejorar el UX (lista de solicitudes)
+mejorar el UX (solicitudes - seleccion de chofer)
+
 
 

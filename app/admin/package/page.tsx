@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
@@ -21,9 +21,13 @@ import {
     Anchor,
     Info,
     X,
-    Loader2
+    Loader2,
+    QrCode,
+    Download
 } from 'lucide-react';
 import { getPackages, confirmPackage } from './actions';
+import { QRCodeCanvas } from 'qrcode.react';
+import { toPng } from 'html-to-image';
 
 interface Package {
     id: number;
@@ -247,10 +251,246 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
     );
 };
 
+const PackageQRCodeModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
+    const qrRef = useRef<HTMLDivElement>(null);
+    const [downloading, setDownloading] = useState(false);
+
+    const reserveUrl = `${window.location.origin}/packages?reserve=${pkg.id}`;
+
+    const downloadFlyer = async () => {
+        if (!qrRef.current) return;
+        setDownloading(true);
+        try {
+            const dataUrl = await toPng(qrRef.current, { quality: 1.0, pixelRatio: 2 });
+            const link = document.createElement('a');
+            link.download = `QR-VamosJuntos-${pkg.name.replace(/\s+/g, '-')}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('Error generating image', err);
+        }
+        setDownloading(false);
+    };
+
+    return (
+        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
+            <div className="qr-modal-container" onClick={e => e.stopPropagation()}>
+                <button className="close-btn-modern" onClick={onClose}><X size={20} /></button>
+                
+                <div ref={qrRef} className="printable-content">
+                    {/* Horizontal Header: Photo + QR */}
+                    <div className="flyer-header-row">
+                        <div className="flyer-visual-box">
+                            {pkg.image ? (
+                                <Image 
+                                    src={pkg.image} 
+                                    alt={pkg.name} 
+                                    fill 
+                                    style={{ objectFit: 'cover' }}
+                                    unoptimized 
+                                />
+                            ) : (
+                                <div className="placeholder-visual"><QrCode size={48} opacity={0.1} /></div>
+                            )}
+                            <div className="flyer-overlay-side" />
+                            <div className="flyer-brand-tag">VAMOS JUNTOS</div>
+                        </div>
+
+                        <div className="flyer-qr-box">
+                            <div className="qr-inner-card">
+                                <QRCodeCanvas 
+                                    value={reserveUrl} 
+                                    size={120} 
+                                    level="H" 
+                                    includeMargin={false}
+                                    imageSettings={{
+                                        src: "/icons/icon-192x192.png",
+                                        x: undefined,
+                                        y: undefined,
+                                        height: 25,
+                                        width: 25,
+                                        excavate: true,
+                                    }}
+                                />
+                            </div>
+                            <div className="scan-label-mini">ESCANEA AQUÍ</div>
+                        </div>
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="flyer-details-body">
+                        {/* Background Image with Transparency */}
+                        {pkg.image && (
+                            <div className="flyer-bg-image">
+                                <Image 
+                                    src={pkg.image} 
+                                    alt="bg" 
+                                    fill 
+                                    style={{ objectFit: 'cover' }}
+                                    unoptimized 
+                                />
+                            </div>
+                        )}
+                        <div className="flyer-content-relative">
+                            <h2 className="flyer-pkg-name-modern">{pkg.name}</h2>
+                            
+                            <p className="flyer-description-modern">
+                                {pkg.description || 'Disfruta de una experiencia de lujo diseñada para crear recuerdos inolvidables.'}
+                            </p>
+
+                            <div className="flyer-highlights-modern">
+                                {Array.isArray(pkg.items) && (pkg.items as { name: string; type: string }[]).slice(0, 3).map((item, i) => (
+                                    <div key={i} className="highlight-tag-modern">
+                                        <TypeIcon type={item.type} size={10} />
+                                        <span>{item.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flyer-footer-row">
+                                <div className="flyer-time-pill-modern">
+                                    <Clock size={12} />
+                                    <span>SALIDA: {pkg.start_time || '08:00'} AM</span>
+                                </div>
+                                <div className="cta-brand-footer">Luxury Travel Experience</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modal-actions-bar">
+                    <button 
+                        onClick={downloadFlyer}
+                        disabled={downloading}
+                        className="btn-download-premium"
+                    >
+                        {downloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
+                        <span>Descargar Sticker QR</span>
+                    </button>
+                </div>
+            </div>
+            
+            <style jsx>{`
+                .modal-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0,0,0,0.9);
+                    backdrop-filter: blur(20px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 2rem;
+                    z-index: 5000;
+                }
+                .qr-modal-container {
+                    width: 100%;
+                    max-width: 380px;
+                    background: #0a0a0a;
+                    border-radius: 40px;
+                    overflow: hidden;
+                    position: relative;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+                    animation: modal-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                }
+                @keyframes modal-pop {
+                    from { transform: scale(0.9); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                .close-btn-modern {
+                    position: absolute;
+                    top: 1.25rem;
+                    right: 1.25rem;
+                    z-index: 100;
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    border-radius: 50%;
+                    background: rgba(0,0,0,0.5);
+                    border: 1px solid rgba(255,255,255,0.2);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .close-btn-modern:hover { background: #ef4444; border-color: #ef4444; }
+
+                .printable-content { background: white; text-align: left; }
+                
+                .flyer-header-row { display: flex; height: 160px; background: #000; overflow: hidden; }
+                .flyer-visual-box { flex: 1; position: relative; overflow: hidden; }
+                .flyer-overlay-side { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.4), transparent); }
+                .flyer-brand-tag { position: absolute; top: 1rem; left: 1rem; font-size: 0.55rem; font-weight: 900; color: #8b5cf6; letter-spacing: 0.2em; background: rgba(0,0,0,0.6); padding: 0.2rem 0.5rem; border-radius: 4px; z-index: 2; }
+                
+                .flyer-qr-box { width: 140px; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #f3f4f6; gap: 0.5rem; }
+                .qr-inner-card { padding: 0.5rem; background: white; }
+                .scan-label-mini { font-size: 0.6rem; font-weight: 900; color: #8b5cf6; letter-spacing: 0.05em; }
+
+                .flyer-details-body { padding: 0; position: relative; overflow: hidden; background: white; }
+                .flyer-bg-image { position: absolute; inset: 0; opacity: 0.25; filter: blur(2px); transform: scale(1.1); }
+                .flyer-content-relative { position: relative; z-index: 1; padding: 1.25rem 1.5rem; }
+                
+                .flyer-pkg-name-modern { font-size: 1.25rem; font-weight: 900; color: #111827; margin: 0 0 0.5rem 0; line-height: 1.2; }
+                .flyer-description-modern { font-size: 0.75rem; color: #6b7280; line-height: 1.5; margin: 0 0 1rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+                
+                .flyer-highlights-modern { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+                .highlight-tag-modern { 
+                    display: flex; 
+                    align-items: center; 
+                    gap: 0.3rem; 
+                    background: #f3f4f6; 
+                    padding: 0.35rem 0.7rem; 
+                    border-radius: 8px; 
+                    font-size: 0.6rem; 
+                    font-weight: 800; 
+                    color: #4b5563;
+                    text-transform: uppercase;
+                }
+
+                .flyer-footer-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #e5e7eb; padding-top: 1rem; }
+                .flyer-time-pill-modern { 
+                    display: flex; 
+                    align-items: center; 
+                    gap: 0.4rem; 
+                    color: #8b5cf6; 
+                    font-size: 0.7rem; 
+                    font-weight: 800;
+                    background: rgba(139, 92, 246, 0.05);
+                    padding: 0.4rem 0.8rem;
+                    border-radius: 50px;
+                }
+                .cta-brand-footer { font-size: 0.55rem; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; }
+
+                .modal-actions-bar { padding: 1.5rem; background: #0a0a0a; border-top: 1px solid rgba(255,255,255,0.1); }
+                .btn-download-premium { 
+                    width: 100%; 
+                    padding: 1rem; 
+                    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); 
+                    border: none; 
+                    border-radius: 16px; 
+                    color: white; 
+                    font-weight: 800; 
+                    font-size: 0.9rem; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    gap: 0.75rem; 
+                    cursor: pointer; 
+                    transition: all 0.3s;
+                }
+                .btn-download-premium:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4); }
+                .btn-download-premium:disabled { opacity: 0.5; cursor: not-allowed; }
+            `}</style>
+        </div>
+    );
+};
+
 export default function PackagesPage() {
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
+    const [qrPkg, setQrPkg] = useState<Package | null>(null);
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -379,6 +619,9 @@ export default function PackagesPage() {
                                             <button onClick={() => setPreviewPkg(pkg)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px' }} title="Ver Detalles">
                                                 <Eye size={16} />
                                             </button>
+                                            <button onClick={() => setQrPkg(pkg)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', color: '#8b5cf6' }} title="Generar QR Marketing">
+                                                <QrCode size={16} />
+                                            </button>
                                             <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px' }}>
                                                 <Edit2 size={16} />
                                             </button>
@@ -403,6 +646,14 @@ export default function PackagesPage() {
                 <PreviewFlyerModal 
                     pkg={previewPkg} 
                     onClose={() => setPreviewPkg(null)} 
+                />
+            )}
+
+            {/* QR Generator Modal */}
+            {qrPkg && (
+                <PackageQRCodeModal 
+                    pkg={qrPkg} 
+                    onClose={() => setQrPkg(null)} 
                 />
             )}
         </div>

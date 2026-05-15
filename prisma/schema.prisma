@@ -138,7 +138,7 @@ model Beach {
   name         String
   type         String
   city         String
-  state        String
+  state         String
   status       String   @default("Abierta")
   coordinates  String
   popularity   String   @default("Media")
@@ -256,6 +256,8 @@ model PackageReservation {
   date            String   // Date of the tour
   time            String   // Time of the tour
   passengers      Int
+  basePrice       Float    @default(0)
+  serviceFee      Float    @default(0)
   totalPrice      Float
   status          String   @default("Confirmado") // Since it's post-payment
   notes           String?  @db.Text

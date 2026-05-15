@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/lib/auth';
 import { getDashboardReservations, getDashboardStats } from './package/actions';
 import Link from 'next/link';
+import styles from './admin.module.css';
 
 interface ReservationData {
     id: number;
@@ -17,6 +18,14 @@ interface ReservationData {
     };
 }
 
+interface DashboardStats {
+    totalSales: number;
+    totalFees: number;
+    totalReservations: number;
+    yachtCount: number;
+    taxiCount: number;
+}
+
 export default async function AdminDashboard() {
     const user = await getCurrentUser();
     const displayName = user?.name || user?.username || 'Administrador';
@@ -27,12 +36,15 @@ export default async function AdminDashboard() {
     ]);
 
     const reservations: ReservationData[] = resResult.success && resResult.data ? (resResult.data as unknown as ReservationData[]) : [];
-    const stats = statsResult.success && statsResult.data ? statsResult.data : {
-        totalSales: 0,
-        totalReservations: 0,
-        yachtCount: 0,
-        taxiCount: 0
-    };
+    const stats: DashboardStats = statsResult.success && statsResult.data 
+        ? (statsResult.data as unknown as DashboardStats) 
+        : {
+            totalSales: 0,
+            totalFees: 0,
+            totalReservations: 0,
+            yachtCount: 0,
+            taxiCount: 0
+        };
 
     const getDaysDifference = (dateString: string) => {
         const today = new Date();
@@ -60,26 +72,31 @@ export default async function AdminDashboard() {
                 <p style={{ color: 'var(--text-muted)' }}>Bienvenido, {displayName}. Gestiona tu plataforma desde aquí.</p>
             </header>
 
-            <div className="dashboard-stats-grid">
-                <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ventas Totales</p>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>${stats.totalSales.toLocaleString()}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>Bruto acumulado</span>
+            <div className={styles.dashboardStatsGrid}>
+                <div className={styles.glassCard}>
+                    <p className={styles.statLabel}>Ventas Totales</p>
+                    <div className={styles.statValue}>${stats.totalSales.toLocaleString()}</div>
+                    <span className={styles.statSub} style={{ color: 'var(--secondary)' }}>Bruto acumulado</span>
                 </div>
-                <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas</p>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{stats.totalReservations}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>Gestiones totales</span>
+                <div className={styles.glassCard}>
+                    <p className={styles.statLabel}>Cargos Operativos (5%)</p>
+                    <div className={styles.statValue} style={{ color: '#10b981' }}>${stats.totalFees.toLocaleString()}</div>
+                    <span className={styles.statSub} style={{ color: 'var(--text-muted)' }}>Comisiones totales</span>
                 </div>
-                <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Flota de Yates</p>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{stats.yachtCount}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unidades registradas</span>
+                <div className={styles.glassCard}>
+                    <p className={styles.statLabel}>Reservas</p>
+                    <div className={styles.statValue}>{stats.totalReservations}</div>
+                    <span className={styles.statSub} style={{ color: 'var(--secondary)' }}>Gestiones totales</span>
                 </div>
-                <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Taxis / Chóferes</p>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{stats.taxiCount}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--accent)' }}>Equipo operativo</span>
+                <div className={styles.glassCard}>
+                    <p className={styles.statLabel}>Flota de Yates</p>
+                    <div className={styles.statValue}>{stats.yachtCount}</div>
+                    <span className={styles.statSub} style={{ color: 'var(--text-muted)' }}>Unidades activas</span>
+                </div>
+                <div className={styles.glassCard}>
+                    <p className={styles.statLabel}>Taxis / Chóferes</p>
+                    <div className={styles.statValue}>{stats.taxiCount}</div>
+                    <span className={styles.statSub} style={{ color: 'var(--accent)' }}>Equipo operativo</span>
                 </div>
             </div>
 

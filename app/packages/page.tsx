@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
     Search, 
@@ -105,7 +106,35 @@ const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
 // --- MAIN PAGE ---
 
 export default function PackagesCatalogPage() {
-  const [packages, setPackages] = useState<unknown[]>([]);
+    return (
+        <Suspense fallback={
+            <div className="catalog-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 className="animate-spin" size={40} color="#8b5cf6" />
+            </div>
+        }>
+            <CatalogContent />
+        </Suspense>
+    );
+}
+
+interface ApiPackage {
+  id: number;
+  name?: string;
+  description?: string;
+  image?: string;
+  duration?: string;
+  start_time?: string;
+  price?: number;
+  pickup?: string;
+  dropoff?: string;
+  vehicle?: { id: number; model: string; capacity: number };
+  driver?: { id: number; name: string; phone?: string };
+  items?: unknown;
+  user?: { name: string; email: string; role: string };
+}
+
+function CatalogContent() {
+  const [packages, setPackages] = useState<ApiPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('todos');
@@ -115,11 +144,24 @@ export default function PackagesCatalogPage() {
     const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
     const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
 
+    const searchParams = useSearchParams();
+    const reserveId = searchParams.get('reserve');
+    const driverIdParam = searchParams.get('driverId');
+
+    useEffect(() => {
+        if (reserveId && packages.length > 0) {
+            const pkg = packages.find(p => p.id.toString() === reserveId);
+            if (pkg) {
+                setBookingPkg(mapApiToFrontend(pkg));
+            }
+        }
+    }, [reserveId, packages]);
+
     useEffect(() => {
         const fetchPackages = async () => {
             const result = await getPackages();
             if (result.success && result.data) {
-                setPackages(result.data);
+                setPackages(result.data as ApiPackage[]);
             }
             setLoading(false);
         };
@@ -142,9 +184,12 @@ export default function PackagesCatalogPage() {
             const items = Array.isArray(pkg.items) ? pkg.items : (typeof pkg.items === 'string' ? JSON.parse(pkg.items) : []);
             const hasCategory = activeCategory === 'todos' || items.some((item: { type?: string }) => item.type === activeCategory);
             
-            return matchesSearch && hasCategory;
+            // Filter by driverId if present in URL
+            const matchesDriver = !driverIdParam || pkg.driver?.id?.toString() === driverIdParam;
+
+            return matchesSearch && hasCategory && matchesDriver;
         });
-    }, [packages, search, activeCategory]);
+    }, [packages, search, activeCategory, driverIdParam]);
 
     if (confirmedBooking) {
         return <SuccessStep booking={confirmedBooking} onReset={() => setConfirmedBooking(null)} />;

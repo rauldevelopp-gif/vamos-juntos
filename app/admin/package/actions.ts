@@ -239,13 +239,15 @@ export async function createPackageReservation(data: {
     date: string;
     time: string;
     passengers: number;
+    basePrice: number;
+    serviceFee: number;
     totalPrice: number;
     notes: string;
 }) {
     try {
         const pkg = await prisma.package.findUnique({ where: { id: data.packageId } });
         if (!pkg) throw new Error("Package not found");
-
+ 
         const reservation = await prisma.packageReservation.create({
             data: {
                 packageId: data.packageId,
@@ -257,6 +259,8 @@ export async function createPackageReservation(data: {
                 date: data.date,
                 time: data.time,
                 passengers: data.passengers,
+                basePrice: data.basePrice,
+                serviceFee: data.serviceFee,
                 totalPrice: data.totalPrice,
                 notes: data.notes,
                 status: 'Confirmado'
@@ -268,7 +272,7 @@ export async function createPackageReservation(data: {
         return { success: false, error: 'Failed to create reservation' };
     }
 }
-
+ 
 export async function getDashboardReservations() {
     try {
         const user = await getCurrentUser();
@@ -323,10 +327,10 @@ export async function getDashboardStats() {
         const whereClause = (!user || user.role === 'ADMIN') ? baseWhere : { userId: user.id };
         const resWhereClause = (!user || user.role === 'ADMIN') ? baseWhere : { package: { userId: user.id } };
 
-        const [totalSales, totalReservations, yachtCount, taxiCount] = await Promise.all([
+        const [totals, totalReservations, yachtCount, taxiCount] = await Promise.all([
             prisma.packageReservation.aggregate({
                 where: resWhereClause,
-                _sum: { totalPrice: true }
+                _sum: { totalPrice: true, serviceFee: true }
             }),
             prisma.packageReservation.count({
                 where: resWhereClause
@@ -342,7 +346,8 @@ export async function getDashboardStats() {
         return {
             success: true,
             data: {
-                totalSales: totalSales._sum.totalPrice || 0,
+                totalSales: totals._sum.totalPrice || 0,
+                totalFees: totals._sum.serviceFee || 0,
                 totalReservations,
                 yachtCount,
                 taxiCount

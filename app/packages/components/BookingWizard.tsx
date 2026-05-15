@@ -53,10 +53,15 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
         <div className="detail-item"><span>Vehículo</span><strong>{pkg.vehicle.name}</strong></div>
       </div>
 
+      <div className="summary-total-breakdown">
+        <div className="detail-item"><span>Monto Base</span><strong>${pkg.price} USD</strong></div>
+        <div className="detail-item"><span>Cargo Operativo (5%)</span><strong>${(pkg.price * 0.05).toFixed(2)} USD</strong></div>
+      </div>
+
       <div className="summary-total">
         <span>Total a Pagar</span>
         <div className="price-wrap">
-          <span className="amount">${pkg.price}</span>
+          <span className="amount">${(pkg.price * 1.05).toFixed(2)}</span>
           <span className="currency">USD</span>
         </div>
       </div>
@@ -68,14 +73,15 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
         .summary-pkg img { width: 5rem; height: 5rem; border-radius: 16px; object-fit: cover; }
         .summary-pkg h4 { font-size: 0.9rem; color: white; font-weight: 700; margin-bottom: 0.25rem; }
         .summary-pkg p { font-size: 0.7rem; color: #8b5cf6; font-weight: 900; text-transform: uppercase; }
-        .summary-details { margin-bottom: 2rem; }
+        .summary-details { margin-bottom: 1.5rem; }
+        .summary-total-breakdown { margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); }
         .detail-item { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.75rem; }
         .detail-item span { color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; }
         .detail-item strong { color: white; }
         .summary-total { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end; }
         .summary-total span { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 900; text-transform: uppercase; }
         .price-wrap { text-align: right; }
-        .amount { font-size: 1.75rem; font-weight: 900; color: white; }
+        .amount { font-size: 1.75rem; font-weight: 900; color: #8b5cf6; }
         .currency { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 700; margin-left: 0.25rem; }
       `}</style>
     </div>
@@ -99,6 +105,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
   const prevStep = () => setStep(s => s - 1);
 
   const handleSubmit = () => {
+    const basePrice = pkg.price;
+    const feeAmount = basePrice * 0.05;
+    const totalPrice = basePrice + feeAmount;
+
     const booking: Booking = {
       id: Math.random().toString(36).substr(2, 9).toUpperCase(),
       packageId: pkg.id,
@@ -106,7 +116,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
       reservationDate: formData.date,
       reservationTime: pkg.startTime,
       passengers: formData.passengers,
-      totalPrice: pkg.price,
+      totalPrice: totalPrice,
       status: 'pending',
       customer: {
         firstName: formData.firstName,
@@ -122,7 +132,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
         pickup: pkg.pickup.name,
         dropoff: pkg.dropoff.name,
         items: pkg.items.map(i => i.name),
-        price: pkg.price
+        price: basePrice
       },
       notes: formData.notes
     };
@@ -425,6 +435,9 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
   const simulatePayment = async () => {
     setPaymentState('processing');
     
+    const basePrice = booking.totalPrice / 1.05;
+    const feeAmount = booking.totalPrice - basePrice;
+
     try {
       await createPackageReservation({
         packageId: Number(booking.packageId) || 0,
@@ -435,7 +448,9 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         date: booking.reservationDate,
         time: booking.reservationTime,
         passengers: booking.passengers,
-        totalPrice: (booking as Booking).totalPrice || 0,
+        totalPrice: booking.totalPrice,
+        basePrice: basePrice,
+        serviceFee: feeAmount,
         notes: booking.notes || ''
       });
     } catch (error) {
