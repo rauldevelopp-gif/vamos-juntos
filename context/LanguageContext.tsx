@@ -93,7 +93,25 @@ const translations = {
         catalog_explore: "Explora el catálogo de",
         search: "Buscar",
         syncing_catalog: "Sincronizando catálogo...",
-        no_items_found: "No se encontraron"
+        no_items_found: "No se encontraron",
+        
+        // Registration
+        partner_cta_title: "¿Eres Operador o Transportista?",
+        partner_cta_desc: "Únete a la red más exclusiva de servicios de lujo. Expande tu alcance y gestiona tus servicios con nuestra tecnología premium.",
+        btn_register_now: "Registrarme Ahora",
+        reg_title: "Registro de Socios",
+        reg_subtitle: "Completa el formulario para unirte a nuestra red",
+        full_name: "Nombre Completo",
+        address: "Dirección",
+        country: "País",
+        phone: "Teléfono",
+        email: "Correo Electrónico",
+        user_type: "Tipo de Usuario",
+        operator: "Operador",
+        transporter: "Transportista",
+        btn_submit_reg: "Enviar Registro",
+        reg_success: "¡Registro enviado con éxito! Nos pondremos en contacto pronto.",
+        back_to_site: "Volver al sitio"
     },
     en: {
         // Navbar
@@ -183,7 +201,25 @@ const translations = {
         catalog_explore: "Explore the catalog of",
         search: "Search",
         syncing_catalog: "Syncing catalog...",
-        no_items_found: "No items found for"
+        no_items_found: "No items found for",
+        
+        // Registration
+        partner_cta_title: "Are you an Operator or Transporter?",
+        partner_cta_desc: "Join the most exclusive luxury service network. Expand your reach and manage your services with our premium technology.",
+        btn_register_now: "Register Now",
+        reg_title: "Partner Registration",
+        reg_subtitle: "Complete the form to join our network",
+        full_name: "Full Name",
+        address: "Address",
+        country: "Country",
+        phone: "Phone",
+        email: "Email Address",
+        user_type: "User Type",
+        operator: "Operator",
+        transporter: "Transporter",
+        btn_submit_reg: "Submit Registration",
+        reg_success: "Registration submitted successfully! We will contact you soon.",
+        back_to_site: "Back to site"
     }
 };
 

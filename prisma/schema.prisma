@@ -16,6 +16,18 @@ model User {
   email     String? @unique
   name      String?
   reservations Reservation[]
+  drivers      Driver[]
+  taxis        Taxi[]
+  yachts       Yacht[]
+  crew         Crew[]
+  places       Place[]
+  airports     Airport[]
+  hotels       Hotel[]
+  beaches      Beach[]
+  attractions  Attraction[]
+  restaurants  Restaurant[]
+  packages     Package[]
+  packageReservations PackageReservation[]
 }
 
 model Driver {
@@ -29,6 +41,8 @@ model Driver {
   availability Boolean  @default(true)
   taxis        Taxi[]
   packages     Package[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Taxi {
@@ -46,6 +60,8 @@ model Taxi {
   driverId     Int
   driver       Driver   @relation(fields: [driverId], references: [id])
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Yacht {
@@ -63,6 +79,8 @@ model Yacht {
   availability Boolean  @default(true)
   crew         Crew[]
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Crew {
@@ -74,6 +92,8 @@ model Crew {
   photo        String?
   yachtId      Int
   yacht        Yacht    @relation(fields: [yachtId], references: [id])
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Place {
@@ -81,6 +101,8 @@ model Place {
   name         String
   category     String
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Airport {
@@ -93,6 +115,8 @@ model Airport {
   status       String   @default("Operativo")
   coordinates  String
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Hotel {
@@ -105,6 +129,8 @@ model Hotel {
   status       String   @default("Disponible")
   coordinates  String
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Beach {
@@ -117,6 +143,8 @@ model Beach {
   coordinates  String
   popularity   String   @default("Media")
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Attraction {
@@ -129,6 +157,8 @@ model Attraction {
   coordinates     String
   recommendedTime String   @default("2 Horas")
   reservations    ReservationService[]
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
 }
 
 model Restaurant {
@@ -141,6 +171,8 @@ model Restaurant {
   coordinates  String
   priceRange   String   @default("$$")
   reservations ReservationService[]
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 model Reservation {
@@ -204,4 +236,30 @@ model Package {
   clientId    String?  // UUID to track custom packages in session
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
+  packageReservations PackageReservation[]
+}
+
+model PackageReservation {
+  id              Int      @id @default(autoincrement())
+  packageId       Int
+  package         Package  @relation(fields: [packageId], references: [id])
+  userId          Int?     // Owner of the package
+  user            User?    @relation(fields: [userId], references: [id])
+  
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  customerCountry String?
+  
+  date            String   // Date of the tour
+  time            String   // Time of the tour
+  passengers      Int
+  totalPrice      Float
+  status          String   @default("Confirmado") // Since it's post-payment
+  notes           String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

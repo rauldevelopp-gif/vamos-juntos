@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Loader2, Plus } from 'lucide-react';
 import { getPackages } from './admin/package/actions';
 import { useLanguage } from '../context/LanguageContext';
+import { BookingWizard, SuccessStep } from './packages/components/BookingWizard';
+import { TourPackage, Booking } from './packages/types';
+import { PackageDetail } from './packages/components/PackageDetail';
 
 import Image from 'next/image';
 
@@ -37,6 +40,33 @@ interface Package {
     createdAt: Date;
 }
 
+const mapApiToFrontend = (apiPkg: any): TourPackage => {
+  const items = Array.isArray(apiPkg.items) 
+    ? apiPkg.items 
+    : (typeof apiPkg.items === 'string' ? JSON.parse(apiPkg.items) : []);
+
+  return {
+    id: apiPkg.id,
+    name: apiPkg.name || 'Sin nombre',
+    description: apiPkg.description || 'Experiencia exclusiva diseñada para ti.',
+    image: apiPkg.image || '/mexico_luxury_ruins_hero_1778020263723.png',
+    duration: apiPkg.duration || '8 Horas',
+    startTime: apiPkg.start_time || '08:00',
+    price: apiPkg.price || 0,
+    maxPassengers: apiPkg.vehicle?.capacity || 8,
+    pickup: { id: 1, name: apiPkg.pickup || 'Punto de partida', type: 'airport' },
+    dropoff: { id: 2, name: apiPkg.dropoff || 'Punto de destino', type: 'hotel' },
+    vehicle: { id: apiPkg.vehicle?.id || 1, name: apiPkg.vehicle?.model || 'Luxury SUV', type: 'Premium', capacity: apiPkg.vehicle?.capacity || 8 },
+    driver: { id: apiPkg.driver?.id || 1, name: apiPkg.driver?.name || 'Driver VIP' },
+    owner: apiPkg.user ? { name: apiPkg.user.name, email: apiPkg.user.email, role: apiPkg.user.role } : undefined,
+    items: items.map((item: any, idx: number) => ({
+        id: idx,
+        name: (typeof item === 'string' ? item : item.name) || 'Item',
+        type: (typeof item === 'string' ? 'atraccion' : item.type) || 'atraccion'
+    }))
+  };
+};
+
 const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     switch (type) {
         case 'aeropuerto': return <Plane size={size} />;
@@ -49,117 +79,13 @@ const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
     }
 };
 
-const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
-    const { t } = useLanguage();
-    const displayPkg = {
-        ...pkg,
-        total: pkg.price || pkg.total || 0,
-        items: Array.isArray(pkg.items) ? pkg.items : (typeof pkg.items === 'string' ? JSON.parse(pkg.items) : [])
-    };
-
-    return (
-        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 2000 }}>
-            <div className="flyer-container" onClick={e => e.stopPropagation()}>
-                <button className="flyer-close" onClick={onClose}><X size={24} /></button>
-                <div className="flyer-hero">
-                    {displayPkg.image ? (
-                        <Image src={displayPkg.image} alt={displayPkg.name} fill className="hero-img" style={{ objectFit: 'cover' }} unoptimized />
-                    ) : (
-                        <div className="hero-placeholder"><ImageIcon size={64} opacity={0.2} /></div>
-                    )}
-                    <div className="hero-overlay">
-                        <div className="flyer-badge">{t('custom_package_flyer')}</div>
-                        <h1 className="flyer-title">{displayPkg.name || '---'}</h1>
-                        <div className="flyer-meta"><span>VAMOS JUNTOS • {t('client_request_flyer')}</span></div>
-                    </div>
-                </div>
-                <div className="flyer-body">
-                    <div className="flyer-description">
-                        <p>{displayPkg.description || '...'}</p>
-                    </div>
-                    <div className="flyer-itinerary">
-                        <h3>{t('selected_itinerary')}</h3>
-                        <div className="flyer-items">
-                            {displayPkg.items.length === 0 ? (
-                                <p className="empty-msg">{t('package_promotional')}</p>
-                            ) : (
-                                displayPkg.items.map((item: PackageItem, idx: number) => (
-                                    <div key={item.id || idx} className="flyer-item-row">
-                                        <div className="item-number">{(idx + 1).toString().padStart(2, '0')}</div>
-                                        <div className="item-icon-wrap"><TypeIcon type={item.type} size={16} /></div>
-                                        <div className="item-info">
-                                            <div className="item-name">{item.name}</div>
-                                            <div className="item-type">{item.type}</div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {displayPkg.driver && (
-                        <div className="flyer-driver-section">
-                            <div className="driver-label">{t('assigned_driver')}</div>
-                            <div className="driver-flyer-card">
-                                <Image src={displayPkg.driver.photo || 'https://i.pravatar.cc/150?u=' + displayPkg.driver.id} alt="Driver" width={35} height={35} style={{ borderRadius: '50%', border: '2px solid var(--primary)' }} unoptimized />
-                                <div className="driver-flyer-info">
-                                    <div className="driver-flyer-name">{displayPkg.driver.name}</div>
-                                    <div className="driver-flyer-role">{t('driver_vip')} • {displayPkg.driver.taxis?.[0]?.model || 'Luxury Van'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="flyer-footer">
-                        <div className="price-box">
-                            <span className="label">{t('total_investment')}</span>
-                            <span className="value">${displayPkg.total.toLocaleString()} <small>USD</small></span>
-                        </div>
-                        <div className="contact-info">
-                            <p>{t('brand_footer_note')}</p>
-                            <div className="brand-logo">VAMOS JUNTOS</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <style jsx>{`
-                .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 2rem; z-index: 10000; }
-                .flyer-container { width: 100%; max-width: 450px; background: #0a0a0a; border-radius: 30px; overflow-y: auto; max-height: 90vh; position: relative; border: 1px solid rgba(255,255,255,0.1); animation: flyer-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-                @keyframes flyer-up { from { transform: translateY(50px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-                .flyer-close { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
-                .flyer-hero { height: 240px; position: relative; overflow: hidden; }
-                .hero-img { width: 100%; height: 100%; object-fit: cover; }
-                .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, #0a0a0a, transparent); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; }
-                .flyer-badge { font-size: 0.6rem; font-weight: 900; background: var(--primary); color: white; padding: 0.3rem 0.8rem; border-radius: 5px; width: fit-content; margin-bottom: 0.5rem; letter-spacing: 0.1em; }
-                .flyer-title { font-size: 1.5rem; font-weight: 800; margin: 0; color: white; }
-                .flyer-meta { font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 0.3rem; font-weight: 700; }
-                .flyer-body { padding: 1.5rem; }
-                .flyer-description { font-size: 0.8rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin-bottom: 1.5rem; }
-                .flyer-itinerary h3 { font-size: 0.7rem; font-weight: 900; color: var(--primary); letter-spacing: 0.15em; margin-bottom: 1rem; }
-                .flyer-items { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.5rem; }
-                .flyer-item-row { display: flex; align-items: center; gap: 0.8rem; }
-                .item-number { font-size: 0.6rem; font-weight: 900; color: rgba(255,255,255,0.1); }
-                .item-icon-wrap { color: var(--primary); }
-                .item-name { font-size: 0.85rem; font-weight: 700; color: white; }
-                .item-type { font-size: 0.55rem; text-transform: uppercase; color: rgba(255,255,255,0.3); font-weight: 700; }
-                .flyer-driver-section { margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); }
-                .driver-label { font-size: 0.55rem; font-weight: 900; color: rgba(255,255,255,0.2); margin-bottom: 0.5rem; }
-                .driver-flyer-card { display: flex; align-items: center; gap: 0.8rem; }
-                .driver-flyer-name { font-size: 0.8rem; font-weight: 700; color: white; }
-                .driver-flyer-role { font-size: 0.65rem; color: var(--primary); font-weight: 600; }
-                .flyer-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; display: flex; justify-content: space-between; align-items: flex-end; }
-                .price-box .value { font-size: 1.4rem; font-weight: 900; color: white; }
-                .brand-logo { font-size: 1rem; font-weight: 900; background: linear-gradient(to right, #8b5cf6, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-            `}</style>
-        </div>
-    );
-};
-
 export default function Home() {
   const { t } = useLanguage();
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
-  const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
+  const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
+  const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
+  const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -171,6 +97,10 @@ export default function Home() {
     };
     fetchPackages();
   }, []);
+  if (confirmedBooking) {
+    return <SuccessStep booking={confirmedBooking} onReset={() => setConfirmedBooking(null)} />;
+  }
+
   return (
     <main>
       {/* Hero Section */}
@@ -251,14 +181,23 @@ export default function Home() {
                   </p>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>${pkg.price?.toLocaleString()} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>USD</small></span>
-                    <button 
-                      onClick={() => setPreviewPkg(pkg)}
-                      className="btn-premium" 
-                      style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <Info size={16} />
-                      {t('details')}
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        onClick={() => setSelectedPkg(mapApiToFrontend(pkg))}
+                        className="btn-secondary" 
+                        style={{ padding: '0.6rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        title={t('details')}
+                      >
+                        <Info size={16} />
+                      </button>
+                      <button 
+                        onClick={() => setBookingPkg(mapApiToFrontend(pkg))}
+                        className="btn-premium" 
+                        style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, justifyContent: 'center' }}
+                      >
+                        Reservar
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -267,11 +206,54 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Preview Flyer Modal */}
-      {previewPkg && (
-        <PreviewFlyerModal 
-          pkg={previewPkg} 
-          onClose={() => setPreviewPkg(null)} 
+      {/* Partner Registration CTA */}
+      <section style={{ padding: '6rem 0', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <Image 
+            src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop" 
+            alt="Partnership" 
+            fill 
+            style={{ objectFit: 'cover', opacity: 0.15 }}
+            unoptimized
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--background), transparent, var(--background))' }}></div>
+        </div>
+        
+        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <div className="glass-panel" style={{ padding: '4rem 2rem', maxWidth: '900px', margin: '0 auto', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+            <Sparkles size={48} color="var(--primary)" style={{ marginBottom: '1.5rem', opacity: 0.8 }} />
+            <h2 className="heading-2" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{t('partner_cta_title')}</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto 2.5rem', lineHeight: '1.6' }}>
+              {t('partner_cta_desc')}
+            </p>
+            <Link href="/register" className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.8rem' }}>
+              {t('btn_register_now')}
+              <ArrowRight size={20} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {selectedPkg && (
+        <PackageDetail 
+          pkg={selectedPkg} 
+          onClose={() => setSelectedPkg(null)} 
+          onContinue={(pkg) => {
+            setSelectedPkg(null);
+            setBookingPkg(pkg);
+          }}
+        />
+      )}
+
+      {/* Booking Wizard */}
+      {bookingPkg && (
+        <BookingWizard 
+          pkg={bookingPkg}
+          onClose={() => setBookingPkg(null)}
+          onComplete={(booking) => {
+              setBookingPkg(null);
+              setConfirmedBooking(booking);
+          }}
         />
       )}
 

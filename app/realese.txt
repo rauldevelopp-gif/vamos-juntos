@@ -1,0 +1,8 @@
+registro de usuarios
+recuperar contraseña
+cambiar contraseña
+poner el identificar de usuario en todas las tablas
+persistnecia de las reservas
+simulacion de pago
+
+

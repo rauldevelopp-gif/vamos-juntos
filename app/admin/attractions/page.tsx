@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, X, Loader2, Camera } from 'lucide-react';
 import { getAttractions } from './actions';
 
 interface Attraction {
@@ -65,6 +65,14 @@ export default function AttractionsPage() {
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
                         <p>Sincronizando aventuras...</p>
                     </div>
+                ) : attractions.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Camera size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay atracciones registradas</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Las nuevas atracciones aparecerán aquí.</p>
+                    </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
@@ -117,6 +125,14 @@ export default function AttractionsPage() {
                     <div style={{ textAlign: 'center', padding: '4rem' }}>
                         <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
                         <p style={{ color: 'var(--text-muted)' }}>Cargando aventuras...</p>
+                    </div>
+                ) : attractions.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Camera size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay atracciones registradas</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Las nuevas atracciones aparecerán aquí.</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>

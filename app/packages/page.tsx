@@ -70,6 +70,11 @@ const mapApiToFrontend = (apiPkg: {
         id: apiPkg.driver?.id || 1,
         name: apiPkg.driver?.name || 'Driver VIP'
     },
+    owner: (apiPkg as any).user ? {
+        name: (apiPkg as any).user.name,
+        email: (apiPkg as any).user.email,
+        role: (apiPkg as any).user.role
+    } : undefined,
     items: items.map((item: { name?: string; type?: string } | string, idx: number) => ({
         id: idx,
         name: (typeof item === 'string' ? item : item.name) || 'Item',

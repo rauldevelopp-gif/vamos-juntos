@@ -292,6 +292,14 @@ export default function PackagesPage() {
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
                         <p>Cargando paquetes...</p>
                     </div>
+                ) : packages.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Calendar size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay paquetes premium registrados</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos paquetes aparecerán aquí.</p>
+                    </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>

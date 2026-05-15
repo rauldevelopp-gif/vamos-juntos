@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TourPackage, Booking } from '../types';
+import { createPackageReservation } from '../../admin/package/actions';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -14,7 +15,8 @@ import {
   Globe,
   FileText,
   Sparkles,
-  Home
+  Home,
+  ShieldCheck
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -163,7 +165,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
                 <div className="input-grid single">
                   <div className="input-group">
                     <label><Calendar size={12} /> Selecciona la Fecha</label>
-                    <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+                    <input 
+                      type="date" 
+                      min={new Date().toISOString().split('T')[0]} 
+                      value={formData.date} 
+                      onChange={e => setFormData({...formData, date: e.target.value})} 
+                    />
                   </div>
                   <div className="info-badge-simple">
                     <Clock size={16} />
@@ -403,9 +410,188 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
 };
 
 export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = ({ booking, onReset }) => {
+  const [paymentState, setPaymentState] = useState<'pending' | 'processing' | 'success'>('pending');
+  const [cardInfo, setCardInfo] = useState({
+    name: '',
+    number: '',
+    expiry: '',
+    cvv: ''
+  });
+
   const handleDownloadPDF = () => {
     window.print();
   };
+
+  const simulatePayment = async () => {
+    setPaymentState('processing');
+    
+    try {
+      await createPackageReservation({
+        packageId: Number(booking.packageId) || 0,
+        customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+        customerEmail: booking.customer.email,
+        customerPhone: booking.customer.phone,
+        customerCountry: booking.customer.country,
+        date: booking.reservationDate,
+        time: booking.reservationTime,
+        passengers: booking.passengers,
+        totalPrice: (booking as any).totalPrice || 0,
+        notes: booking.notes || ''
+      });
+    } catch (error) {
+      console.error('Failed to save reservation', error);
+    }
+
+    setTimeout(() => {
+      setPaymentState('success');
+    }, 1500);
+  };
+
+  if (paymentState === 'pending') {
+    return (
+      <div className="success-overlay">
+        <div className="success-card">
+          <div className="success-icon-container" style={{ margin: '0 auto 2rem' }}>
+            <div className="success-icon" style={{ background: '#8b5cf6', boxShadow: '0 15px 40px rgba(139, 92, 246, 0.4)' }}>
+              <CreditCard size={36} color="white" />
+            </div>
+          </div>
+          
+          <div className="success-text">
+            <h2>Pago Requerido</h2>
+            <p>Tu reserva está casi lista. Por favor, completa el pago seguro para confirmar tu itinerario.</p>
+          </div>
+
+          <div className="success-info-panel" style={{ textAlign: 'left', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Total a Pagar</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>
+                  ${(booking as any).totalPrice || 0} <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>USD</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ padding: '0.3rem 0.6rem', background: '#1a1a1a', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', height: 'fit-content' }}>
+                  <span style={{ color: '#253b80', fontWeight: 900, fontSize: '0.6rem', italic: 'true' }}>VISA</span>
+                </div>
+                <div style={{ padding: '0.3rem 0.6rem', background: '#1a1a1a', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', height: 'fit-content', display: 'flex' }}>
+                   <div style={{ width: '8px', height: '8px', background: '#eb001b', borderRadius: '50%', marginRight: '-4px' }}></div>
+                   <div style={{ width: '8px', height: '8px', background: '#f79e1b', borderRadius: '50%', opacity: 0.8 }}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card-form">
+              <div className="input-group">
+                <label>Nombre del Titular</label>
+                <input 
+                  type="text" 
+                  placeholder="Como aparece en la tarjeta"
+                  value={cardInfo.name}
+                  onChange={e => setCardInfo({...cardInfo, name: e.target.value})}
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Número de Tarjeta</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    placeholder="0000 0000 0000 0000"
+                    maxLength={19}
+                    value={cardInfo.number}
+                    onChange={e => {
+                      let val = e.target.value.replace(/\D/g, '');
+                      val = val.replace(/(.{4})/g, '$1 ').trim();
+                      setCardInfo({...cardInfo, number: val});
+                    }}
+                  />
+                  <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>
+                    <CreditCard size={18} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="input-group">
+                  <label>Vencimiento</label>
+                  <input 
+                    type="text" 
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    value={cardInfo.expiry}
+                    onChange={e => {
+                      let val = e.target.value.replace(/\D/g, '');
+                      if (val.length > 2) val = val.substring(0, 2) + '/' + val.substring(2);
+                      setCardInfo({...cardInfo, expiry: val});
+                    }}
+                  />
+                </div>
+                <div className="input-group">
+                  <label>CVV</label>
+                  <input 
+                    type="password" 
+                    placeholder="***"
+                    maxLength={4}
+                    value={cardInfo.cvv}
+                    onChange={e => setCardInfo({...cardInfo, cvv: e.target.value.replace(/\D/g, '')})}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={simulatePayment} 
+              className="btn-primary" 
+              style={{ width: '100%', marginBottom: '1rem', background: '#8b5cf6', marginTop: '1rem' }}
+              disabled={!cardInfo.name || cardInfo.number.length < 16 || !cardInfo.expiry || !cardInfo.cvv}
+            >
+              Confirmar Pago <ArrowRight size={18} />
+            </button>
+            <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', margin: 0 }}>
+              <ShieldCheck size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+              Pago encriptado SSL de 256 bits. Modo de prueba.
+            </p>
+          </div>
+        </div>
+        <style jsx>{`
+          .success-overlay { position: fixed; inset: 0; background: #050505; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 4rem 2rem; color: white; text-align: center; overflow-y: auto; }
+          .success-card { max-width: 450px; width: 100%; margin: auto 0; }
+          .success-icon-container { position: relative; width: 6rem; height: 6rem; display: flex; align-items: center; justify-content: center; }
+          .success-icon { z-index: 2; width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+          h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; }
+          p { color: rgba(255,255,255,0.5); margin-bottom: 2rem; line-height: 1.6; font-size: 1.1rem; }
+          .success-info-panel { background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; }
+          .card-form { display: flex; flex-direction: column; gap: 1.25rem; }
+          .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+          .input-group label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.05em; }
+          .input-group input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 14px; color: white; font-size: 0.9rem; font-weight: 600; outline: none; transition: all 0.2s; width: 100%; box-sizing: border-box; }
+          .input-group input:focus { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); }
+          .btn-primary { color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; }
+          .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); }
+          .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (paymentState === 'processing') {
+    return (
+      <div className="success-overlay">
+        <div className="success-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyItems: 'center', paddingTop: '4rem' }}>
+          <div className="loader" style={{ margin: '0 auto 2rem' }}></div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Procesando pago...</h2>
+          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Por favor, no cierres esta ventana.</p>
+        </div>
+        <style jsx>{`
+          .success-overlay { position: fixed; inset: 0; background: #050505; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 4rem 2rem; color: white; text-align: center; }
+          .success-card { max-width: 450px; width: 100%; margin: auto 0; }
+          .loader { width: 48px; height: 48px; border: 5px solid rgba(139, 92, 246, 0.2); border-bottom-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="success-overlay">
@@ -430,7 +616,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
           <div className="info-body">
             <div className="info-row">
               <div className="info-label-group"><CheckCircle2 size={12} className="text-emerald-500" /> <span>Estado</span></div>
-              <span className="status">Pendiente</span>
+              <span className="status">Confirmado</span>
             </div>
             <div className="info-row">
               <div className="info-label-group"><Sparkles size={12} className="text-violet-500" /> <span>Tour</span></div>
@@ -503,7 +689,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         .info-row { display: flex; justify-content: space-between; font-size: 0.85rem; align-items: center; }
         .info-label-group { display: flex; align-items: center; gap: 0.6rem; }
         .info-label-group span { color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; }
-        .status { color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 900; font-size: 0.65rem; }
+        .status { color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 900; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
         .success-actions { display: flex; gap: 1.25rem; margin-bottom: 4rem; }
         .btn-sec { flex: 1; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1.5rem; border-radius: 20px; font-weight: 900; text-transform: uppercase; cursor: pointer; font-size: 0.8rem; }

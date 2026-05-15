@@ -31,6 +31,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const session = cookieStore.get('session');
+  const username = cookieStore.get('username')?.value || null;
 
   return (
     <html lang="es">
@@ -40,7 +41,7 @@ export default async function RootLayout({
       <body>
         <LanguageProvider>
           <PWARegistration />
-          <Navbar session={session} />
+          <Navbar session={session} username={username} />
 
           <main style={{ minHeight: 'calc(100vh - 140px)', padding: '2rem 0' }}>
             {children}

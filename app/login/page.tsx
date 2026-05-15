@@ -100,6 +100,12 @@ export default function LoginPage() {
                     <button type="submit" className="btn-premium" disabled={loading} style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', height: '54px' }}>
                         {loading ? <Loader2 className="animate-spin" size={20} /> : 'Entrar al Panel'}
                     </button>
+
+                    <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                        <Link href="/forgot-password" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textDecoration: 'none' }}>
+                            ¿Olvidaste tu contraseña? <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Recupérala aquí</span>
+                        </Link>
+                    </div>
                 </form>
             </div>
         </div>

@@ -86,6 +86,14 @@ export default function YachtsPage() {
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
                         <p>Sincronizando flota elite...</p>
                     </div>
+                ) : yachts.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Anchor size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay yates registrados</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos yates aparecerán aquí.</p>
+                    </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
@@ -150,6 +158,14 @@ export default function YachtsPage() {
                     <div style={{ textAlign: 'center', padding: '4rem' }}>
                         <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
                         <p style={{ color: 'var(--text-muted)' }}>Zarpando...</p>
+                    </div>
+                ) : yachts.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Anchor size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay yates registrados</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos yates aparecerán aquí.</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>

@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 export async function POST(request: Request) {
     const cookieStore = await cookies();
     cookieStore.delete('session');
+    cookieStore.delete('username');
+    cookieStore.delete('user_login');
     const url = new URL('/', request.url);
     return NextResponse.redirect(url, { status: 303 });
 }

@@ -10,11 +10,14 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0",
+    "@prisma/client": "^5.14.0",
+    "@types/nodemailer": "^8.0.0",
     "lucide-react": "^1.14.0",
     "next": "14.2.35",
+    "nodemailer": "^8.0.7",
     "react": "^18",
     "react-dom": "^18",
+    "resend": "^6.12.3",
     "stripe": "^14.0.0"
   },
   "devDependencies": {
@@ -23,7 +26,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
-    "prisma": "^5.0.0",
+    "prisma": "^5.14.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5"

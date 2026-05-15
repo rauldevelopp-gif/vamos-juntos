@@ -34,6 +34,12 @@ export interface PackageItem {
   name: string;
 }
 
+export interface Owner {
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
 export interface TourPackage {
   id: number;
   name: string;
@@ -49,6 +55,7 @@ export interface TourPackage {
 
   vehicle: Vehicle;
   driver: Driver;
+  owner?: Owner;
 
   items: PackageItem[];
 }

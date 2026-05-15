@@ -69,6 +69,8 @@ interface PackageDetailProps {
 }
 
 export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onContinue }) => {
+  const [showOwnerInfo, setShowOwnerInfo] = React.useState(false);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={e => e.stopPropagation()}>
@@ -102,6 +104,11 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
             <p className="pkg-subtitle">
               Explora lo mejor de {pkg.pickup.name} con un servicio boutique personalizado.
             </p>
+            
+            <div className="owner-badge" onClick={() => setShowOwnerInfo(true)}>
+              <ShieldCheck size={14} />
+              <span>Operado por: {pkg.owner?.name || 'VamosJuntos VIP'}</span>
+            </div>
           </div>
         </div>
 
@@ -158,25 +165,53 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
                 </div>
               </section>
 
-              <section className="pricing-card">
-                <div className="pricing-header">
-                  <div>
-                    <p className="pricing-label">Inversión Total</p>
-                    <h3 className="price-value">${pkg.price} <small>USD</small></h3>
-                  </div>
-                  <ShieldCheck size={40} className="shield-icon" />
-                </div>
-                <button 
-                  onClick={() => onContinue(pkg)}
-                  className="continue-btn"
-                >
-                  Continuar Reserva <ChevronRight size={18} />
-                </button>
-              </section>
             </div>
+          </div>
+
+          <div className="pricing-bar">
+            <div className="pricing-info">
+              <p className="pricing-label">Total</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <h3 className="price-value">${pkg.price} <small>USD</small></h3>
+              </div>
+            </div>
+            <button 
+              onClick={() => onContinue(pkg)}
+              className="continue-btn-inline"
+            >
+              Reserva <ChevronRight size={18} />
+            </button>
           </div>
         </div>
       </div>
+
+      {showOwnerInfo && (
+        <div className="modal-overlay" style={{ zIndex: 10001, background: 'rgba(0,0,0,0.8)' }} onClick={() => setShowOwnerInfo(false)}>
+          <div className="owner-modal-container" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" style={{ top: '1rem', right: '1rem', width: '2rem', height: '2rem' }} onClick={() => setShowOwnerInfo(false)}>
+              <X size={16} />
+            </button>
+            <div style={{ textAlign: 'center', margin: '2rem 0' }}>
+              <div style={{ width: '5rem', height: '5rem', background: '#8b5cf6', borderRadius: '50%', margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)' }}>
+                <User size={40} color="white" />
+              </div>
+              <h3 style={{ fontSize: '1.5rem', color: 'white', margin: '0 0 0.5rem 0', fontWeight: 900 }}>{pkg.owner?.name || 'VamosJuntos VIP'}</h3>
+              <p style={{ margin: '0', color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 800 }}>Agente Autorizado</p>
+            </div>
+            
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '20px', fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+              Este paquete es operado y garantizado directamente por <strong>{pkg.owner?.name || 'nuestro equipo VIP'}</strong>. Todos los servicios incluyen atención personalizada de primera clase.
+            </div>
+
+            {pkg.owner?.email && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(16, 185, 129, 0.05)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                <ShieldCheck size={18} color="#10b981" />
+                <span>Contacto de soporte: <strong style={{ color: 'white' }}>{pkg.owner.email}</strong></span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .modal-overlay { 
@@ -232,7 +267,12 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
         .rating-row span { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); }
         
         .pkg-title { font-size: 2.5rem; font-weight: 900; color: white; line-height: 1.1; margin-bottom: 0.5rem; }
-        .pkg-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.4); font-weight: 500; }
+        .pkg-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-bottom: 1rem; }
+
+        .owner-badge { display: inline-flex; alignItems: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; border-radius: 20px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.3s; }
+        .owner-badge:hover { background: rgba(16, 185, 129, 0.3); transform: translateY(-2px); }
+
+        .owner-modal-container { width: 90%; max-width: 400px; background: #151515; border-radius: 24px; padding: 2rem; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 
         .content-side { flex: 1; overflow-y: auto; padding: 3.5rem; }
         .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
@@ -240,10 +280,10 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
         .section-label { font-size: 0.7rem; font-weight: 900; color: #8b5cf6; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1.5rem; }
         .description { font-size: 1rem; color: rgba(255,255,255,0.7); line-height: 1.7; margin-bottom: 2rem; }
         
-        .meta-pills { display: flex; flex-wrap: wrap; gap: 1rem; }
-        .pill { background: #151515; border: 1px solid rgba(255,255,255,0.05); padding: 1.25rem 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1rem; }
-        .pill-label { font-size: 0.6rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; }
-        .pill-value { font-size: 0.9rem; font-weight: 900; color: white; }
+        .meta-pills { display: flex; flex-wrap: wrap; gap: 2rem; }
+        .pill { background: transparent; border: none; padding: 0; display: flex; align-items: center; gap: 0.75rem; color: #8b5cf6; }
+        .pill-label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 0.1rem; }
+        .pill-value { font-size: 0.95rem; font-weight: 800; color: white; }
 
         .vehicle-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 28px; display: flex; align-items: center; gap: 1.5rem; }
         .vehicle-icon { width: 4rem; height: 4rem; background: #1a1a1a; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #8b5cf6; }
@@ -253,14 +293,13 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
 
         .timeline-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 2.5rem; border-radius: 32px; }
 
-        .pricing-card { background: #8b5cf6; padding: 2.5rem; border-radius: 32px; color: white; box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3); }
-        .pricing-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
-        .pricing-label { font-size: 0.7rem; font-weight: 900; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; }
-        .price-value { font-size: 2.5rem; font-weight: 900; }
-        .price-value small { font-size: 0.9rem; font-weight: 700; opacity: 0.6; text-transform: uppercase; }
+        .pricing-bar { display: flex; align-items: center; justify-content: space-between; background: #8b5cf6; padding: 1.5rem 2.5rem; border-radius: 24px; color: white; box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3); margin-top: 3rem; }
+        .pricing-label { font-size: 0.7rem; font-weight: 900; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.2rem; }
+        .price-value { font-size: 2rem; font-weight: 900; margin: 0; display: flex; align-items: baseline; gap: 0.2rem; }
+        .price-value small { font-size: 0.9rem; font-weight: 700; opacity: 0.8; text-transform: uppercase; }
         
-        .continue-btn { width: 100%; background: white; color: #8b5cf6; border: none; padding: 1.5rem; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; }
-        .continue-btn:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .continue-btn-inline { background: white; color: #8b5cf6; border: none; padding: 1rem 2rem; border-radius: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; }
+        .continue-btn-inline:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -271,6 +310,8 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
             .visuals-side { width: 100%; height: 280px; }
             .content-grid { grid-template-columns: 1fr; gap: 2.5rem; }
             .content-side { padding: 2rem; }
+            .pricing-bar { flex-direction: column; align-items: stretch; gap: 1.5rem; padding: 1.5rem; }
+            .pricing-info { display: flex; justify-content: space-between; align-items: center; }
         }
       `}</style>
     </div>

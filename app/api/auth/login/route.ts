@@ -32,7 +32,19 @@ export async function POST(request: Request) {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
-                maxAge: 60 * 60 * 24, // 1 day
+                maxAge: 60 * 60 * 24,
+            });
+            cookieStore.set('user_login', user.username, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24,
+            });
+            cookieStore.set('username', user.name || user.username, {
+                httpOnly: false, // readable by client
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24,
             });
 
             return NextResponse.json({ success: true });

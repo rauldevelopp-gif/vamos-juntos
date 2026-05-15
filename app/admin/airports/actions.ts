@@ -1,16 +1,24 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function getAirports() {
     try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const whereClause = user.role === 'ADMIN' ? {} : { userId: user.id };
+
         let airports = await prisma.airport.findMany({
+            where: whereClause,
             orderBy: { name: 'asc' }
         });
 
-        if (airports.length === 0) {
+        if (airports.length === 0 && user.role === 'ADMIN') {
             await seedInitialAirports();
             airports = await prisma.airport.findMany({
+                where: whereClause,
                 orderBy: { name: 'asc' }
             });
         }
@@ -23,10 +31,11 @@ export async function getAirports() {
 }
 
 async function seedInitialAirports() {
+    const user = await getCurrentUser();
     const airportsData = [
-        { name: 'Aeropuerto Int. de Cancún', location: 'Carretera Cancún-Chetumal Km 22', iata: 'CUN', city: 'Cancún', state: 'Quintana Roo', status: 'Operativo', coordinates: '21.0367,-86.8770' },
-        { name: 'Aeropuerto de la Ciudad de México', location: 'Av. Capitán Carlos León s/n', iata: 'MEX', city: 'CDMX', state: 'CDMX', status: 'Operativo', coordinates: '19.4361,-99.0719' },
-        { name: 'Aeropuerto de Tulum (Felipe Carrillo)', location: 'Ctra. Fed 307 Km 201', iata: 'TQO', city: 'Tulum', state: 'Quintana Roo', status: 'Nuevo', coordinates: '20.1558,-87.6698' },
+        { name: 'Aeropuerto Int. de Cancún', location: 'Carretera Cancún-Chetumal Km 22', iata: 'CUN', city: 'Cancún', state: 'Quintana Roo', status: 'Operativo', coordinates: '21.0367,-86.8770', userId: user?.id },
+        { name: 'Aeropuerto de la Ciudad de México', location: 'Av. Capitán Carlos León s/n', iata: 'MEX', city: 'CDMX', state: 'CDMX', status: 'Operativo', coordinates: '19.4361,-99.0719', userId: user?.id },
+        { name: 'Aeropuerto de Tulum (Felipe Carrillo)', location: 'Ctra. Fed 307 Km 201', iata: 'TQO', city: 'Tulum', state: 'Quintana Roo', status: 'Nuevo', coordinates: '20.1558,-87.6698', userId: user?.id },
     ];
 
     for (const airport of airportsData) {
@@ -38,6 +47,16 @@ async function seedInitialAirports() {
 
 export async function deleteAirport(id: number) {
     try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        if (user.role !== 'ADMIN') {
+            const airport = await prisma.airport.findUnique({ where: { id } });
+            if (!airport || airport.userId !== user.id) {
+                return { success: false, error: 'No autorizado' };
+            }
+        }
+
         await prisma.airport.delete({
             where: { id }
         });

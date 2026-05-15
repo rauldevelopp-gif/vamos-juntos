@@ -16,13 +16,15 @@ import {
     Ship, 
     Home,
     Menu,
-    X
+    X,
+    Calendar
 } from 'lucide-react';
 
 const MENU_ITEMS = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Solicitudes', href: '/admin/requests', icon: Clock },
     { name: 'Paquetes', href: '/admin/package', icon: Package },
+    { name: 'Reservas', href: '/admin/reservations', icon: Calendar },
     { name: 'Aeropuerto', href: '/admin/airports', icon: Plane },
     { name: 'Hoteles', href: '/admin/hotels', icon: Hotel },
     { name: 'Playas', href: '/admin/beaches', icon: Palmtree },

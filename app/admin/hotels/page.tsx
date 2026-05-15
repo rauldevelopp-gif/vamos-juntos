@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Star, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, X, Star, Loader2, Hotel } from 'lucide-react';
 import { getHotels } from './actions';
 
 interface Hotel {
@@ -70,6 +70,14 @@ export default function HotelsPage() {
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
                         <p>Sincronizando hoteles...</p>
                     </div>
+                ) : hotels.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Hotel size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay hoteles registrados</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos hoteles aparecerán aquí.</p>
+                    </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
@@ -131,6 +139,14 @@ export default function HotelsPage() {
                     <div style={{ textAlign: 'center', padding: '4rem' }}>
                         <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
                         <p style={{ color: 'var(--text-muted)' }}>Cargando hoteles...</p>
+                    </div>
+                ) : hotels.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '6rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Hotel size={32} color="var(--text-muted)" />
+                        </div>
+                        <h3>No hay hoteles registrados</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos hoteles aparecerán aquí.</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>

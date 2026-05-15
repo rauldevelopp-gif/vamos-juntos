@@ -1,11 +1,18 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function getYachts() {
     try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const whereClause = user.role === 'ADMIN' ? {} : { userId: user.id };
+
         console.log("getYachts: Fetching from DB...");
         let yachts = await prisma.yacht.findMany({
+            where: whereClause,
             include: {
                 crew: true
             },
@@ -17,10 +24,11 @@ export async function getYachts() {
         console.log(`getYachts: Found ${yachts.length} yachts.`);
 
         // Seed if empty for demonstration
-        if (yachts.length === 0) {
+        if (yachts.length === 0 && user.role === 'ADMIN') {
             console.log("getYachts: Table empty, seeding...");
             await seedInitialYachts();
             yachts = await prisma.yacht.findMany({
+                where: whereClause,
                 include: {
                     crew: true
                 },
@@ -46,6 +54,7 @@ export async function getYachts() {
 
 async function seedInitialYachts() {
     try {
+        const user = await getCurrentUser();
         const yachtsData = [
             {
                 name: "Sea Diamond",
@@ -58,6 +67,7 @@ async function seedInitialYachts() {
                 status: "Disponible",
                 location: "Marina Cancún",
                 coordinates: "21.1465,-86.8219",
+                userId: user?.id,
                 crew: {
                     create: [
                         { 
@@ -88,6 +98,7 @@ async function seedInitialYachts() {
                 status: "Reservado",
                 location: "Puerto Aventuras",
                 coordinates: "20.5008,-87.2289",
+                userId: user?.id,
                 crew: {
                     create: [
                         { 

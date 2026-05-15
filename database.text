@@ -1,0 +1,200 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.Airport (
+  id integer NOT NULL DEFAULT nextval('"Airport_id_seq"'::regclass),
+  name text NOT NULL,
+  location text NOT NULL,
+  iata text NOT NULL,
+  city text NOT NULL,
+  state text NOT NULL,
+  status text NOT NULL DEFAULT 'Operativo'::text,
+  coordinates text NOT NULL,
+  userId integer,
+  CONSTRAINT Airport_pkey PRIMARY KEY (id),
+  CONSTRAINT Airport_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Attraction (
+  id integer NOT NULL DEFAULT nextval('"Attraction_id_seq"'::regclass),
+  name text NOT NULL,
+  category text NOT NULL,
+  city text NOT NULL,
+  state text NOT NULL,
+  status text NOT NULL DEFAULT 'Abierto'::text,
+  coordinates text NOT NULL,
+  recommendedTime text NOT NULL DEFAULT '2 Horas'::text,
+  userId integer,
+  CONSTRAINT Attraction_pkey PRIMARY KEY (id),
+  CONSTRAINT Attraction_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Beach (
+  id integer NOT NULL DEFAULT nextval('"Beach_id_seq"'::regclass),
+  name text NOT NULL,
+  type text NOT NULL,
+  city text NOT NULL,
+  state text NOT NULL,
+  status text NOT NULL DEFAULT 'Abierta'::text,
+  coordinates text NOT NULL,
+  popularity text NOT NULL DEFAULT 'Media'::text,
+  userId integer,
+  CONSTRAINT Beach_pkey PRIMARY KEY (id),
+  CONSTRAINT Beach_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Crew (
+  id integer NOT NULL DEFAULT nextval('"Crew_id_seq"'::regclass),
+  name text NOT NULL,
+  role text NOT NULL,
+  experience text NOT NULL,
+  phone text,
+  photo text,
+  yachtId integer NOT NULL,
+  userId integer,
+  CONSTRAINT Crew_pkey PRIMARY KEY (id),
+  CONSTRAINT Crew_yachtId_fkey FOREIGN KEY (yachtId) REFERENCES public.Yacht(id),
+  CONSTRAINT Crew_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Driver (
+  id integer NOT NULL DEFAULT nextval('"Driver_id_seq"'::regclass),
+  name text NOT NULL,
+  license text NOT NULL,
+  phone text NOT NULL,
+  availability boolean NOT NULL DEFAULT true,
+  expiration text,
+  photo text,
+  rating double precision NOT NULL DEFAULT 5.0,
+  userId integer,
+  CONSTRAINT Driver_pkey PRIMARY KEY (id),
+  CONSTRAINT Driver_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Hotel (
+  id integer NOT NULL DEFAULT nextval('"Hotel_id_seq"'::regclass),
+  name text NOT NULL,
+  location text NOT NULL,
+  stars integer NOT NULL DEFAULT 5,
+  city text NOT NULL,
+  state text NOT NULL,
+  status text NOT NULL DEFAULT 'Disponible'::text,
+  coordinates text NOT NULL,
+  userId integer,
+  CONSTRAINT Hotel_pkey PRIMARY KEY (id),
+  CONSTRAINT Hotel_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Package (
+  id integer NOT NULL DEFAULT nextval('"Package_id_seq"'::regclass),
+  name text NOT NULL,
+  status text NOT NULL DEFAULT 'Borrador'::text,
+  price double precision NOT NULL,
+  sales integer NOT NULL DEFAULT 0,
+  date text NOT NULL,
+  image text,
+  createdAt timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt timestamp without time zone NOT NULL,
+  description text,
+  driverId integer,
+  items jsonb,
+  clientId text,
+  start_time text DEFAULT '08:00'::text,
+  userId integer,
+  CONSTRAINT Package_pkey PRIMARY KEY (id),
+  CONSTRAINT Package_driverId_fkey FOREIGN KEY (driverId) REFERENCES public.Driver(id),
+  CONSTRAINT Package_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Place (
+  id integer NOT NULL DEFAULT nextval('"Place_id_seq"'::regclass),
+  name text NOT NULL,
+  category text NOT NULL,
+  userId integer,
+  CONSTRAINT Place_pkey PRIMARY KEY (id),
+  CONSTRAINT Place_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Reservation (
+  id integer NOT NULL DEFAULT nextval('"Reservation_id_seq"'::regclass),
+  userId integer NOT NULL,
+  date timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  totalAmount double precision NOT NULL,
+  status text NOT NULL DEFAULT 'PENDING'::text,
+  CONSTRAINT Reservation_pkey PRIMARY KEY (id),
+  CONSTRAINT Reservation_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.ReservationService (
+  id integer NOT NULL DEFAULT nextval('"ReservationService_id_seq"'::regclass),
+  reservationId integer NOT NULL,
+  serviceType text NOT NULL,
+  taxiId integer,
+  yachtId integer,
+  placeId integer,
+  restaurantId integer,
+  airportId integer,
+  hotelId integer,
+  beachId integer,
+  attractionId integer,
+  quantity integer NOT NULL DEFAULT 1,
+  price double precision NOT NULL,
+  CONSTRAINT ReservationService_pkey PRIMARY KEY (id),
+  CONSTRAINT ReservationService_reservationId_fkey FOREIGN KEY (reservationId) REFERENCES public.Reservation(id),
+  CONSTRAINT ReservationService_taxiId_fkey FOREIGN KEY (taxiId) REFERENCES public.Taxi(id),
+  CONSTRAINT ReservationService_yachtId_fkey FOREIGN KEY (yachtId) REFERENCES public.Yacht(id),
+  CONSTRAINT ReservationService_placeId_fkey FOREIGN KEY (placeId) REFERENCES public.Place(id),
+  CONSTRAINT ReservationService_restaurantId_fkey FOREIGN KEY (restaurantId) REFERENCES public.Restaurant(id),
+  CONSTRAINT ReservationService_airportId_fkey FOREIGN KEY (airportId) REFERENCES public.Airport(id),
+  CONSTRAINT ReservationService_hotelId_fkey FOREIGN KEY (hotelId) REFERENCES public.Hotel(id),
+  CONSTRAINT ReservationService_beachId_fkey FOREIGN KEY (beachId) REFERENCES public.Beach(id),
+  CONSTRAINT ReservationService_attractionId_fkey FOREIGN KEY (attractionId) REFERENCES public.Attraction(id)
+);
+CREATE TABLE public.Restaurant (
+  id integer NOT NULL DEFAULT nextval('"Restaurant_id_seq"'::regclass),
+  name text NOT NULL,
+  cuisine text NOT NULL,
+  city text NOT NULL,
+  state text NOT NULL,
+  status text NOT NULL DEFAULT 'Abierto'::text,
+  coordinates text NOT NULL,
+  priceRange text NOT NULL DEFAULT '$$'::text,
+  userId integer,
+  CONSTRAINT Restaurant_pkey PRIMARY KEY (id),
+  CONSTRAINT Restaurant_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.Taxi (
+  id integer NOT NULL DEFAULT nextval('"Taxi_id_seq"'::regclass),
+  type text NOT NULL,
+  driverId integer NOT NULL,
+  amenities ARRAY DEFAULT ARRAY[]::text[],
+  brand text NOT NULL,
+  color text NOT NULL,
+  luggage integer NOT NULL,
+  model text NOT NULL,
+  passengers integer NOT NULL,
+  plate text NOT NULL,
+  status text NOT NULL DEFAULT 'Disponible'::text,
+  year integer NOT NULL,
+  userId integer,
+  CONSTRAINT Taxi_pkey PRIMARY KEY (id),
+  CONSTRAINT Taxi_driverId_fkey FOREIGN KEY (driverId) REFERENCES public.Driver(id),
+  CONSTRAINT Taxi_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
+CREATE TABLE public.User (
+  id integer NOT NULL DEFAULT nextval('"User_id_seq"'::regclass),
+  username text NOT NULL,
+  password text NOT NULL,
+  role text NOT NULL DEFAULT 'USER'::text,
+  email text,
+  name text,
+  CONSTRAINT User_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.Yacht (
+  id integer NOT NULL DEFAULT nextval('"Yacht_id_seq"'::regclass),
+  name text NOT NULL,
+  capacity integer NOT NULL,
+  availability boolean NOT NULL DEFAULT true,
+  brand text NOT NULL,
+  coordinates text NOT NULL,
+  length text NOT NULL,
+  location text NOT NULL,
+  model text NOT NULL,
+  price_day double precision NOT NULL,
+  status text NOT NULL DEFAULT 'Disponible'::text,
+  year integer NOT NULL,
+  userId integer,
+  CONSTRAINT Yacht_pkey PRIMARY KEY (id),
+  CONSTRAINT Yacht_userId_fkey FOREIGN KEY (userId) REFERENCES public.User(id)
+);
