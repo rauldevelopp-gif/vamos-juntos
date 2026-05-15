@@ -3,8 +3,23 @@
 import Link from 'next/link';
 import { ArrowLeft, Calendar, FileText, CheckCircle2 } from 'lucide-react';
 
+interface Reservation {
+    id: number;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    date: string;
+    time: string;
+    passengers: number;
+    status: string;
+    totalPrice: number;
+    package?: {
+        name: string;
+    };
+}
+
 interface ReservationsListProps {
-    reservations: any[];
+    reservations: Reservation[];
 }
 
 export default function ReservationsList({ reservations }: ReservationsListProps) {
@@ -69,7 +84,7 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                                 </td>
                             </tr>
                         ) : (
-                            reservations.map((res: any) => {
+                            reservations.map((res: Reservation) => {
                                 const countdown = getCountdownLabel(res.date);
                                 return (
                                     <tr key={res.id} className="hover-row" style={{ borderBottom: '1px solid var(--border-glass)', transition: 'var(--transition-smooth)' }}>
@@ -118,7 +133,7 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {reservations.map((res: any) => {
+                        {reservations.map((res: Reservation) => {
                             const countdown = getCountdownLabel(res.date);
                             return (
                                 <div key={res.id} className="reservation-card-mobile" style={{ padding: '1.5rem', borderRadius: '24px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)' }}>

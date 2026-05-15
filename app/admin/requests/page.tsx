@@ -6,7 +6,6 @@ import {
     ArrowLeft, 
     Calendar, 
     Loader2, 
-    Eye, 
     X, 
     Plane,
     Hotel,
@@ -15,7 +14,6 @@ import {
     Camera,
     Anchor, 
     Info, 
-    Check,
     Clock,
     Search,
     UserPlus,
@@ -30,6 +28,7 @@ import {
 } from 'lucide-react';
 import { getClientRequests, confirmPackage } from '../package/actions';
 import { getTaxis } from '../taxis/actions';
+import Image from 'next/image';
 
 interface Package {
     id: number;
@@ -50,6 +49,21 @@ interface Package {
         taxis?: Array<{ model: string; plate: string }>;
     };
     createdAt: string;
+}
+
+interface Taxi {
+    id: number;
+    plate: string;
+    model: string;
+    passengers: number;
+    amenities: string[];
+    driver: {
+        id: number;
+        name: string;
+        photo: string | null;
+        license: string;
+        expiration: string;
+    };
 }
 
 const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
@@ -156,7 +170,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
 
 const AssignDriverModal = ({ pkg, taxis, onClose, onAssign, isAssigning }: { 
     pkg: Package, 
-    taxis: any[], 
+    taxis: Taxi[], 
     onClose: () => void, 
     onAssign: (pkgId: number, driverId: number) => void,
     isAssigning: number | null 
@@ -264,7 +278,15 @@ const AssignDriverModal = ({ pkg, taxis, onClose, onAssign, isAssigning }: {
                                         boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
                                     }}>
                                         {taxi.driver.photo ? (
-                                            <img src={taxi.driver.photo} alt={taxi.driver.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                                <Image 
+                                                    src={taxi.driver.photo} 
+                                                    alt={taxi.driver.name} 
+                                                    fill 
+                                                    style={{ objectFit: 'cover' }}
+                                                    unoptimized 
+                                                />
+                                            </div>
                                         ) : (
                                             <span style={{ fontWeight: 800, color: 'white', fontSize: '1.2rem' }}>{taxi.driver.name.charAt(0)}</span>
                                         )}
@@ -358,7 +380,7 @@ export default function RequestsPage() {
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
     const [assigningPkg, setAssigningPkg] = useState<Package | null>(null);
     const [isConfirming, setIsConfirming] = useState<number | null>(null);
-    const [taxis, setTaxis] = useState<any[]>([]);
+    const [taxis, setTaxis] = useState<Taxi[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -367,7 +389,7 @@ export default function RequestsPage() {
                 getTaxis()
             ]);
             if (reqRes.success && reqRes.data) setRequests(reqRes.data as Package[]);
-            if (taxiRes.success && taxiRes.data) setTaxis(taxiRes.data);
+            if (taxiRes.success && taxiRes.data) setTaxis(taxiRes.data as unknown as Taxi[]);
             setLoading(false);
         };
         fetchData();

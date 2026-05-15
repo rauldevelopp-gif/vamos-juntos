@@ -435,7 +435,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         date: booking.reservationDate,
         time: booking.reservationTime,
         passengers: booking.passengers,
-        totalPrice: (booking as any).totalPrice || 0,
+        totalPrice: (booking as Booking).totalPrice || 0,
         notes: booking.notes || ''
       });
     } catch (error) {
@@ -467,7 +467,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
               <div>
                 <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Total a Pagar</span>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>
-                  ${(booking as any).totalPrice || 0} <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>USD</span>
+                  ${(booking as Booking).totalPrice || 0} <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>USD</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>

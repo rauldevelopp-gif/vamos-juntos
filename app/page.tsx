@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Compass, Info, ArrowRight, Settings, Sparkles, X, Image as ImageIcon, Plane, Hotel, Utensils, Palmtree, Camera, Anchor, Loader2, Plus } from 'lucide-react';
+import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
 import { getPackages } from './admin/package/actions';
 import { useLanguage } from '../context/LanguageContext';
 import { BookingWizard, SuccessStep } from './packages/components/BookingWizard';
@@ -40,7 +40,21 @@ interface Package {
     createdAt: Date;
 }
 
-const mapApiToFrontend = (apiPkg: any): TourPackage => {
+const mapApiToFrontend = (apiPkg: { 
+    id: number;
+    name?: string;
+    description?: string;
+    image?: string | null;
+    duration?: string;
+    start_time?: string;
+    price?: number;
+    pickup?: string;
+    dropoff?: string;
+    vehicle?: { id: number; model: string; capacity: number };
+    driver?: { id: number; name: string };
+    user?: { name: string; email: string; role: string };
+    items?: unknown;
+}): TourPackage => {
   const items = Array.isArray(apiPkg.items) 
     ? apiPkg.items 
     : (typeof apiPkg.items === 'string' ? JSON.parse(apiPkg.items) : []);
@@ -59,7 +73,7 @@ const mapApiToFrontend = (apiPkg: any): TourPackage => {
     vehicle: { id: apiPkg.vehicle?.id || 1, name: apiPkg.vehicle?.model || 'Luxury SUV', type: 'Premium', capacity: apiPkg.vehicle?.capacity || 8 },
     driver: { id: apiPkg.driver?.id || 1, name: apiPkg.driver?.name || 'Driver VIP' },
     owner: apiPkg.user ? { name: apiPkg.user.name, email: apiPkg.user.email, role: apiPkg.user.role } : undefined,
-    items: items.map((item: any, idx: number) => ({
+    items: items.map((item: { name?: string; type?: string } | string, idx: number) => ({
         id: idx,
         name: (typeof item === 'string' ? item : item.name) || 'Item',
         type: (typeof item === 'string' ? 'atraccion' : item.type) || 'atraccion'
@@ -67,17 +81,7 @@ const mapApiToFrontend = (apiPkg: any): TourPackage => {
   };
 };
 
-const TypeIcon = ({ type, size = 18 }: { type: string; size?: number }) => {
-    switch (type) {
-        case 'aeropuerto': return <Plane size={size} />;
-        case 'hotel': return <Hotel size={size} />;
-        case 'restaurante': return <Utensils size={size} />;
-        case 'playa': return <Palmtree size={size} />;
-        case 'atraccion': return <Camera size={size} />;
-        case 'yate': return <Anchor size={size} />;
-        default: return <Info size={size} />;
-    }
-};
+
 
 export default function Home() {
   const { t } = useLanguage();

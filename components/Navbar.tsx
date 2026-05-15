@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Home, Package, LogOut, User, Search, Globe, ChevronDown, Key, LayoutDashboard } from 'lucide-react';
+import { Home, Package, LogOut, User, Search, ChevronDown, Key, LayoutDashboard } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 export const Navbar = ({ session, username }: { session: unknown, username: string | null }) => {
   const { t, language, setLanguage } = useLanguage();
@@ -36,8 +37,8 @@ export const Navbar = ({ session, username }: { session: unknown, username: stri
         <Link href="/" style={{ textDecoration: 'none' }}>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center' }} className="text-gradient">
             <span className="brand-text-desktop">VamosJuntos</span>
-            <span className="brand-text-mobile" style={{ display: 'none' }}>
-              <img src="/icons/icon-192x192.png" alt="VamosJuntos Logo" width="36" height="36" style={{ borderRadius: '8px' }} />
+            <span className="brand-text-mobile" style={{ display: 'none', position: 'relative', width: '36px', height: '36px' }}>
+              <Image src="/icons/icon-192x192.png" alt="VamosJuntos Logo" width={36} height={36} style={{ borderRadius: '8px' }} unoptimized />
             </span>
           </h1>
         </Link>
@@ -73,11 +74,13 @@ export const Navbar = ({ session, username }: { session: unknown, username: stri
               }}
               title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
             >
-              <img 
+              <Image 
                 src={language === 'es' ? 'https://flagcdn.com/w20/es.png' : 'https://flagcdn.com/w20/us.png'} 
-                width="18" 
+                width={18} 
+                height={14}
                 alt={language === 'es' ? 'ES' : 'EN'} 
                 style={{ borderRadius: '2px', objectFit: 'cover' }}
+                unoptimized
               />
               <span>{language === 'es' ? 'ES' : 'EN'}</span>
             </button>

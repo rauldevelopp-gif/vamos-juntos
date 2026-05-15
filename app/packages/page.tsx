@@ -36,6 +36,7 @@ const mapApiToFrontend = (apiPkg: {
   vehicle?: { id: number; model: string; capacity: number }; 
   driver?: { id: number; name: string }; 
   items?: unknown; 
+  user?: { name: string; email: string; role: string };
 }): TourPackage => {
   const items = Array.isArray(apiPkg.items) 
     ? apiPkg.items 
@@ -70,10 +71,10 @@ const mapApiToFrontend = (apiPkg: {
         id: apiPkg.driver?.id || 1,
         name: apiPkg.driver?.name || 'Driver VIP'
     },
-    owner: (apiPkg as any).user ? {
-        name: (apiPkg as any).user.name,
-        email: (apiPkg as any).user.email,
-        role: (apiPkg as any).user.role
+    owner: apiPkg.user ? {
+        name: apiPkg.user.name,
+        email: apiPkg.user.email,
+        role: apiPkg.user.role
     } : undefined,
     items: items.map((item: { name?: string; type?: string } | string, idx: number) => ({
         id: idx,

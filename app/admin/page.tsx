@@ -2,6 +2,21 @@ import { getCurrentUser } from '@/lib/auth';
 import { getDashboardReservations, getDashboardStats } from './package/actions';
 import Link from 'next/link';
 
+interface ReservationData {
+    id: number;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    date: string;
+    time: string;
+    passengers: number;
+    status: string;
+    totalPrice: number;
+    package?: {
+        name: string;
+    };
+}
+
 export default async function AdminDashboard() {
     const user = await getCurrentUser();
     const displayName = user?.name || user?.username || 'Administrador';
@@ -11,7 +26,7 @@ export default async function AdminDashboard() {
         getDashboardStats()
     ]);
 
-    const reservations = resResult.success && resResult.data ? resResult.data : [];
+    const reservations: ReservationData[] = resResult.success && resResult.data ? (resResult.data as unknown as ReservationData[]) : [];
     const stats = statsResult.success && statsResult.data ? statsResult.data : {
         totalSales: 0,
         totalReservations: 0,
@@ -93,7 +108,7 @@ export default async function AdminDashboard() {
                                     <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No tienes reservas recientes.</td>
                                 </tr>
                             ) : (
-                                reservations.map((res: any) => {
+                                reservations.map((res: ReservationData) => {
                                     const countdown = getCountdownLabel(res.date);
                                     return (
                                         <tr key={res.id} style={{ borderBottom: '1px solid var(--border-glass)' }}>

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 
 // In-memory OTP store — in production replace with Redis or a DB table
-const otpStore = new Map<string, { code: string; expiresAt: number; userData?: any }>();
+const otpStore = new Map<string, { code: string; expiresAt: number; userData?: unknown }>();
 
 function generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
