@@ -1,161 +1,271 @@
-export const dynamic = 'force-dynamic';
+'use client';
 
-import { getCurrentUser } from '@/lib/auth';
-import { getDashboardReservations, getDashboardStats } from './package/actions';
-import Link from 'next/link';
-import styles from './admin.module.css';
+import React, { useState, useEffect } from 'react';
+import { 
+    getEffectiveReservations, 
+    getMonthlyRevenue, 
+    getDriverRankings, 
+    getPopularDestinations, 
+    getAvailabilityStats 
+} from './reports/actions';
+import { Loader2, DollarSign, TrendingUp, Users, MapPin, Anchor, Car } from 'lucide-react';
 
-interface ReservationData {
-    id: number;
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    date: string;
-    time: string;
-    passengers: number;
-    status: string;
-    totalPrice: number;
-    package?: {
-        name: string;
-    };
-}
+export default function AdminDashboard() {
+    const [loading, setLoading] = useState(true);
+    const [selectedReport, setSelectedReport] = useState<string | null>(null);
+    
+    const [metrics, setMetrics] = useState({
+        effectiveReservations: 0,
+        totalRevenue: 0,
+        monthlyRevenueData: [] as any[],
+        driverRankings: [] as any[],
+        popularDestinations: [] as any[],
+        drivers: { data: [] as any[], total: 0, available: 0 },
+        yachts: { data: [] as any[], total: 0, available: 0 }
+    });
 
-interface DashboardStats {
-    totalSales: number;
-    totalFees: number;
-    totalReservations: number;
-    yachtCount: number;
-    taxiCount: number;
-}
+    useEffect(() => {
+        const fetchMetrics = async () => {
+            setLoading(true);
+            try {
+                const [resEff, resRev, resRank, resDest, resAvail] = await Promise.all([
+                    getEffectiveReservations(),
+                    getMonthlyRevenue(),
+                    getDriverRankings(),
+                    getPopularDestinations(),
+                    getAvailabilityStats()
+                ]);
 
-export default async function AdminDashboard() {
-    const user = await getCurrentUser();
-    const displayName = user?.name || user?.username || 'Administrador';
+                let totalRev = 0;
+                if (resRev.success && resRev.data) {
+                    totalRev = resRev.data.reduce((sum: number, item: any) => sum + item.Ingresos, 0);
+                }
 
-    const [resResult, statsResult] = await Promise.all([
-        getDashboardReservations(),
-        getDashboardStats()
-    ]);
-
-    const reservations: ReservationData[] = resResult.success && resResult.data ? (resResult.data as unknown as ReservationData[]) : [];
-    const stats: DashboardStats = statsResult.success && statsResult.data 
-        ? (statsResult.data as unknown as DashboardStats) 
-        : {
-            totalSales: 0,
-            totalFees: 0,
-            totalReservations: 0,
-            yachtCount: 0,
-            taxiCount: 0
+                setMetrics({
+                    effectiveReservations: resEff.success ? resEff.count : 0,
+                    totalRevenue: totalRev,
+                    monthlyRevenueData: resRev.success ? resRev.data : [],
+                    driverRankings: resRank.success ? resRank.data : [],
+                    popularDestinations: resDest.success ? resDest.data : [],
+                    drivers: resAvail.success && resAvail.drivers ? resAvail.drivers : { data: [], total: 0, available: 0 },
+                    yachts: resAvail.success && resAvail.yachts ? resAvail.yachts : { data: [], total: 0, available: 0 }
+                });
+            } catch (e) {
+                console.error("Error fetching metrics", e);
+            }
+            setLoading(false);
         };
+        fetchMetrics();
+    }, []);
 
-    const getDaysDifference = (dateString: string) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        // Assuming date is YYYY-MM-DD
-        const targetDate = new Date(dateString + 'T00:00:00');
+    const renderCustomBarChart = (data: any[], dataKey: string, nameKey: string, color: string, title: string) => {
+        if (!data || data.length === 0) return <div style={{ color: 'var(--text-muted)' }}>No hay datos suficientes</div>;
         
-        const diffTime = targetDate.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
+        const maxValue = Math.max(...data.map(d => d[dataKey] || 0), 1);
+        
+        return (
+            <div style={{ width: '100%', height: '100%' }}>
+                <h3 style={{ marginBottom: '2rem', color }}>{title}</h3>
+                <div style={{ display: 'flex', alignItems: 'flex-end', height: '300px', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    {data.map((item, idx) => {
+                        const heightPct = Math.max((item[dataKey] / maxValue) * 100, 5); 
+                        return (
+                            <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
+                                    {typeof item[dataKey] === 'number' && item[dataKey] > 1000 ? '$' + item[dataKey].toLocaleString() : item[dataKey]}
+                                </div>
+                                <div style={{ 
+                                    width: '100%', 
+                                    height: `${heightPct}%`, 
+                                    backgroundColor: color, 
+                                    borderRadius: '4px 4px 0 0',
+                                    transition: 'height 1s ease-out'
+                                }}></div>
+                                <div style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center' }}>
+                                    {item[nameKey]}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
     };
 
-    const getCountdownLabel = (dateString: string) => {
-        const days = getDaysDifference(dateString);
-        if (days < 0) return { text: 'Ya pasó', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
-        if (days === 0) return { text: 'Es Hoy', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
-        if (days === 1) return { text: 'Mañana', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
-        return { text: `Faltan ${days} días`, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' };
+    const renderCustomPieChart = (data: any[], title: string, colorTitle: string) => {
+        if (!data || data.length === 0) return null;
+        
+        const total = data.reduce((sum, item) => sum + item.value, 0);
+        let currentAngle = 0;
+        
+        const conicStops = data.map(item => {
+            const percentage = (item.value / total) * 100;
+            const stop = `${item.fill} ${currentAngle}% ${currentAngle + percentage}%`;
+            currentAngle += percentage;
+            return stop;
+        }).join(', ');
+
+        return (
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h3 style={{ marginBottom: '2rem', color: colorTitle }}>{title}</h3>
+                
+                <div style={{
+                    width: '200px',
+                    height: '200px',
+                    borderRadius: '50%',
+                    background: `conic-gradient(${conicStops})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '2rem',
+                    boxShadow: '0 0 20px rgba(0,0,0,0.5)'
+                }}>
+                    <div style={{ width: '120px', height: '120px', backgroundColor: 'var(--bg-card)', borderRadius: '50%' }}></div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '2rem' }}>
+                    {data.map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ width: '15px', height: '15px', backgroundColor: item.fill, borderRadius: '3px' }}></div>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{item.name}: <strong style={{ color: 'white' }}>{item.value}</strong></span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     };
+
+    const renderChart = () => {
+        if (!selectedReport) return (
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                Selecciona una métrica arriba para ver el reporte detallado
+            </div>
+        );
+
+        switch (selectedReport) {
+            case 'revenue':
+                return renderCustomBarChart(metrics.monthlyRevenueData, 'Ingresos', 'name', '#10b981', 'Ingresos Mensuales Generados');
+            case 'reservations':
+                return renderCustomBarChart(metrics.monthlyRevenueData, 'Ingresos', 'name', '#8b5cf6', 'Evolución de Ingresos y Reservas');
+            case 'drivers_rank':
+                return renderCustomBarChart(metrics.driverRankings.slice(0, 5), 'Puntuacion', 'name', '#f59e0b', 'Top 5 Conductores por Puntuación');
+            case 'destinations':
+                return renderCustomBarChart(metrics.popularDestinations.slice(0, 5), 'Selecciones', 'name', '#3b82f6', 'Top 5 Destinos Más Seleccionados');
+            case 'drivers_avail':
+                return renderCustomPieChart(metrics.drivers.data, 'Proporción de Conductores', '#ec4899');
+            case 'yachts_avail':
+                return renderCustomPieChart(metrics.yachts.data, 'Proporción de Yates', '#06b6d4');
+            default:
+                return null;
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+                <Loader2 size={40} className="animate-spin" style={{ color: 'var(--primary)' }} />
+            </div>
+        );
+    }
 
     return (
         <div>
             <header style={{ marginBottom: '3rem' }}>
-                <h1 className="heading-1">Panel de Control</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Bienvenido, {displayName}. Gestiona tu plataforma desde aquí.</p>
+                <h1 className="heading-1">Panel de Control (Reportes)</h1>
+                <p style={{ color: 'var(--text-muted)' }}>Bienvenido, Administrador. Haz clic en las tarjetas para ver los gráficos detallados.</p>
             </header>
 
-            <div className={styles.dashboardStatsGrid}>
-                <div className={styles.glassCard}>
-                    <p className={styles.statLabel}>Ventas Totales</p>
-                    <div className={styles.statValue}>${stats.totalSales.toLocaleString()}</div>
-                    <span className={styles.statSub} style={{ color: 'var(--secondary)' }}>Bruto acumulado</span>
+            <div className="dashboard-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                {/* 1. Reservas Efectivas */}
+                <div 
+                    className="glass-card" 
+                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'reservations' ? '2px solid #8b5cf6' : '' }}
+                    onClick={() => setSelectedReport('reservations')}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas Efectivas</p>
+                        <TrendingUp size={18} color="#8b5cf6" />
+                    </div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.effectiveReservations}</div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
                 </div>
-                <div className={styles.glassCard}>
-                    <p className={styles.statLabel}>Cargos Operativos (5%)</p>
-                    <div className={styles.statValue} style={{ color: '#10b981' }}>${stats.totalFees.toLocaleString()}</div>
-                    <span className={styles.statSub} style={{ color: 'var(--text-muted)' }}>Comisiones totales</span>
+
+                {/* 2. Ingresos Mensuales */}
+                <div 
+                    className="glass-card" 
+                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'revenue' ? '2px solid #10b981' : '' }}
+                    onClick={() => setSelectedReport('revenue')}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ingresos Generados</p>
+                        <DollarSign size={18} color="#10b981" />
+                    </div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>${metrics.totalRevenue.toLocaleString()}</div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
                 </div>
-                <div className={styles.glassCard}>
-                    <p className={styles.statLabel}>Reservas</p>
-                    <div className={styles.statValue}>{stats.totalReservations}</div>
-                    <span className={styles.statSub} style={{ color: 'var(--secondary)' }}>Gestiones totales</span>
+
+                {/* 3. Ranking Conductores */}
+                <div 
+                    className="glass-card" 
+                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'drivers_rank' ? '2px solid #f59e0b' : '' }}
+                    onClick={() => setSelectedReport('drivers_rank')}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ranking Conductores</p>
+                        <Users size={18} color="#f59e0b" />
+                    </div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.driverRankings.length > 0 ? metrics.driverRankings[0].Puntuacion : 0} ⭐</div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Top Actual: {metrics.driverRankings.length > 0 ? metrics.driverRankings[0].name : 'N/A'}</span>
                 </div>
-                <div className={styles.glassCard}>
-                    <p className={styles.statLabel}>Flota de Yates</p>
-                    <div className={styles.statValue}>{stats.yachtCount}</div>
-                    <span className={styles.statSub} style={{ color: 'var(--text-muted)' }}>Unidades activas</span>
+
+                {/* 4. Destinos Populares */}
+                <div 
+                    className="glass-card" 
+                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'destinations' ? '2px solid #3b82f6' : '' }}
+                    onClick={() => setSelectedReport('destinations')}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Destino Top</p>
+                        <MapPin size={18} color="#3b82f6" />
+                    </div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 700, margin: '1rem 0' }}>
+                        {metrics.popularDestinations.length > 0 ? metrics.popularDestinations[0].name : 'Sin datos'}
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
                 </div>
-                <div className={styles.glassCard}>
-                    <p className={styles.statLabel}>Taxis / Chóferes</p>
-                    <div className={styles.statValue}>{stats.taxiCount}</div>
-                    <span className={styles.statSub} style={{ color: 'var(--accent)' }}>Equipo operativo</span>
+
+                {/* 5. Disponibilidad Conductores */}
+                <div 
+                    className="glass-card" 
+                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'drivers_avail' ? '2px solid #ec4899' : '' }}
+                    onClick={() => setSelectedReport('drivers_avail')}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Conductores Disponibles</p>
+                        <Car size={18} color="#ec4899" />
+                    </div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.drivers.available} / {metrics.drivers.total}</div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
+                </div>
+
+                {/* 6. Disponibilidad Yates */}
+                <div 
+                    className="glass-card" 
+                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'yachts_avail' ? '2px solid #06b6d4' : '' }}
+                    onClick={() => setSelectedReport('yachts_avail')}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Yates Disponibles</p>
+                        <Anchor size={18} color="#06b6d4" />
+                    </div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.yachts.available} / {metrics.yachts.total}</div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
                 </div>
             </div>
 
             <section style={{ marginTop: '3rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem' }}>Próximas Reservas</h2>
-                    <Link href="/admin/reservations" className="btn-premium" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', textDecoration: 'none' }}>
-                        <span className="btn-text-mobile-hide">Ver todas</span>
-                        <span style={{ marginLeft: '0.5rem' }}>📑</span>
-                    </Link>
-                </div>
-                <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                                <th style={{ padding: '1.5rem' }}>Cliente</th>
-                                <th style={{ padding: '1.5rem' }}>Tour</th>
-                                <th style={{ padding: '1.5rem' }}>Fecha</th>
-                                <th style={{ padding: '1.5rem' }}>Estado</th>
-                                <th style={{ padding: '1.5rem' }}>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {reservations.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No tienes reservas recientes.</td>
-                                </tr>
-                            ) : (
-                                reservations.map((res: ReservationData) => {
-                                    const countdown = getCountdownLabel(res.date);
-                                    return (
-                                        <tr key={res.id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                                            <td style={{ padding: '1.5rem' }}>
-                                                <div style={{ fontWeight: 600 }}>{res.customerName}</div>
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{res.customerEmail}</div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{res.customerPhone}</div>
-                                            </td>
-                                            <td style={{ padding: '1.5rem' }}>
-                                                <div style={{ fontWeight: 600 }}>{res.package?.name || 'Paquete Eliminado'}</div>
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{res.passengers} pax</div>
-                                            </td>
-                                            <td style={{ padding: '1.5rem' }}>
-                                                <div style={{ fontWeight: 600 }}>{res.date} a las {res.time}</div>
-                                                <div style={{ display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', marginTop: '0.2rem', color: countdown.color, background: countdown.bg, fontWeight: 700 }}>
-                                                    {countdown.text}
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: '1.5rem' }}>
-                                                <span style={{ padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', fontWeight: 800 }}>{res.status}</span>
-                                            </td>
-                                            <td style={{ padding: '1.5rem', fontWeight: 600 }}>${res.totalPrice.toLocaleString()} USD</td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
+                <div className="glass-panel" style={{ padding: '2rem', minHeight: '400px' }}>
+                    {renderChart()}
                 </div>
             </section>
         </div>

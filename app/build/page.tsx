@@ -693,7 +693,7 @@ export default function PackageBuilderPage() {
                                             onChange={(e) => setPkg(prev => ({ ...prev, description: e.target.value }))}
                                         />
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    <div className="datetime-grid">
                                         <div className="field-group">
                                             <label className="field-label">{t('start_date_label')}</label>
                                             <input 
@@ -769,7 +769,7 @@ export default function PackageBuilderPage() {
                                         {pkg.total.toFixed(2)}
                                     </div>
                                 </div>
-                                <div className="summary-actions" style={{ display: 'flex', gap: '1rem' }}>
+                                <div className="summary-actions">
                                     <button onClick={() => setIsPreviewOpen(true)} className="btn-glass-nav" style={{ padding: '0.8rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
                                         <Camera size={18} /> {t('btn_preview')}
                                     </button>
@@ -777,7 +777,7 @@ export default function PackageBuilderPage() {
                                         onClick={handleSave} 
                                         className="btn-premium save-btn" 
                                         disabled={isSaving}
-                                        style={{ padding: '0.8rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isSaving ? 0.7 : 1 }}
+                                        style={{ opacity: isSaving ? 0.7 : 1 }}
                                     >
                                         {isSaving ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
                                         {isSaving ? t('saving') : t('btn_save_package')}
@@ -828,6 +828,54 @@ export default function PackageBuilderPage() {
                 .price-input input { width: 100px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.5rem; color: white; text-align: right; }
                 .summary-card { padding: 2rem; border-radius: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); margin-top: 2rem; }
                 .total-value { font-size: 2.5rem; font-weight: 900; color: white; }
+
+                /* RESPONSIVE DESIGN */
+                @media (max-width: 1024px) {
+                    .builder-container { padding: 1.5rem; }
+                    .header-left h1 { font-size: 2rem; }
+                }
+
+                @media (max-width: 768px) {
+                    .builder-container { padding: 1rem; }
+                    .builder-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+                    .header-left { flex-direction: row; align-items: flex-start; }
+                    .header-left h1 { font-size: 1.75rem; }
+                    .header-left p { font-size: 0.9rem; }
+                    
+                    .category-triggers-bar { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+                    .cat-trigger-btn { padding: 0.75rem; border-radius: 1rem; }
+                    .cat-label { font-size: 0.65rem; }
+
+                    .package-card { flex-direction: row; align-items: center; padding: 1rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+                    .package-card::-webkit-scrollbar { height: 4px; }
+                    .package-card::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 4px; }
+                    .card-content { white-space: nowrap; flex-shrink: 0; padding-right: 1rem; }
+                    .card-actions { margin-left: auto; margin-top: 0; width: auto; flex-shrink: 0; justify-content: flex-end; }
+                    .icon-box, .drag-handle { flex-shrink: 0; }
+                    .price-input input { width: 80px; }
+
+                    .summary-card { flex-direction: column; align-items: flex-start; gap: 1.5rem; padding: 1.5rem; }
+                    .summary-actions { width: 100%; flex-direction: column; }
+                    .summary-actions button { width: 100%; justify-content: center; padding: 1rem; }
+                    .total-value { font-size: 2rem; }
+
+                    .flyer-container { max-width: 95%; margin: 1rem auto; }
+                    .flyer-hero { height: 200px; }
+                    .flyer-title { font-size: 1.5rem; }
+                    .flyer-body { padding: 1.5rem; }
+                }
+
+                @media (max-width: 640px) {
+                    .datetime-grid { grid-template-columns: 1fr !important; }
+                    .category-triggers-bar { grid-template-columns: repeat(2, 1fr); }
+                    .modal-content { padding: 1.5rem; border-radius: 1.5rem; }
+                    .catalog-item-card { flex-direction: column; gap: 1rem; }
+                }
+
+                .datetime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+                .summary-actions { display: flex; gap: 1rem; }
+                .summary-actions button { padding: 0.8rem 1.5rem; border-radius: 1rem; display: flex; alignItems: center; gap: 0.5rem; font-weight: 700; }
+
             ` }} />
 
             {isDriverModalOpen && (
