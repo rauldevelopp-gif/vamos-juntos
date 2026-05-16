@@ -17,11 +17,11 @@ export default function AdminDashboard() {
     const [metrics, setMetrics] = useState({
         effectiveReservations: 0,
         totalRevenue: 0,
-        monthlyRevenueData: [] as any[],
-        driverRankings: [] as any[],
-        popularDestinations: [] as any[],
-        drivers: { data: [] as any[], total: 0, available: 0 },
-        yachts: { data: [] as any[], total: 0, available: 0 }
+        monthlyRevenueData: [] as unknown[],
+        driverRankings: [] as unknown[],
+        popularDestinations: [] as unknown[],
+        drivers: { data: [] as unknown[], total: 0, available: 0 },
+        yachts: { data: [] as unknown[], total: 0, available: 0 }
     });
 
     useEffect(() => {
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
 
                 let totalRev = 0;
                 if (resRev.success && resRev.data) {
-                    totalRev = resRev.data.reduce((sum: number, item: any) => sum + item.Ingresos, 0);
+                    totalRev = resRev.data.reduce((sum: number, item: unknown) => sum + item.Ingresos, 0);
                 }
 
                 setMetrics({
@@ -58,83 +58,176 @@ export default function AdminDashboard() {
         fetchMetrics();
     }, []);
 
-    const renderCustomBarChart = (data: any[], dataKey: string, nameKey: string, color: string, title: string) => {
-        if (!data || data.length === 0) return <div style={{ color: 'var(--text-muted)' }}>No hay datos suficientes</div>;
-        
-        const maxValue = Math.max(...data.map(d => d[dataKey] || 0), 1);
-        
+    const renderCustomBarChart = <
+        T extends Record<string, string | number>
+        >(
+        data: T[],
+        dataKey: keyof T,
+        nameKey: keyof T,
+        color: string,
+        title: string
+        ) => {
+        if (!data || data.length === 0)
+            return <div style={{ color: 'var(--text-muted)' }}>No hay datos suficientes</div>;
+
+        const maxValue = Math.max(
+            ...data.map((d) => Number(d[dataKey]) || 0),
+            1
+        );
+
         return (
             <div style={{ width: '100%', height: '100%' }}>
-                <h3 style={{ marginBottom: '2rem', color }}>{title}</h3>
-                <div style={{ display: 'flex', alignItems: 'flex-end', height: '300px', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    {data.map((item, idx) => {
-                        const heightPct = Math.max((item[dataKey] / maxValue) * 100, 5); 
-                        return (
-                            <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-                                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
-                                    {typeof item[dataKey] === 'number' && item[dataKey] > 1000 ? '$' + item[dataKey].toLocaleString() : item[dataKey]}
-                                </div>
-                                <div style={{ 
-                                    width: '100%', 
-                                    height: `${heightPct}%`, 
-                                    backgroundColor: color, 
-                                    borderRadius: '4px 4px 0 0',
-                                    transition: 'height 1s ease-out'
-                                }}></div>
-                                <div style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center' }}>
-                                    {item[nameKey]}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+            <h3 style={{ marginBottom: '2rem', color }}>{title}</h3>
+
+            <div
+                style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                height: '300px',
+                gap: '1rem',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                }}
+            >
+                {data.map((item, idx) => {
+                const value = Number(item[dataKey]) || 0;
+                const heightPct = Math.max((value / maxValue) * 100, 5);
+
+                return (
+                    <div
+                    key={idx}
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        height: '100%',
+                        justifyContent: 'flex-end',
+                    }}
+                    >
+                    <div
+                        style={{
+                        fontSize: '0.8rem',
+                        color: 'rgba(255,255,255,0.7)',
+                        marginBottom: '0.5rem',
+                        }}
+                    >
+                        {value > 1000 ? '$' + value.toLocaleString() : value}
+                    </div>
+
+                    <div
+                        style={{
+                        width: '100%',
+                        height: `${heightPct}%`,
+                        backgroundColor: color,
+                        borderRadius: '4px 4px 0 0',
+                        transition: 'height 1s ease-out',
+                        }}
+                    />
+
+                    <div
+                        style={{
+                        fontSize: '0.75rem',
+                        marginTop: '0.5rem',
+                        color: 'var(--text-muted)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: '100%',
+                        textAlign: 'center',
+                        }}
+                    >
+                        {String(item[nameKey])}
+                    </div>
+                    </div>
+                );
+                })}
+            </div>
             </div>
         );
     };
 
-    const renderCustomPieChart = (data: any[], title: string, colorTitle: string) => {
+    const renderCustomPieChart = (
+        data: PieChartData[],
+        title: string,
+        colorTitle: string
+        ) => {
         if (!data || data.length === 0) return null;
-        
+
         const total = data.reduce((sum, item) => sum + item.value, 0);
+
         let currentAngle = 0;
-        
-        const conicStops = data.map(item => {
+
+        const conicStops = data
+            .map((item) => {
             const percentage = (item.value / total) * 100;
+
             const stop = `${item.fill} ${currentAngle}% ${currentAngle + percentage}%`;
+
             currentAngle += percentage;
+
             return stop;
-        }).join(', ');
+            })
+            .join(', ');
 
         return (
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 style={{ marginBottom: '2rem', color: colorTitle }}>{title}</h3>
-                
-                <div style={{
-                    width: '200px',
-                    height: '200px',
-                    borderRadius: '50%',
-                    background: `conic-gradient(${conicStops})`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '2rem',
-                    boxShadow: '0 0 20px rgba(0,0,0,0.5)'
-                }}>
-                    <div style={{ width: '120px', height: '120px', backgroundColor: 'var(--bg-card)', borderRadius: '50%' }}></div>
-                </div>
+            <div
+            style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+            }}
+            >
+            <h3 style={{ marginBottom: '2rem', color: colorTitle }}>{title}</h3>
 
-                <div style={{ display: 'flex', gap: '2rem' }}>
-                    {data.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <div style={{ width: '15px', height: '15px', backgroundColor: item.fill, borderRadius: '3px' }}></div>
-                            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{item.name}: <strong style={{ color: 'white' }}>{item.value}</strong></span>
-                        </div>
-                    ))}
+            <div
+                style={{
+                width: '200px',
+                height: '200px',
+                borderRadius: '50%',
+                background: `conic-gradient(${conicStops})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '2rem',
+                boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+                }}
+            >
+                <div
+                style={{
+                    width: '120px',
+                    height: '120px',
+                    backgroundColor: 'var(--bg-card)',
+                    borderRadius: '50%',
+                }}
+                />
+            </div>
+
+            <div style={{ display: 'flex', gap: '2rem' }}>
+                {data.map((item, idx) => (
+                <div
+                    key={idx}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                    <div
+                    style={{
+                        width: '15px',
+                        height: '15px',
+                        backgroundColor: item.fill,
+                        borderRadius: '3px',
+                    }}
+                    />
+
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                    {item.name}:{' '}
+                    <strong style={{ color: 'white' }}>{item.value}</strong>
+                    </span>
                 </div>
+                ))}
+            </div>
             </div>
         );
     };
-
     const renderChart = () => {
         if (!selectedReport) return (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
