@@ -11,19 +11,22 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^1.14.0",
-    "next": "14.2.35",
-    "react": "^18",
-    "react-dom": "^18",
+    "next": "^14.2.35",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "resend": "^6.12.3",
     "stripe": "^14.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.35",
-    "prisma": "^5.0.0",
+    "eslint": "^10.4.0",
+    "eslint-config-next": "^14.2.35",
+    "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
