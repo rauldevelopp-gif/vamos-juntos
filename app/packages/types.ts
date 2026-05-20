@@ -89,4 +89,5 @@ export interface Booking {
   };
 
   notes?: string;
+  discountCode?: string;
 }

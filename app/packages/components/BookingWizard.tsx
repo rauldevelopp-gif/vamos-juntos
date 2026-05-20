@@ -173,7 +173,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
       },
       notes: formData.notes,
       discountCode: discountInfo?.code
-    } as any;
+    };
     onComplete(booking);
   };
 

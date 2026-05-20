@@ -4,8 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { Percent, Plus, Trash2, CheckCircle2, XCircle, Loader2, RefreshCw } from 'lucide-react';
 import { getDiscountCodes, createDiscountCode, deleteDiscountCode } from './actions';
 
+interface DiscountCode {
+    id: number;
+    code: string;
+    discount: number;
+    used: boolean;
+    createdAt: string;
+}
+
 export default function DiscountsPage() {
-    const [codes, setCodes] = useState<any[]>([]);
+    const [codes, setCodes] = useState<DiscountCode[]>([]);
     const [loading, setLoading] = useState(true);
     const [newCode, setNewCode] = useState('');
     const [newDiscount, setNewDiscount] = useState('');

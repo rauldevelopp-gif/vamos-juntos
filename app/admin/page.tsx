@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LayoutDashboard, Calendar, Car, Ship, Hotel, Plane, MapPin, CheckCircle2, Server } from 'lucide-react';
+import { LayoutDashboard, Calendar, Car, Ship, Hotel, Plane, CheckCircle2, Server } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboard() {

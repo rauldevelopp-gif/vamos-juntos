@@ -18,19 +18,25 @@ interface PieChartData {
     fill: string;
 }
 
+interface RevenueData { name: string; Ingresos: number; }
+interface DriverRanking { name: string; Puntuacion: number; }
+interface DestinationData { name: string; Selecciones: number; }
+interface DetailedRevenue { dateStr: string; Reservas: number; Paquetes: number; isEstimate: boolean; }
+interface DetailedYacht { name: string; capacity: number; location: string; price_day: number; }
+
 export default function ReportsDashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedReport, setSelectedReport] = useState<string | null>(null);
     const [selectedDetail, setSelectedDetail] = useState<{ title: string, subtitle: string, value: string | number } | null>(null);
-    const [detailedRevenueData, setDetailedRevenueData] = useState<any[] | null>(null);
-    const [detailedYachtsData, setDetailedYachtsData] = useState<any[] | null>(null);
+    const [detailedRevenueData, setDetailedRevenueData] = useState<DetailedRevenue[] | null>(null);
+    const [detailedYachtsData, setDetailedYachtsData] = useState<DetailedYacht[] | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [metrics, setMetrics] = useState({
         effectiveReservations: 0,
         totalRevenue: 0,
-        monthlyRevenueData: [] as any[],
-        driverRankings: [] as any[],
-        popularDestinations: [] as any[],
+        monthlyRevenueData: [] as RevenueData[],
+        driverRankings: [] as DriverRanking[],
+        popularDestinations: [] as DestinationData[],
         drivers: { data: [] as PieChartData[], total: 0, available: 0 },
         yachts: { data: [] as PieChartData[], total: 0, available: 0 }
     });
@@ -49,7 +55,7 @@ export default function ReportsDashboard() {
 
                 let totalRev = 0;
                 if (resRev.success && resRev.data) {
-                    totalRev = resRev.data.reduce((sum: number, item: any) => sum + item.Ingresos, 0);
+                    totalRev = resRev.data.reduce((sum: number, item: RevenueData) => sum + item.Ingresos, 0);
                 }
 
                 setMetrics({
