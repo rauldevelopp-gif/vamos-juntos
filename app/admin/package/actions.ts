@@ -243,6 +243,7 @@ export async function createPackageReservation(data: {
     serviceFee: number;
     totalPrice: number;
     notes: string;
+    discountCode?: string;
 }) {
     try {
         const pkg = await prisma.package.findUnique({ where: { id: data.packageId } });
@@ -266,6 +267,14 @@ export async function createPackageReservation(data: {
                 status: 'Confirmado'
             }
         });
+
+        if (data.discountCode) {
+            await prisma.discountCode.update({
+                where: { code: data.discountCode },
+                data: { used: true }
+            });
+        }
+
         return { success: true, data: reservation };
     } catch (error) {
         console.error('Error creating package reservation:', error);

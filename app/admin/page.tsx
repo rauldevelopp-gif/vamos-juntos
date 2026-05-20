@@ -1,366 +1,131 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { 
-    getEffectiveReservations, 
-    getMonthlyRevenue, 
-    getDriverRankings, 
-    getPopularDestinations, 
-    getAvailabilityStats 
-} from './reports/actions';
-import { Loader2, DollarSign, TrendingUp, Users, MapPin, Anchor, Car } from 'lucide-react';
+import React from 'react';
+import { LayoutDashboard, Calendar, Car, Ship, Hotel, Plane, MapPin, CheckCircle2, Server } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminDashboard() {
-    const [loading, setLoading] = useState(true);
-    const [selectedReport, setSelectedReport] = useState<string | null>(null);
-    
-    const [metrics, setMetrics] = useState({
-        effectiveReservations: 0,
-        totalRevenue: 0,
-        monthlyRevenueData: [] as unknown[],
-        driverRankings: [] as unknown[],
-        popularDestinations: [] as unknown[],
-        drivers: { data: [] as unknown[], total: 0, available: 0 },
-        yachts: { data: [] as unknown[], total: 0, available: 0 }
-    });
-
-    useEffect(() => {
-        const fetchMetrics = async () => {
-            setLoading(true);
-            try {
-                const [resEff, resRev, resRank, resDest, resAvail] = await Promise.all([
-                    getEffectiveReservations(),
-                    getMonthlyRevenue(),
-                    getDriverRankings(),
-                    getPopularDestinations(),
-                    getAvailabilityStats()
-                ]);
-
-                let totalRev = 0;
-                if (resRev.success && resRev.data) {
-                    totalRev = resRev.data.reduce((sum: number, item: unknown) => sum + item.Ingresos, 0);
-                }
-
-                setMetrics({
-                    effectiveReservations: resEff.success ? resEff.count : 0,
-                    totalRevenue: totalRev,
-                    monthlyRevenueData: resRev.success ? resRev.data : [],
-                    driverRankings: resRank.success ? resRank.data : [],
-                    popularDestinations: resDest.success ? resDest.data : [],
-                    drivers: resAvail.success && resAvail.drivers ? resAvail.drivers : { data: [], total: 0, available: 0 },
-                    yachts: resAvail.success && resAvail.yachts ? resAvail.yachts : { data: [], total: 0, available: 0 }
-                });
-            } catch (e) {
-                console.error("Error fetching metrics", e);
-            }
-            setLoading(false);
-        };
-        fetchMetrics();
-    }, []);
-
-    const renderCustomBarChart = <
-        T extends Record<string, string | number>
-        >(
-        data: T[],
-        dataKey: keyof T,
-        nameKey: keyof T,
-        color: string,
-        title: string
-        ) => {
-        if (!data || data.length === 0)
-            return <div style={{ color: 'var(--text-muted)' }}>No hay datos suficientes</div>;
-
-        const maxValue = Math.max(
-            ...data.map((d) => Number(d[dataKey]) || 0),
-            1
-        );
-
-        return (
-            <div style={{ width: '100%', height: '100%' }}>
-            <h3 style={{ marginBottom: '2rem', color }}>{title}</h3>
-
-            <div
-                style={{
-                display: 'flex',
-                alignItems: 'flex-end',
-                height: '300px',
-                gap: '1rem',
-                borderBottom: '1px solid rgba(255,255,255,0.1)',
-                }}
-            >
-                {data.map((item, idx) => {
-                const value = Number(item[dataKey]) || 0;
-                const heightPct = Math.max((value / maxValue) * 100, 5);
-
-                return (
-                    <div
-                    key={idx}
-                    style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        height: '100%',
-                        justifyContent: 'flex-end',
-                    }}
-                    >
-                    <div
-                        style={{
-                        fontSize: '0.8rem',
-                        color: 'rgba(255,255,255,0.7)',
-                        marginBottom: '0.5rem',
-                        }}
-                    >
-                        {value > 1000 ? '$' + value.toLocaleString() : value}
-                    </div>
-
-                    <div
-                        style={{
-                        width: '100%',
-                        height: `${heightPct}%`,
-                        backgroundColor: color,
-                        borderRadius: '4px 4px 0 0',
-                        transition: 'height 1s ease-out',
-                        }}
-                    />
-
-                    <div
-                        style={{
-                        fontSize: '0.75rem',
-                        marginTop: '0.5rem',
-                        color: 'var(--text-muted)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '100%',
-                        textAlign: 'center',
-                        }}
-                    >
-                        {String(item[nameKey])}
-                    </div>
-                    </div>
-                );
-                })}
-            </div>
-            </div>
-        );
-    };
-
-    const renderCustomPieChart = (
-        data: PieChartData[],
-        title: string,
-        colorTitle: string
-        ) => {
-        if (!data || data.length === 0) return null;
-
-        const total = data.reduce((sum, item) => sum + item.value, 0);
-
-        let currentAngle = 0;
-
-        const conicStops = data
-            .map((item) => {
-            const percentage = (item.value / total) * 100;
-
-            const stop = `${item.fill} ${currentAngle}% ${currentAngle + percentage}%`;
-
-            currentAngle += percentage;
-
-            return stop;
-            })
-            .join(', ');
-
-        return (
-            <div
-            style={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-            }}
-            >
-            <h3 style={{ marginBottom: '2rem', color: colorTitle }}>{title}</h3>
-
-            <div
-                style={{
-                width: '200px',
-                height: '200px',
-                borderRadius: '50%',
-                background: `conic-gradient(${conicStops})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '2rem',
-                boxShadow: '0 0 20px rgba(0,0,0,0.5)',
-                }}
-            >
-                <div
-                style={{
-                    width: '120px',
-                    height: '120px',
-                    backgroundColor: 'var(--bg-card)',
-                    borderRadius: '50%',
-                }}
-                />
-            </div>
-
-            <div style={{ display: 'flex', gap: '2rem' }}>
-                {data.map((item, idx) => (
-                <div
-                    key={idx}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                >
-                    <div
-                    style={{
-                        width: '15px',
-                        height: '15px',
-                        backgroundColor: item.fill,
-                        borderRadius: '3px',
-                    }}
-                    />
-
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                    {item.name}:{' '}
-                    <strong style={{ color: 'white' }}>{item.value}</strong>
-                    </span>
-                </div>
-                ))}
-            </div>
-            </div>
-        );
-    };
-    const renderChart = () => {
-        if (!selectedReport) return (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                Selecciona una métrica arriba para ver el reporte detallado
-            </div>
-        );
-
-        switch (selectedReport) {
-            case 'revenue':
-                return renderCustomBarChart(metrics.monthlyRevenueData, 'Ingresos', 'name', '#10b981', 'Ingresos Mensuales Generados');
-            case 'reservations':
-                return renderCustomBarChart(metrics.monthlyRevenueData, 'Ingresos', 'name', '#8b5cf6', 'Evolución de Ingresos y Reservas');
-            case 'drivers_rank':
-                return renderCustomBarChart(metrics.driverRankings.slice(0, 5), 'Puntuacion', 'name', '#f59e0b', 'Top 5 Conductores por Puntuación');
-            case 'destinations':
-                return renderCustomBarChart(metrics.popularDestinations.slice(0, 5), 'Selecciones', 'name', '#3b82f6', 'Top 5 Destinos Más Seleccionados');
-            case 'drivers_avail':
-                return renderCustomPieChart(metrics.drivers.data, 'Proporción de Conductores', '#ec4899');
-            case 'yachts_avail':
-                return renderCustomPieChart(metrics.yachts.data, 'Proporción de Yates', '#06b6d4');
-            default:
-                return null;
-        }
-    };
-
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-                <Loader2 size={40} className="animate-spin" style={{ color: 'var(--primary)' }} />
-            </div>
-        );
-    }
-
     return (
         <div>
             <header style={{ marginBottom: '3rem' }}>
-                <h1 className="heading-1">Panel de Control (Reportes)</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Bienvenido, Administrador. Haz clic en las tarjetas para ver los gráficos detallados.</p>
+                <h1 className="heading-1">Dashboard de Administración</h1>
+                <p style={{ color: 'var(--text-muted)' }}>Bienvenido al centro de control principal de VamosJuntos.</p>
             </header>
 
-            <div className="dashboard-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                {/* 1. Reservas Efectivas */}
-                <div 
-                    className="glass-card" 
-                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'reservations' ? '2px solid #8b5cf6' : '' }}
-                    onClick={() => setSelectedReport('reservations')}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas Efectivas</p>
-                        <TrendingUp size={18} color="#8b5cf6" />
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.effectiveReservations}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
+            {/* General Info Banner */}
+            <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem', display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 300px' }}>
+                    <h2 style={{ fontSize: '1.8rem', color: 'var(--primary)', marginBottom: '1rem' }}>Estado del Sistema</h2>
+                    <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        La plataforma VamosJuntos está operando con normalidad. Desde aquí puedes gestionar todos los módulos del sistema, revisar las solicitudes de los usuarios y supervisar las métricas de rendimiento en la sección de reportes.
+                    </p>
                 </div>
-
-                {/* 2. Ingresos Mensuales */}
-                <div 
-                    className="glass-card" 
-                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'revenue' ? '2px solid #10b981' : '' }}
-                    onClick={() => setSelectedReport('revenue')}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ingresos Generados</p>
-                        <DollarSign size={18} color="#10b981" />
+                <div style={{ display: 'flex', gap: '2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <CheckCircle2 color="#10b981" size={24} />
+                        <span style={{ color: 'white', fontWeight: 600 }}>Servicios Online</span>
                     </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>${metrics.totalRevenue.toLocaleString()}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
-                </div>
-
-                {/* 3. Ranking Conductores */}
-                <div 
-                    className="glass-card" 
-                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'drivers_rank' ? '2px solid #f59e0b' : '' }}
-                    onClick={() => setSelectedReport('drivers_rank')}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ranking Conductores</p>
-                        <Users size={18} color="#f59e0b" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Server color="#3b82f6" size={24} />
+                        <span style={{ color: 'white', fontWeight: 600 }}>Base de Datos Activa</span>
                     </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.driverRankings.length > 0 ? metrics.driverRankings[0].Puntuacion : 0} ⭐</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Top Actual: {metrics.driverRankings.length > 0 ? metrics.driverRankings[0].name : 'N/A'}</span>
-                </div>
-
-                {/* 4. Destinos Populares */}
-                <div 
-                    className="glass-card" 
-                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'destinations' ? '2px solid #3b82f6' : '' }}
-                    onClick={() => setSelectedReport('destinations')}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Destino Top</p>
-                        <MapPin size={18} color="#3b82f6" />
-                    </div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 700, margin: '1rem 0' }}>
-                        {metrics.popularDestinations.length > 0 ? metrics.popularDestinations[0].name : 'Sin datos'}
-                    </div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
-                </div>
-
-                {/* 5. Disponibilidad Conductores */}
-                <div 
-                    className="glass-card" 
-                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'drivers_avail' ? '2px solid #ec4899' : '' }}
-                    onClick={() => setSelectedReport('drivers_avail')}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Conductores Disponibles</p>
-                        <Car size={18} color="#ec4899" />
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.drivers.available} / {metrics.drivers.total}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
-                </div>
-
-                {/* 6. Disponibilidad Yates */}
-                <div 
-                    className="glass-card" 
-                    style={{ padding: '1.5rem', cursor: 'pointer', border: selectedReport === 'yachts_avail' ? '2px solid #06b6d4' : '' }}
-                    onClick={() => setSelectedReport('yachts_avail')}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Yates Disponibles</p>
-                        <Anchor size={18} color="#06b6d4" />
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, margin: '0.5rem 0' }}>{metrics.yachts.available} / {metrics.yachts.total}</div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ver gráfico</span>
                 </div>
             </div>
 
-            <section style={{ marginTop: '3rem' }}>
-                <div className="glass-panel" style={{ padding: '2rem', minHeight: '400px' }}>
-                    {renderChart()}
-                </div>
-            </section>
+            <h3 style={{ marginBottom: '1.5rem', color: 'white', fontSize: '1.4rem' }}>Módulos Principales</h3>
+            
+            <div className="dashboard-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                {/* Module Cards */}
+                <Link href="/admin/reservations" style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Reservas</h4>
+                            <Calendar size={24} color="#8b5cf6" />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            Gestiona todas las reservas de servicios, aprueba solicitudes y revisa el historial completo de clientes.
+                        </p>
+                    </div>
+                </Link>
+
+                <Link href="/admin/taxis" style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Flota de Taxis</h4>
+                            <Car size={24} color="#ec4899" />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            Controla los vehículos, conductores disponibles, estados de servicio y calificaciones.
+                        </p>
+                    </div>
+                </Link>
+
+                <Link href="/admin/yachts" style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Yates</h4>
+                            <Ship size={24} color="#06b6d4" />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            Administra la disponibilidad de yates, establece capacidades, precios por hora y características.
+                        </p>
+                    </div>
+                </Link>
+
+                <Link href="/admin/hotels" style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Alojamiento</h4>
+                            <Hotel size={24} color="#f59e0b" />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            Configura los hoteles asociados, disponibilidad de habitaciones, precios y fotos.
+                        </p>
+                    </div>
+                </Link>
+                
+                <Link href="/admin/airports" style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Aeropuertos</h4>
+                            <Plane size={24} color="#10b981" />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            Administra los puntos de partida y llegada para las transferencias y vuelos.
+                        </p>
+                    </div>
+                </Link>
+                
+                <Link href="/admin/reports" style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Reportes</h4>
+                            <LayoutDashboard size={24} color="#3b82f6" />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            Analiza el rendimiento del negocio con gráficos detallados e interactivos.
+                        </p>
+                    </div>
+                </Link>
+            </div>
         </div>
     );
 }

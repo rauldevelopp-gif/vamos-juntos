@@ -48,26 +48,42 @@ export async function getMonthlyRevenue() {
             revenueByMonth[monthStr] += res.totalAmount;
         });
 
-        // Also add package sales revenue (simplified, assuming all sales happened in current month for demo if date isn't easily parsed, but let's try to parse)
         const packages = await prisma.package.findMany({
-            where: { sales: { gt: 0 } },
-            select: { date: true, price: true, sales: true }
+            where: { status: { in: ['Finalizado', 'Reservado'] }, sales: { gt: 0 } },
+            select: { date: true, price: true, sales: true, status: true }
         });
+
+        const packageRevByMonth: Record<string, { finalizado: number, reservado: number }> = {};
 
         packages.forEach(pkg => {
             const date = new Date(pkg.date); // pkg.date is a string, assuming ISO format
+            let monthStr = '';
             if (!isNaN(date.getTime())) {
-                const monthStr = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-                if (!revenueByMonth[monthStr]) {
-                    revenueByMonth[monthStr] = 0;
-                }
-                revenueByMonth[monthStr] += (pkg.price * pkg.sales);
+                monthStr = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
             } else {
                  // Fallback to current month if date is invalid
                  const now = new Date();
-                 const monthStr = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-                 if (!revenueByMonth[monthStr]) revenueByMonth[monthStr] = 0;
-                 revenueByMonth[monthStr] += (pkg.price * pkg.sales);
+                 monthStr = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+            }
+
+            if (!packageRevByMonth[monthStr]) {
+                packageRevByMonth[monthStr] = { finalizado: 0, reservado: 0 };
+            }
+
+            if (pkg.status === 'Finalizado') {
+                packageRevByMonth[monthStr].finalizado += (pkg.price * pkg.sales);
+            } else if (pkg.status === 'Reservado') {
+                packageRevByMonth[monthStr].reservado += (pkg.price * pkg.sales);
+            }
+        });
+
+        Object.keys(packageRevByMonth).forEach(monthStr => {
+            if (!revenueByMonth[monthStr]) revenueByMonth[monthStr] = 0;
+            if (packageRevByMonth[monthStr].finalizado > 0) {
+                revenueByMonth[monthStr] += packageRevByMonth[monthStr].finalizado;
+            } else {
+                // Use reservado as estimate
+                revenueByMonth[monthStr] += packageRevByMonth[monthStr].reservado;
             }
         });
 
@@ -81,6 +97,92 @@ export async function getMonthlyRevenue() {
     } catch (error) {
         console.error("Error getting monthly revenue:", error);
         return { success: false, error: "Failed to fetch revenue" };
+    }
+}
+
+export async function getRevenueDetailsByMonth(monthStr: string) {
+    try {
+        const [monthName, yearStr] = monthStr.split(' ');
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const monthIndex = monthNames.indexOf(monthName);
+        if (monthIndex === -1) return { success: false, error: 'Invalid month' };
+
+        const year = parseInt(yearStr);
+        const startDate = new Date(year, monthIndex, 1);
+        const endDate = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+
+        const reservations = await prisma.reservation.findMany({
+            where: {
+                status: { not: 'CANCELLED' },
+                date: { gte: startDate, lte: endDate }
+            },
+            select: { date: true, totalAmount: true }
+        });
+
+        const packages = await prisma.package.findMany({
+            where: { status: { in: ['Finalizado', 'Reservado'] }, sales: { gt: 0 } },
+            select: { date: true, price: true, sales: true, status: true }
+        });
+
+        const dailyData: Record<string, { dateStr: string, Reservas: number, Paquetes: number, isEstimate: boolean }> = {};
+
+        for (let i = 1; i <= endDate.getDate(); i++) {
+            dailyData[i.toString()] = { dateStr: `${i} ${monthName}`, Reservas: 0, Paquetes: 0, isEstimate: false };
+        }
+
+        reservations.forEach(res => {
+            const day = res.date.getDate().toString();
+            if (dailyData[day]) {
+                dailyData[day].Reservas += res.totalAmount;
+            }
+        });
+
+        let hasFinalizados = false;
+        packages.forEach(pkg => {
+            const date = new Date(pkg.date);
+            if (!isNaN(date.getTime()) && date.getMonth() === monthIndex && date.getFullYear() === year) {
+                if (pkg.status === 'Finalizado') hasFinalizados = true;
+            } else if (isNaN(date.getTime())) {
+                const now = new Date();
+                if (now.getMonth() === monthIndex && now.getFullYear() === year) {
+                    if (pkg.status === 'Finalizado') hasFinalizados = true;
+                }
+            }
+        });
+
+        packages.forEach(pkg => {
+            const date = new Date(pkg.date);
+            let day = '1';
+            let valid = false;
+
+            if (!isNaN(date.getTime()) && date.getMonth() === monthIndex && date.getFullYear() === year) {
+                day = date.getDate().toString();
+                valid = true;
+            } else if (isNaN(date.getTime())) {
+                const now = new Date();
+                if (now.getMonth() === monthIndex && now.getFullYear() === year) {
+                    day = '1';
+                    valid = true;
+                }
+            }
+
+            if (valid) {
+                if (hasFinalizados && pkg.status !== 'Finalizado') return;
+                if (!hasFinalizados && pkg.status !== 'Reservado') return;
+
+                if (dailyData[day]) {
+                    dailyData[day].Paquetes += (pkg.price * pkg.sales);
+                    if (!hasFinalizados) dailyData[day].isEstimate = true;
+                }
+            }
+        });
+
+        const data = Object.values(dailyData);
+
+        return { success: true, data };
+    } catch (error) {
+        console.error("Error getting detailed revenue:", error);
+        return { success: false, error: "Failed to fetch details" };
     }
 }
 
@@ -148,7 +250,7 @@ export async function getAvailabilityStats() {
         const [driversAvailable, driversTotal, yachtsAvailable, yachtsTotal] = await Promise.all([
             prisma.driver.count({ where: { availability: true } }),
             prisma.driver.count(),
-            prisma.yacht.count({ where: { availability: true } }),
+            prisma.yacht.count({ where: { status: 'Disponible' } }),
             prisma.yacht.count()
         ]);
 
@@ -170,5 +272,18 @@ export async function getAvailabilityStats() {
     } catch (error) {
         console.error("Error getting availability stats:", error);
         return { success: false, error: "Failed to fetch availability" };
+    }
+}
+
+export async function getYachtsDetails(isAvailable: boolean) {
+    try {
+        const yachts = await prisma.yacht.findMany({
+            where: isAvailable ? { status: 'Disponible' } : { status: { not: 'Disponible' } },
+            select: { name: true, capacity: true, location: true, price_day: true }
+        });
+        return { success: true, data: yachts };
+    } catch (error) {
+        console.error("Error getting yacht details:", error);
+        return { success: false, error: "Failed to fetch yacht details" };
     }
 }

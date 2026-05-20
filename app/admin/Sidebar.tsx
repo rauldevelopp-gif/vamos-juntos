@@ -17,11 +17,14 @@ import {
     Home,
     Menu,
     X,
-    Calendar
+    Calendar,
+    Percent
 } from 'lucide-react';
 
 const MENU_ITEMS = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Reportes', href: '/admin/reports', icon: LayoutDashboard },
+    { name: 'Descuentos', href: '/admin/discounts', icon: Percent },
     { name: 'Solicitudes', href: '/admin/requests', icon: Clock },
     { name: 'Paquetes', href: '/admin/package', icon: Package },
     { name: 'Reservas', href: '/admin/reservations', icon: Calendar },
