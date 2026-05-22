@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TourPackage, Booking } from '../types';
 import { createPackageReservation } from '../../admin/package/actions';
+import { validateDiscountCode } from '../../admin/discounts/actions';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -26,7 +27,16 @@ interface BookingWizardProps {
   onComplete: (booking: Booking) => void;
 }
 
-export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, date: string }> = ({ pkg, passengers, date }) => {
+export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, date: string, discountInfo: { code: string, percentage: number } | null }> = ({ pkg, passengers, date, discountInfo }) => {
+  const basePrice = pkg.price;
+  const feeAmount = basePrice * 0.05;
+  let totalPrice = basePrice + feeAmount;
+  let discountAmount = 0;
+
+  if (discountInfo) {
+    discountAmount = totalPrice * (discountInfo.percentage / 100);
+    totalPrice -= discountAmount;
+  }
   return (
     <div className="summary-box">
       <h3>Resumen de Reserva</h3>
@@ -56,12 +66,18 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
       <div className="summary-total-breakdown">
         <div className="detail-item"><span>Monto Base</span><strong>${pkg.price} USD</strong></div>
         <div className="detail-item"><span>Cargo Operativo (5%)</span><strong>${(pkg.price * 0.05).toFixed(2)} USD</strong></div>
+        {discountInfo && (
+            <div className="detail-item">
+                <span style={{ color: '#10b981' }}>Descuento ({discountInfo.percentage}%)</span>
+                <strong style={{ color: '#10b981' }}>-${discountAmount.toFixed(2)} USD</strong>
+            </div>
+        )}
       </div>
 
       <div className="summary-total">
         <span>Total a Pagar</span>
         <div className="price-wrap">
-          <span className="amount">${(pkg.price * 1.05).toFixed(2)}</span>
+          <span className="amount">${totalPrice.toFixed(2)}</span>
           <span className="currency">USD</span>
         </div>
       </div>
@@ -100,6 +116,24 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
     country: '',
     notes: ''
   });
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountInfo, setDiscountInfo] = useState<{ code: string, percentage: number } | null>(null);
+  const [discountError, setDiscountError] = useState('');
+  const [validatingDiscount, setValidatingDiscount] = useState(false);
+
+  const handleValidateDiscount = async () => {
+    if (!discountCode) return;
+    setValidatingDiscount(true);
+    setDiscountError('');
+    const res = await validateDiscountCode(discountCode.toUpperCase());
+    if (res.success && res.data) {
+        setDiscountInfo({ code: res.data.code, percentage: res.data.discount });
+    } else {
+        setDiscountError(res.error || 'Código inválido');
+        setDiscountInfo(null);
+    }
+    setValidatingDiscount(false);
+  };
 
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
@@ -107,7 +141,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
   const handleSubmit = () => {
     const basePrice = pkg.price;
     const feeAmount = basePrice * 0.05;
-    const totalPrice = basePrice + feeAmount;
+    let totalPrice = basePrice + feeAmount;
+    if (discountInfo) {
+      totalPrice -= totalPrice * (discountInfo.percentage / 100);
+    }
 
     const booking: Booking = {
       id: Math.random().toString(36).substr(2, 9).toUpperCase(),
@@ -134,7 +171,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
         items: pkg.items.map(i => i.name),
         price: basePrice
       },
-      notes: formData.notes
+      notes: formData.notes,
+      discountCode: discountInfo?.code
     };
     onComplete(booking);
   };
@@ -294,15 +332,38 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
                       </div>
                     </div>
                   </div>
-                  <div className="secure-badge">
-                    <CreditCard size={20} />
-                    <div>
-                      <p className="badge-t">Reserva Protegida</p>
-                      <p className="badge-s">Bloquearemos la disponibilidad de inmediato.</p>
+                    <div className="secure-badge">
+                      <CreditCard size={20} />
+                      <div>
+                        <p className="badge-t">Reserva Protegida</p>
+                        <p className="badge-s">Bloquearemos la disponibilidad de inmediato.</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="nav-actions split">
+
+                  <div className="discount-section" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '1.5rem', marginBottom: '2rem' }}>
+                    <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginBottom: '1rem' }}>Código de Descuento</p>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Ingresa tu código" 
+                        value={discountCode}
+                        onChange={e => setDiscountCode(e.target.value.toUpperCase())}
+                        style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px', color: 'white', fontWeight: 700 }}
+                      />
+                      <button 
+                        onClick={handleValidateDiscount}
+                        disabled={validatingDiscount || !discountCode}
+                        style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0 1.5rem', borderRadius: '12px', fontWeight: 900, cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        {validatingDiscount ? '...' : 'Aplicar'}
+                      </button>
+                    </div>
+                    {discountError && <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600 }}>{discountError}</p>}
+                    {discountInfo && <p style={{ color: '#10b981', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600 }}>¡Código {discountInfo.code} aplicado! (-{discountInfo.percentage}%)</p>}
+                  </div>
+
+                  <div className="nav-actions split">
                   <button onClick={prevStep} className="btn-secondary">Atrás</button>
                   <button onClick={handleSubmit} className="btn-primary success flex-1">
                     Confirmar Ahora <CheckCircle2 size={18} />
@@ -313,7 +374,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
           </div>
 
           <div className="summary-column">
-            <BookingSummary pkg={pkg} passengers={formData.passengers} date={formData.date} />
+            <BookingSummary pkg={pkg} passengers={formData.passengers} date={formData.date} discountInfo={discountInfo} />
           </div>
         </div>
       </main>
