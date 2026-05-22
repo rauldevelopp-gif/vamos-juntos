@@ -76,6 +76,8 @@ model Yacht {
   location     String
   coordinates  String
   availability Boolean  @default(true)
+  description_long String?  @db.Text
+  gallery      String[] @default([])
   crew         Crew[]
   reservations ReservationService[]
   userId       Int?
@@ -137,10 +139,12 @@ model Beach {
   name         String
   type         String
   city         String
-  state         String
+  state        String
   status       String   @default("Abierta")
   coordinates  String
   popularity   String   @default("Media")
+  description_long String?  @db.Text
+  gallery      String[] @default([])
   reservations ReservationService[]
   userId       Int?
   user         User?    @relation(fields: [userId], references: [id])
@@ -155,6 +159,8 @@ model Attraction {
   status          String   @default("Abierto")
   coordinates     String
   recommendedTime String   @default("2 Horas")
+  description_long String?  @db.Text
+  gallery         String[] @default([])
   reservations    ReservationService[]
   userId          Int?
   user            User?    @relation(fields: [userId], references: [id])

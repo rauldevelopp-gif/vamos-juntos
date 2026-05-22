@@ -6,9 +6,8 @@ import { getCurrentUser } from '@/lib/auth';
 export async function getYachts() {
     try {
         const user = await getCurrentUser();
-        if (!user) return { success: false, error: 'No autorizado' };
         
-        const whereClause = user.role === 'ADMIN' ? {} : { userId: user.id };
+        const whereClause = (!user || user.role === 'ADMIN') ? {} : { userId: user.id };
 
         console.log("getYachts: Fetching from DB...");
         let yachts = await prisma.yacht.findMany({
@@ -24,7 +23,7 @@ export async function getYachts() {
         console.log(`getYachts: Found ${yachts.length} yachts.`);
 
         // Seed if empty for demonstration
-        if (yachts.length === 0 && user.role === 'ADMIN') {
+        if (yachts.length === 0 && (!user || user.role === 'ADMIN')) {
             console.log("getYachts: Table empty, seeding...");
             await seedInitialYachts();
             yachts = await prisma.yacht.findMany({
@@ -49,6 +48,43 @@ export async function getYachts() {
             error: "Error al obtener yates: " + message,
             details: stack
         };
+    }
+}
+
+export async function createYacht(data: any) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        const newYacht = await prisma.yacht.create({
+            data: {
+                ...data,
+                userId: user.id
+            }
+        });
+        return { success: true, data: newYacht };
+    } catch (error: unknown) {
+        return { success: false, error: 'Error al crear yate' };
+    }
+}
+
+export async function updateYacht(id: number, data: any) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        // Ensure owner or admin
+        const existing = await prisma.yacht.findUnique({ where: { id } });
+        if (!existing || (existing.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        const updatedYacht = await prisma.yacht.update({
+            where: { id },
+            data
+        });
+        return { success: true, data: updatedYacht };
+    } catch (error: unknown) {
+        return { success: false, error: 'Error al actualizar yate' };
     }
 }
 
@@ -127,5 +163,17 @@ async function seedInitialYachts() {
         }
     } catch (e) {
         console.error("Seed error:", e);
+    }
+}
+
+export async function getPublicYachts() {
+    try {
+        const yachts = await prisma.yacht.findMany({
+            include: { crew: true },
+            orderBy: { id: 'asc' }
+        });
+        return { success: true, data: JSON.parse(JSON.stringify(yachts)) };
+    } catch (error: unknown) {
+        return { success: false, error: 'Error al obtener yates' };
     }
 }

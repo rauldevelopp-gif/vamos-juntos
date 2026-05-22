@@ -7,6 +7,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { BookingWizard, SuccessStep } from './packages/components/BookingWizard';
 import { TourPackage, Booking } from './packages/types';
 import { PackageDetail } from './packages/components/PackageDetail';
+import Carousel from '../components/Carousel';
+import EntityGrid from '../components/EntityGrid';
+import { getPublicYachts } from './admin/yachts/actions';
+import { getPublicBeaches } from './admin/beaches/actions';
+import { getPublicAttractions } from './admin/attractions/actions';
 
 import Image from 'next/image';
 
@@ -86,20 +91,31 @@ const mapApiToFrontend = (apiPkg: {
 export default function Home() {
   const { t } = useLanguage();
   const [packages, setPackages] = useState<Package[]>([]);
+  const [yachts, setYachts] = useState<any[]>([]);
+  const [beaches, setBeaches] = useState<any[]>([]);
+  const [attractions, setAttractions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
   const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
-    const fetchPackages = async () => {
-      const result = await getPackages();
-      if (result.success && result.data) {
-        setPackages(result.data.slice(0, 6));
-      }
+    const fetchData = async () => {
+      const [pkgRes, yachtRes, beachRes, attrRes] = await Promise.all([
+        getPackages(),
+        getPublicYachts(),
+        getPublicBeaches(),
+        getPublicAttractions()
+      ]);
+      
+      if (pkgRes.success && pkgRes.data) setPackages(pkgRes.data.slice(0, 6));
+      if (yachtRes.success && yachtRes.data) setYachts(yachtRes.data);
+      if (beachRes.success && beachRes.data) setBeaches(beachRes.data);
+      if (attrRes.success && attrRes.data) setAttractions(attrRes.data);
+      
       setLoading(false);
     };
-    fetchPackages();
+    fetchData();
   }, []);
   if (confirmedBooking) {
     return <SuccessStep booking={confirmedBooking} onReset={() => setConfirmedBooking(null)} />;
@@ -209,6 +225,36 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Yachts Grid */}
+      <EntityGrid 
+        title={<><span className="text-gradient">Flota de Yates</span> Elite</>} 
+        subtitle="Navega por las aguas más exclusivas con nuestra colección de embarcaciones de súper lujo." 
+        items={yachts.slice(0, 9)} 
+        viewMoreLink="/yachts"
+        viewMoreText="Ver todos los yates"
+        accentColor="var(--secondary)"
+      />
+
+      {/* Beaches Grid */}
+      <EntityGrid 
+        title={<>Paraísos <span className="text-gradient">Costeros</span></>} 
+        subtitle="Descubre los destinos de playa más impresionantes, seleccionados cuidadosamente para ti." 
+        items={beaches.slice(0, 9)} 
+        viewMoreLink="/beaches"
+        viewMoreText="Ver todas las playas"
+        accentColor="#10b981"
+      />
+
+      {/* Attractions Grid */}
+      <EntityGrid 
+        title={<>Experiencias <span className="text-gradient">Inolvidables</span></>} 
+        subtitle="Aventuras y tours mágicos que llevarán tu viaje al siguiente nivel." 
+        items={attractions.slice(0, 9)} 
+        viewMoreLink="/attractions"
+        viewMoreText="Ver todas las atracciones"
+        accentColor="var(--accent)"
+      />
 
       {/* Partner Registration CTA */}
       <section style={{ padding: '6rem 0', position: 'relative', overflow: 'hidden' }}>

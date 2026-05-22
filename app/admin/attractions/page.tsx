@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Loader2, Camera } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, X, Loader2, Camera, Edit2 } from 'lucide-react';
 import { getAttractions } from './actions';
+import AttractionFormModal from './AttractionFormModal';
 
 interface Attraction {
     id: number;
@@ -21,15 +22,19 @@ export default function AttractionsPage() {
     const [attractions, setAttractions] = useState<Attraction[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAttraction, setSelectedAttraction] = useState<Attraction | null>(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [editAttraction, setEditAttraction] = useState<Attraction | null>(null);
+
+    const fetchAttractions = async () => {
+        setLoading(true);
+        const result = await getAttractions();
+        if (result.success && result.data) {
+            setAttractions(result.data);
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchAttractions = async () => {
-            const result = await getAttractions();
-            if (result.success && result.data) {
-                setAttractions(result.data);
-            }
-            setLoading(false);
-        };
         fetchAttractions();
     }, []);
 
@@ -52,7 +57,7 @@ export default function AttractionsPage() {
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => { setEditAttraction(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Nueva Actividad</span>
                 </button>
@@ -108,9 +113,14 @@ export default function AttractionsPage() {
                                         </span>
                                     </td>
                                     <td style={{ padding: '1.2rem' }}>
-                                        <button onClick={() => setSelectedAttraction(attraction)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <MapPin size={16} strokeWidth={2} />
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button onClick={() => setSelectedAttraction(attraction)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <MapPin size={16} strokeWidth={2} />
+                                            </button>
+                                            <button onClick={() => { setEditAttraction(attraction); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Edit2 size={16} strokeWidth={2} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -193,6 +203,17 @@ export default function AttractionsPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {formModalOpen && (
+                <AttractionFormModal 
+                    attraction={editAttraction} 
+                    onClose={() => setFormModalOpen(false)} 
+                    onSuccess={() => {
+                        setFormModalOpen(false);
+                        fetchAttractions();
+                    }} 
+                />
             )}
 
             <style jsx>{`

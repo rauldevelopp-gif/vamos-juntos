@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Loader2, Palmtree } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, X, Loader2, Palmtree, Edit2 } from 'lucide-react';
 import { getBeaches } from './actions';
+import BeachFormModal from './BeachFormModal';
 
 interface Beach {
     id: number;
@@ -20,15 +21,19 @@ export default function BeachesPage() {
     const [beaches, setBeaches] = useState<Beach[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedBeach, setSelectedBeach] = useState<Beach | null>(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [editBeach, setEditBeach] = useState<Beach | null>(null);
+
+    const fetchBeaches = async () => {
+        setLoading(true);
+        const result = await getBeaches();
+        if (result.success && result.data) {
+            setBeaches(result.data);
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchBeaches = async () => {
-            const result = await getBeaches();
-            if (result.success && result.data) {
-                setBeaches(result.data);
-            }
-            setLoading(false);
-        };
         fetchBeaches();
     }, []);
 
@@ -51,7 +56,7 @@ export default function BeachesPage() {
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => { setEditBeach(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Añadir Playa</span>
                 </button>
@@ -103,9 +108,14 @@ export default function BeachesPage() {
                                         </span>
                                     </td>
                                     <td style={{ padding: '1.2rem' }}>
-                                        <button onClick={() => setSelectedBeach(beach)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <MapPin size={16} strokeWidth={2} />
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button onClick={() => setSelectedBeach(beach)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <MapPin size={16} strokeWidth={2} />
+                                            </button>
+                                            <button onClick={() => { setEditBeach(beach); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Edit2 size={16} strokeWidth={2} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -182,6 +192,17 @@ export default function BeachesPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {formModalOpen && (
+                <BeachFormModal 
+                    beach={editBeach} 
+                    onClose={() => setFormModalOpen(false)} 
+                    onSuccess={() => {
+                        setFormModalOpen(false);
+                        fetchBeaches();
+                    }} 
+                />
             )}
 
             <style jsx>{`

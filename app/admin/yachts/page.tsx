@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Plus, Anchor, Users, X, MapPin, Loader2, Phone } from 'lucide-react';
+import { ArrowLeft, Plus, Anchor, Users, X, MapPin, Loader2, Phone, Edit2 } from 'lucide-react';
 import { getYachts } from './actions';
+import YachtFormModal from './YachtFormModal';
 
 interface Crew {
     id: number;
@@ -35,21 +36,25 @@ export default function YachtsPage() {
     const [loading, setLoading] = useState(true);
     const [selectedYacht, setSelectedYacht] = useState<Yacht | null>(null);
     const [mapYacht, setMapYacht] = useState<Yacht | null>(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [editYacht, setEditYacht] = useState<Yacht | null>(null);
+
+    const fetchYachts = async () => {
+        setLoading(true);
+        console.log("YachtsPage: Calling getYachts...");
+        const result = await getYachts();
+        console.log("YachtsPage: Result received:", result);
+        if (result.success && result.data) {
+            // @ts-expect-error - Result data is compatible with Yacht[]
+            setYachts(result.data);
+        } else if (!result.success) {
+            console.error("YachtsPage Error:", result.error, result.details);
+            alert("Error de base de datos: " + result.error + "\n\nPor favor, asegúrate de haber ejecutado 'npx prisma generate' si cambiaste el esquema.");
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchYachts = async () => {
-            console.log("YachtsPage: Calling getYachts...");
-            const result = await getYachts();
-            console.log("YachtsPage: Result received:", result);
-            if (result.success && result.data) {
-                // @ts-expect-error - Result data is compatible with Yacht[]
-                setYachts(result.data);
-            } else if (!result.success) {
-                console.error("YachtsPage Error:", result.error, result.details);
-                alert("Error de base de datos: " + result.error + "\n\nPor favor, asegúrate de haber ejecutado 'npx prisma generate' si cambiaste el esquema.");
-            }
-            setLoading(false);
-        };
         fetchYachts();
     }, []);
 
@@ -73,7 +78,7 @@ export default function YachtsPage() {
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => { setEditYacht(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
                     <span className="btn-text-mobile-hide">Registrar Yate</span>
                 </button>
@@ -141,9 +146,14 @@ export default function YachtsPage() {
                                         </span>
                                     </td>
                                     <td style={{ padding: '1.2rem' }}>
-                                        <button onClick={() => setSelectedYacht(yacht)} className="btn-glass-nav" style={{ padding: '0.5rem 1rem', borderRadius: '12px', fontSize: '0.85rem' }}>
-                                            Staff ({yacht.crew.length})
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button onClick={() => setSelectedYacht(yacht)} className="btn-glass-nav" style={{ padding: '0.5rem 1rem', borderRadius: '12px', fontSize: '0.85rem' }}>
+                                                Staff ({yacht.crew.length})
+                                            </button>
+                                            <button onClick={() => { setEditYacht(yacht); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px' }}>
+                                                <Edit2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -309,6 +319,17 @@ export default function YachtsPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {formModalOpen && (
+                <YachtFormModal 
+                    yacht={editYacht} 
+                    onClose={() => setFormModalOpen(false)} 
+                    onSuccess={() => {
+                        setFormModalOpen(false);
+                        fetchYachts();
+                    }} 
+                />
             )}
 
             <style jsx>{`
