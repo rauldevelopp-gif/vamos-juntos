@@ -1,7 +1,6 @@
 // app/admin/page.tsx
 "use client";
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import {
   LayoutDashboard,
   Calendar,
@@ -67,38 +66,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-      {/* Lateral Quick Menu */}
-      <nav className="glass-panel" style={{ minWidth: '200px', padding: '1.5rem', borderRadius: '1rem' }}>
-        <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Accesos Rápidos</h3>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          <li>
-            <Link href="/admin/reports" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-              Reportes
-            </Link>
-          </li>
-          <li>
-            <Link href="/admin/reservations" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-              Reservas
-            </Link>
-          </li>
-          <li>
-            <Link href="/admin/taxis" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-              Taxis
-            </Link>
-          </li>
-          <li>
-            <Link href="/admin/yachts" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-              Yates
-            </Link>
-          </li>
-          <li>
-            <Link href="/admin/hotels" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block' }}>
-              Hoteles
-            </Link>
-          </li>
-        </ul>
-      </nav>
-
       {/* KPI Grid */}
       <section className="dashboard-stats-grid" style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
         {kpis && (
