@@ -1,131 +1,176 @@
-'use client';
-
-import React from 'react';
-import { LayoutDashboard, Calendar, Car, Ship, Hotel, Plane, CheckCircle2, Server } from 'lucide-react';
+// app/admin/page.tsx
+"use client";
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+  LayoutDashboard,
+  Calendar,
+  Car,
+  Ship,
+  Hotel,
+  Plane,
+  CheckCircle2,
+  Server,
+  TrendingUp,
+  DollarSign,
+  Users,
+  X,
+} from 'lucide-react';
+
+// Icon map for KPIs
+const kpiIcons = {
+  totalReservations: <Calendar size={24} color="#8b5cf6" />, // reservas
+  totalRevenue: <DollarSign size={24} color="#10b981" />, // ingresos
+  reservationsToday: <TrendingUp size={24} color="#f59e0b" />, // reservas hoy
+  newClients: <Users size={24} color="#06b6d4" />, // nuevos clientes
+  conversion: <TrendingUp size={24} color="#ec4899" />, // tasa conversión
+  availableServices: <CheckCircle2 size={24} color="#10b981" />, // servicios disponibles
+  occupiedServices: <X size={24} color="#ef4444" />, // servicios ocupados
+  cancelations: <X size={24} color="#ef4444" />, // cancelaciones
+  ticketPromedio: <TrendingUp size={24} color="#f59e0b" />, // ticket promedio
+  topDest: <Plane size={24} color="#3b82f6" />, // destino top
+  topDriver: <Car size={24} color="#ec4899" />, // conductor top
+  topYacht: <Ship size={24} color="#06b6d4" />, // yate top
+  topRestaurant: <Hotel size={24} color="#f59e0b" />, // restaurante top
+};
 
 export default function AdminDashboard() {
+  const [kpis, setKpis] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchKPIs() {
+      try {
+        const res = await fetch('/api/admin/kpis');
+        const data = await res.json();
+        if (data.success) {
+          setKpis(data.data);
+        }
+      } catch (e) {
+        console.error('Error loading KPIs', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchKPIs();
+  }, []);
+
+  const fmt = (value) => (typeof value === 'number' ? value.toLocaleString('es-MX') : value);
+
+  if (loading) {
     return (
-        <div>
-            <header style={{ marginBottom: '3rem' }}>
-                <h1 className="heading-1">Dashboard de Administración</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Bienvenido al centro de control principal de VamosJuntos.</p>
-            </header>
-
-            {/* General Info Banner */}
-            <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem', display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 300px' }}>
-                    <h2 style={{ fontSize: '1.8rem', color: 'var(--primary)', marginBottom: '1rem' }}>Estado del Sistema</h2>
-                    <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        La plataforma VamosJuntos está operando con normalidad. Desde aquí puedes gestionar todos los módulos del sistema, revisar las solicitudes de los usuarios y supervisar las métricas de rendimiento en la sección de reportes.
-                    </p>
-                </div>
-                <div style={{ display: 'flex', gap: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <CheckCircle2 color="#10b981" size={24} />
-                        <span style={{ color: 'white', fontWeight: 600 }}>Servicios Online</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Server color="#3b82f6" size={24} />
-                        <span style={{ color: 'white', fontWeight: 600 }}>Base de Datos Activa</span>
-                    </div>
-                </div>
-            </div>
-
-            <h3 style={{ marginBottom: '1.5rem', color: 'white', fontSize: '1.4rem' }}>Módulos Principales</h3>
-            
-            <div className="dashboard-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-                {/* Module Cards */}
-                <Link href="/admin/reservations" style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Reservas</h4>
-                            <Calendar size={24} color="#8b5cf6" />
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            Gestiona todas las reservas de servicios, aprueba solicitudes y revisa el historial completo de clientes.
-                        </p>
-                    </div>
-                </Link>
-
-                <Link href="/admin/taxis" style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Flota de Taxis</h4>
-                            <Car size={24} color="#ec4899" />
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            Controla los vehículos, conductores disponibles, estados de servicio y calificaciones.
-                        </p>
-                    </div>
-                </Link>
-
-                <Link href="/admin/yachts" style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Yates</h4>
-                            <Ship size={24} color="#06b6d4" />
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            Administra la disponibilidad de yates, establece capacidades, precios por hora y características.
-                        </p>
-                    </div>
-                </Link>
-
-                <Link href="/admin/hotels" style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Alojamiento</h4>
-                            <Hotel size={24} color="#f59e0b" />
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            Configura los hoteles asociados, disponibilidad de habitaciones, precios y fotos.
-                        </p>
-                    </div>
-                </Link>
-                
-                <Link href="/admin/airports" style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Aeropuertos</h4>
-                            <Plane size={24} color="#10b981" />
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            Administra los puntos de partida y llegada para las transferencias y vuelos.
-                        </p>
-                    </div>
-                </Link>
-                
-                <Link href="/admin/reports" style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', height: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <h4 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Reportes</h4>
-                            <LayoutDashboard size={24} color="#3b82f6" />
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            Analiza el rendimiento del negocio con gráficos detallados e interactivos.
-                        </p>
-                    </div>
-                </Link>
-            </div>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Cargando métricas…</p>
+      </div>
     );
+  }
+
+  return (
+    <div className="admin-dashboard" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+      {/* Lateral Quick Menu */}
+      <nav className="glass-panel" style={{ minWidth: '200px', padding: '1.5rem', borderRadius: '1rem' }}>
+        <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Accesos Rápidos</h3>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li>
+            <Link href="/admin/reports" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+              Reportes
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/reservations" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+              Reservas
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/taxis" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+              Taxis
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/yachts" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+              Yates
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/hotels" className="quick-link" style={{ color: 'var(--text-muted)', display: 'block' }}>
+              Hoteles
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      {/* KPI Grid */}
+      <section className="dashboard-stats-grid" style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+        {kpis && (
+          <>
+            <div className="glass-card" style={{ padding: '1.5rem', border: kpis.totalReservations ? '2px solid #8b5cf6' : '' }}>
+              {kpiIcons.totalReservations}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas Totales</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.totalReservations)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.totalRevenue}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ingresos Generados</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>${fmt(kpis.totalRevenue)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.reservationsToday}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas Hoy</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.reservationsToday)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.newClients}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Nuevos Clientes</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.newClients)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.conversion}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Tasa Conversión</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{kpis.conversion}%</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.availableServices}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Servicios Disponibles</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.availableServices)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.occupiedServices}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Servicios Ocupados</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.occupiedServices)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.cancelations}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Cancelaciones</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.cancelations)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.ticketPromedio}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ticket Promedio</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>${fmt(kpis.ticketPromedio)}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.topDest}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Destino Top</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#3b82f6' }}>{kpis.topDest}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.topDriver}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Conductor Top</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#ec4899' }}>{kpis.topDriver}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.topYacht}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Yate Top</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#06b6d4' }}>{kpis.topYacht}</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              {kpiIcons.topRestaurant}
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Restaurante Top</p>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#f59e0b' }}>{kpis.topRestaurant}</div>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
 }
