@@ -84,7 +84,7 @@ export default function DiscountsPage() {
         <div className="discounts-container" style={{ padding: '2rem' }}>
             <h1 className="page-title" style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'white' }}>
                 <Percent size={32} style={{ color: 'var(--primary)' }} />
-                Gestionar Descuentos
+                Gestionar Cupones
             </h1>
 
             <div className="discounts-grid" style={{ display: 'grid', gap: '2rem' }}>

@@ -125,7 +125,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
     if (!discountCode) return;
     setValidatingDiscount(true);
     setDiscountError('');
-    const res = await validateDiscountCode(discountCode.toUpperCase());
+    const res = await validateDiscountCode(discountCode.toUpperCase(), pkg.id);
     if (res.success && res.data) {
         setDiscountInfo({ code: res.data.code, percentage: res.data.discount });
     } else {
@@ -513,7 +513,8 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         totalPrice: booking.totalPrice,
         basePrice: basePrice,
         serviceFee: feeAmount,
-        notes: booking.notes || ''
+        notes: booking.notes || '',
+        discountCode: booking.discountCode
       });
     } catch (error) {
       console.error('Failed to save reservation', error);

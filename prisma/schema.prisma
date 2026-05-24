@@ -28,6 +28,7 @@ model User {
   restaurants  Restaurant[]
   packages     Package[]
   packageReservations PackageReservation[]
+  discountCodes DiscountCode[]
 }
 
 model Driver {
@@ -267,6 +268,8 @@ model PackageReservation {
   totalPrice      Float
   status          String   @default("Confirmado") // Since it's post-payment
   notes           String?  @db.Text
+  discountCode    String?
+  discountAmount  Float?
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -278,4 +281,6 @@ model DiscountCode {
   discount  Float
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
 }

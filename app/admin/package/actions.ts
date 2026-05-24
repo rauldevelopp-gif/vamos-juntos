@@ -249,6 +249,26 @@ export async function createPackageReservation(data: {
         const pkg = await prisma.package.findUnique({ where: { id: data.packageId } });
         if (!pkg) throw new Error("Package not found");
  
+        let finalDiscountAmount = null;
+        let finalDiscountCode = null;
+
+        if (data.discountCode) {
+            const discountCodeObj = await prisma.discountCode.findUnique({
+                where: { code: data.discountCode }
+            });
+
+            if (discountCodeObj && !discountCodeObj.used) {
+                await prisma.discountCode.update({
+                    where: { code: data.discountCode },
+                    data: { used: true }
+                });
+                
+                const totalBeforeDiscount = data.basePrice + data.serviceFee;
+                finalDiscountAmount = totalBeforeDiscount * (discountCodeObj.discount / 100);
+                finalDiscountCode = data.discountCode;
+            }
+        }
+
         const reservation = await prisma.packageReservation.create({
             data: {
                 packageId: data.packageId,
@@ -264,16 +284,11 @@ export async function createPackageReservation(data: {
                 serviceFee: data.serviceFee,
                 totalPrice: data.totalPrice,
                 notes: data.notes,
-                status: 'Confirmado'
+                status: 'Confirmado',
+                discountCode: finalDiscountCode,
+                discountAmount: finalDiscountAmount
             }
         });
-
-        if (data.discountCode) {
-            await prisma.discountCode.update({
-                where: { code: data.discountCode },
-                data: { used: true }
-            });
-        }
 
         return { success: true, data: reservation };
     } catch (error) {

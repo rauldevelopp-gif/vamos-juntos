@@ -1029,7 +1029,7 @@ function ReservasModule({ period }: { period: Period }) {
                                     <span style={{ color: 'white' }}>${selectedRes.grossValue.toLocaleString()}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Descuentos</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>Cupones</span>
                                     <span style={{ color: '#ef4444' }}>-${selectedRes.discounts.toLocaleString()}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
