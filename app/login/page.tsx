@@ -101,9 +101,12 @@ export default function LoginPage() {
                         {loading ? <Loader2 className="animate-spin" size={20} /> : 'Entrar al Panel'}
                     </button>
 
-                    <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                         <Link href="/forgot-password" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textDecoration: 'none' }}>
                             ¿Olvidaste tu contraseña? <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Recupérala aquí</span>
+                        </Link>
+                        <Link href="/register" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textDecoration: 'none' }}>
+                            ¿No tienes cuenta? <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Regístrate aquí</span>
                         </Link>
                     </div>
                 </form>

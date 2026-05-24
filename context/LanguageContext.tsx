@@ -96,8 +96,8 @@ const translations = {
         no_items_found: "No se encontraron",
         
         // Registration
-        partner_cta_title: "¿Eres Operador o Transportista?",
-        partner_cta_desc: "Únete a la red más exclusiva de servicios de lujo. Expande tu alcance y gestiona tus servicios con nuestra tecnología premium.",
+        partner_cta_title: "Potencia tu negocio de lujo",
+        partner_cta_desc: "¿Eres operador turístico o transportista VIP? Únete a nuestra red exclusiva y conecta con clientes de alto valor. Maximiza tus ingresos, expande tu alcance internacional y gestiona tus servicios sin esfuerzo gracias a nuestra tecnología premium. El éxito de tu negocio a un solo clic.",
         btn_register_now: "Registrarme Ahora",
         reg_title: "Registro de Socios",
         reg_subtitle: "Completa el formulario para unirte a nuestra red",
@@ -204,8 +204,8 @@ const translations = {
         no_items_found: "No items found for",
         
         // Registration
-        partner_cta_title: "Are you an Operator or Transporter?",
-        partner_cta_desc: "Join the most exclusive luxury service network. Expand your reach and manage your services with our premium technology.",
+        partner_cta_title: "Power your luxury business",
+        partner_cta_desc: "Are you a tour operator or VIP transporter? Join our exclusive network and connect with high-net-worth clients. Maximize your revenue, expand your international reach, and manage your services effortlessly with our premium technology. Your business success is just one click away.",
         btn_register_now: "Register Now",
         reg_title: "Partner Registration",
         reg_subtitle: "Complete the form to join our network",

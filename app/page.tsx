@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
+import Testimonials from '../components/Testimonials';
 import { getPackages } from './admin/package/actions';
 import { useLanguage } from '../context/LanguageContext';
 import { BookingWizard, SuccessStep } from './packages/components/BookingWizard';
@@ -256,30 +257,46 @@ export default function Home() {
         accentColor="var(--accent)"
       />
 
+      {/* Testimonials */}
+      <Testimonials />
+
       {/* Partner Registration CTA */}
-      <section style={{ padding: '6rem 0', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <Image 
-            src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop" 
-            alt="Partnership" 
-            fill 
-            style={{ objectFit: 'cover', opacity: 0.15 }}
-            unoptimized
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--background), transparent, var(--background))' }}></div>
-        </div>
-        
-        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <div className="glass-panel" style={{ padding: '4rem 2rem', maxWidth: '900px', margin: '0 auto', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-            <Sparkles size={48} color="var(--primary)" style={{ marginBottom: '1.5rem', opacity: 0.8 }} />
-            <h2 className="heading-2" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{t('partner_cta_title')}</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto 2.5rem', lineHeight: '1.6' }}>
-              {t('partner_cta_desc')}
-            </p>
-            <Link href="/register" className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.8rem' }}>
-              {t('btn_register_now')}
-              <ArrowRight size={20} />
-            </Link>
+      <section style={{ padding: '6rem 0' }}>
+        <div className="container">
+          <div className="glass-card" style={{ position: 'relative', overflow: 'hidden', borderRadius: '2rem', minHeight: '500px', display: 'flex', alignItems: 'center', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+            
+            {/* Background Image */}
+            <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+              <Image 
+                src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop" 
+                alt="Tour Operators" 
+                fill 
+                style={{ objectFit: 'cover', objectPosition: 'center' }}
+                unoptimized
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.8) 50%, transparent 100%)' }}></div>
+            </div>
+
+            {/* Content */}
+            <div style={{ position: 'relative', zIndex: 1, padding: '4rem', maxWidth: '700px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.4)', borderRadius: '50px', color: '#c4b5fd', fontWeight: 600, fontSize: '0.85rem', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '2rem' }}>
+                  <Sparkles size={16} /> Socios Estratégicos
+                </div>
+                
+                <h2 className="heading-1 float-animation" style={{ fontSize: '3rem', marginBottom: '1.5rem', lineHeight: '1.1', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                  {t('partner_cta_title')}
+                </h2>
+                
+                <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.15rem', lineHeight: '1.7', marginBottom: '2.5rem', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                  {t('partner_cta_desc')}
+                </p>
+                
+                <Link href="/register" className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.8rem', borderRadius: '50px', boxShadow: '0 10px 25px -5px rgba(139, 92, 246, 0.5)' }}>
+                  {t('btn_register_now')}
+                  <ArrowRight size={20} />
+                </Link>
+            </div>
+
           </div>
         </div>
       </section>
