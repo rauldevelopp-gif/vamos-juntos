@@ -10,7 +10,10 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^9.2.0",
     "@prisma/client": "^5.22.0",
+    "@stripe/react-stripe-js": "^6.4.0",
+    "@stripe/stripe-js": "^9.6.0",
     "html-to-image": "^1.11.13",
     "lucide-react": "^1.14.0",
     "next": "^14.2.35",

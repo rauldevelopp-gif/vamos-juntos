@@ -29,6 +29,7 @@ model User {
   packages     Package[]
   packageReservations PackageReservation[]
   discountCodes DiscountCode[]
+  gatewaySettings GatewaySettings?
 }
 
 model Driver {
@@ -283,4 +284,16 @@ model DiscountCode {
   createdAt DateTime @default(now())
   userId    Int?
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model GatewaySettings {
+  id              Int      @id @default(autoincrement())
+  stripePublicKey String?
+  stripeSecretKey String?
+  paypalClientId  String?
+  paypalSecret    String?
+  activeGateways  String[] @default([])
+  
+  userId          Int      @unique
+  user            User     @relation(fields: [userId], references: [id])
 }

@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TourPackage, Booking } from '../types';
 import { createPackageReservation } from '../../admin/package/actions';
 import { validateDiscountCode } from '../../admin/discounts/actions';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -480,23 +483,96 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ pkg, onClose, onCo
   );
 };
 
+const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess }: { clientSecret: string, onPaymentSuccess: () => void }) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [error, setError] = React.useState<string | null>(null);
+    const [processing, setProcessing] = React.useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!stripe || !elements) return;
+
+        setProcessing(true);
+        setError(null);
+        const cardElement = elements.getElement(CardElement);
+        
+        const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: cardElement!,
+            }
+        });
+
+        if (stripeError) {
+            setError(stripeError.message || 'Payment failed');
+            setProcessing(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+            onPaymentSuccess();
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', borderRadius: '16px' }}>
+                <CardElement options={{
+                    style: {
+                        base: {
+                            color: '#fff',
+                            fontFamily: 'system-ui, sans-serif',
+                            fontSize: '16px',
+                            '::placeholder': { color: 'rgba(255,255,255,0.4)' },
+                            iconColor: '#8b5cf6',
+                        },
+                        invalid: { color: '#ef4444', iconColor: '#ef4444' },
+                    },
+                    hidePostalCode: true
+                }} />
+            </div>
+            {error && <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, textAlign: 'center' }}>{error}</div>}
+            <button type="submit" disabled={!stripe || processing} className="btn-primary" style={{ width: '100%', background: '#8b5cf6' }}>
+                {processing ? 'Procesando Pago...' : 'Pagar de forma Segura'}
+            </button>
+        </form>
+    );
+};
+
 export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = ({ booking, onReset }) => {
   const [paymentState, setPaymentState] = useState<'pending' | 'processing' | 'success'>('pending');
-  const [cardInfo, setCardInfo] = useState({
-    name: '',
-    number: '',
-    expiry: '',
-    cvv: ''
-  });
+  const [config, setConfig] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'stripe' | 'paypal'>('stripe');
+  const [clientSecret, setClientSecret] = useState('');
+  const [stripePromise, setStripePromise] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`/api/checkout/config?packageId=${booking.packageId}`)
+      .then(r => r.json())
+      .then(res => {
+         if (res.success && res.data) {
+             setConfig(res.data);
+             if (res.data.activeGateways.includes('paypal') && !res.data.activeGateways.includes('stripe')) {
+                 setActiveTab('paypal');
+             }
+             
+             if (res.data.stripePublicKey) {
+                 setStripePromise(loadStripe(res.data.stripePublicKey));
+                 fetch('/api/checkout/stripe', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ packageId: booking.packageId, amount: booking.totalPrice })
+                 }).then(r => r.json()).then(data => {
+                     if (data.success) setClientSecret(data.clientSecret);
+                 });
+             }
+         }
+      });
+  }, [booking.packageId, booking.totalPrice]);
 
   const handleDownloadPDF = () => {
     window.print();
   };
 
-  const simulatePayment = async () => {
+  const handlePaymentSuccess = async () => {
     setPaymentState('processing');
-    
-    // We already calculated these in handleSubmit
     const basePrice = booking.snapshot.price;
     const feeAmount = booking.totalPrice - basePrice;
 
@@ -516,13 +592,11 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         notes: booking.notes || '',
         discountCode: booking.discountCode
       });
+      setPaymentState('success');
     } catch (error) {
       console.error('Failed to save reservation', error);
+      alert('Hubo un error al registrar la reserva.');
     }
-
-    setTimeout(() => {
-      setPaymentState('success');
-    }, 1500);
   };
 
   if (paymentState === 'pending') {
@@ -548,87 +622,79 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
                   ${(booking as Booking).totalPrice || 0} <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>USD</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <div style={{ padding: '0.3rem 0.6rem', background: '#1a1a1a', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', height: 'fit-content' }}>
-                  <span style={{ color: '#253b80', fontWeight: 900, fontSize: '0.6rem', italic: 'true' }}>VISA</span>
-                </div>
-                <div style={{ padding: '0.3rem 0.6rem', background: '#1a1a1a', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', height: 'fit-content', display: 'flex' }}>
-                   <div style={{ width: '8px', height: '8px', background: '#eb001b', borderRadius: '50%', marginRight: '-4px' }}></div>
-                   <div style={{ width: '8px', height: '8px', background: '#f79e1b', borderRadius: '50%', opacity: 0.8 }}></div>
-                </div>
-              </div>
             </div>
 
-            <div className="card-form">
-              <div className="input-group">
-                <label>Nombre del Titular</label>
-                <input 
-                  type="text" 
-                  placeholder="Como aparece en la tarjeta"
-                  value={cardInfo.name}
-                  onChange={e => setCardInfo({...cardInfo, name: e.target.value})}
-                />
-              </div>
+            {config ? (
+                config.activeGateways.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: '#ef4444', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px' }}>
+                        El proveedor de este paquete no tiene métodos de pago configurados.
+                    </div>
+                ) : (
+                    <>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+                            {config.activeGateways.includes('stripe') && (
+                                <button 
+                                    onClick={() => setActiveTab('stripe')}
+                                    style={{ flex: 1, padding: '0.75rem', background: activeTab === 'stripe' ? 'rgba(139, 92, 246, 0.1)' : 'transparent', color: activeTab === 'stripe' ? '#8b5cf6' : 'white', border: `1px solid ${activeTab === 'stripe' ? '#8b5cf6' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                >
+                                    Tarjeta
+                                </button>
+                            )}
+                            {config.activeGateways.includes('paypal') && (
+                                <button 
+                                    onClick={() => setActiveTab('paypal')}
+                                    style={{ flex: 1, padding: '0.75rem', background: activeTab === 'paypal' ? 'rgba(0, 112, 186, 0.1)' : 'transparent', color: activeTab === 'paypal' ? '#0070ba' : 'white', border: `1px solid ${activeTab === 'paypal' ? '#0070ba' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                >
+                                    PayPal
+                                </button>
+                            )}
+                        </div>
 
-              <div className="input-group">
-                <label>Número de Tarjeta</label>
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="text" 
-                    placeholder="0000 0000 0000 0000"
-                    maxLength={19}
-                    value={cardInfo.number}
-                    onChange={e => {
-                      let val = e.target.value.replace(/\D/g, '');
-                      val = val.replace(/(.{4})/g, '$1 ').trim();
-                      setCardInfo({...cardInfo, number: val});
-                    }}
-                  />
-                  <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>
-                    <CreditCard size={18} />
-                  </div>
-                </div>
-              </div>
+                        {activeTab === 'stripe' && clientSecret && stripePromise && (
+                            <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                <StripeCheckoutForm clientSecret={clientSecret} onPaymentSuccess={handlePaymentSuccess} />
+                            </Elements>
+                        )}
+                        {activeTab === 'stripe' && !clientSecret && (
+                            <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.5)' }}>Cargando pasarela de pago...</div>
+                        )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="input-group">
-                  <label>Vencimiento</label>
-                  <input 
-                    type="text" 
-                    placeholder="MM/YY"
-                    maxLength={5}
-                    value={cardInfo.expiry}
-                    onChange={e => {
-                      let val = e.target.value.replace(/\D/g, '');
-                      if (val.length > 2) val = val.substring(0, 2) + '/' + val.substring(2);
-                      setCardInfo({...cardInfo, expiry: val});
-                    }}
-                  />
-                </div>
-                <div className="input-group">
-                  <label>CVV</label>
-                  <input 
-                    type="password" 
-                    placeholder="***"
-                    maxLength={4}
-                    value={cardInfo.cvv}
-                    onChange={e => setCardInfo({...cardInfo, cvv: e.target.value.replace(/\D/g, '')})}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <button 
-              onClick={simulatePayment} 
-              className="btn-primary" 
-              style={{ width: '100%', marginBottom: '1rem', background: '#8b5cf6', marginTop: '1rem' }}
-              disabled={!cardInfo.name || cardInfo.number.length < 16 || !cardInfo.expiry || !cardInfo.cvv}
-            >
-              Confirmar Pago <ArrowRight size={18} />
-            </button>
-            <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', margin: 0 }}>
+                        {activeTab === 'paypal' && config.paypalClientId && (
+                            <div style={{ marginTop: '1.5rem', position: 'relative', zIndex: 1 }}>
+                                <PayPalScriptProvider options={{ "clientId": config.paypalClientId, currency: "USD" }}>
+                                    <PayPalButtons 
+                                        style={{ layout: "vertical", shape: "rect", color: "gold" }}
+                                        createOrder={(data, actions) => {
+                                            return actions.order.create({
+                                                intent: "CAPTURE",
+                                                purchase_units: [
+                                                    {
+                                                        amount: {
+                                                            currency_code: "USD",
+                                                            value: booking.totalPrice.toString(),
+                                                        },
+                                                    },
+                                                ],
+                                            });
+                                        }}
+                                        onApprove={(data, actions) => {
+                                            return actions.order!.capture().then((details) => {
+                                                handlePaymentSuccess();
+                                            });
+                                        }}
+                                    />
+                                </PayPalScriptProvider>
+                            </div>
+                        )}
+                    </>
+                )
+            ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.5)' }}>Obteniendo métodos de pago...</div>
+            )}
+
+            <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', margin: '1.5rem 0 0 0' }}>
               <ShieldCheck size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-              Pago encriptado SSL de 256 bits. Modo de prueba.
+              Pagos procesados de forma segura con cifrado SSL.
             </p>
           </div>
         </div>
@@ -640,11 +706,6 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
           h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; }
           p { color: rgba(255,255,255,0.5); margin-bottom: 2rem; line-height: 1.6; font-size: 1.1rem; }
           .success-info-panel { background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; }
-          .card-form { display: flex; flex-direction: column; gap: 1.25rem; }
-          .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
-          .input-group label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.05em; }
-          .input-group input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 14px; color: white; font-size: 0.9rem; font-weight: 600; outline: none; transition: all 0.2s; width: 100%; box-sizing: border-box; }
-          .input-group input:focus { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); }
           .btn-primary { color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; }
           .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); }
           .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -658,7 +719,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
       <div className="success-overlay">
         <div className="success-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyItems: 'center', paddingTop: '4rem' }}>
           <div className="loader" style={{ margin: '0 auto 2rem' }}></div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Procesando pago...</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Confirmando reserva...</h2>
           <p style={{ color: 'rgba(255,255,255,0.5)' }}>Por favor, no cierres esta ventana.</p>
         </div>
         <style jsx>{`
