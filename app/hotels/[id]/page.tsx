@@ -62,7 +62,7 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1200px', margin: '3rem auto 0', padding: '0 2rem', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
+            <div className="hotel-detail-grid" style={{ maxWidth: '1200px', margin: '3rem auto 0', padding: '0 1rem', display: 'grid', gap: '2rem' }}>
                 {/* LEFT COL: Info */}
                 <div>
                     <section style={{ marginBottom: '3rem' }}>
@@ -72,7 +72,7 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                         </p>
                     </section>
 
-                    <section style={{ marginBottom: '3rem', background: 'rgba(255,255,255,0.02)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <section style={{ marginBottom: '3rem', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '1.5rem' }}>Información Útil</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
                             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -120,15 +120,15 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                         <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '1.5rem' }}>Habitaciones Disponibles</h2>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {hotel.rooms?.length > 0 ? hotel.rooms.map((room: any) => (
-                                <div key={room.id} style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s' }}>
-                                    <div style={{ width: '200px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                                <div key={room.id} className="room-card" style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s' }}>
+                                    <div className="room-image" style={{ background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                                         {room.gallery && room.gallery.length > 0 ? (
                                             <Image src={room.gallery[0]} alt={room.type} fill style={{ objectFit: 'cover' }} unoptimized />
                                         ) : (
                                             <BedDouble size={40} opacity={0.3} />
                                         )}
                                     </div>
-                                    <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div className="room-content" style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>{room.type}</h3>
                                         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                                             Capacidad máxima: {room.maxCapacity} huéspedes
@@ -137,10 +137,13 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                                             <CheckCircle2 size={14} /> Cancelación Gratuita
                                         </div>
                                     </div>
-                                    <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', minWidth: '200px', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div className="room-price" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
                                         <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>${room.basePrice.toLocaleString()}</div>
                                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '1rem' }}>por noche</div>
-                                        <button onClick={() => setSelectedRoom(room)} className="btn-premium" style={{ padding: '0.8rem 1.5rem', width: '100%', borderRadius: '12px' }}>
+                                        <button onClick={() => {
+                                            setSelectedRoom(room);
+                                            window.scrollTo({ top: document.querySelector('.booking-section')?.getBoundingClientRect().top! + window.scrollY - 100, behavior: 'smooth' });
+                                        }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', width: '100%', borderRadius: '12px' }}>
                                             Seleccionar
                                         </button>
                                     </div>
@@ -155,7 +158,7 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                 </div>
 
                 {/* RIGHT COL: Sticky Booking Component */}
-                <div style={{ position: 'relative' }}>
+                <div className="booking-section" style={{ position: 'relative' }}>
                     <div style={{ position: 'sticky', top: '2rem' }}>
                         {selectedRoom ? (
                             <HotelBookingWizard hotel={hotel} room={selectedRoom} onCancel={() => setSelectedRoom(null)} />
@@ -171,8 +174,21 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
             </div>
             
             <style jsx>{`
+                .hotel-detail-grid {
+                    grid-template-columns: 2fr 1fr;
+                }
+                .room-image {
+                    width: 200px;
+                }
+                .room-price {
+                    min-width: 200px;
+                }
                 @media (max-width: 900px) {
-                    .container { grid-template-columns: 1fr !important; }
+                    .hotel-detail-grid { grid-template-columns: 1fr !important; }
+                    .room-card { flex-direction: column; }
+                    .room-image { width: 100% !important; height: 200px; }
+                    .room-price { border-left: none !important; border-top: 1px solid rgba(255,255,255,0.05); align-items: center !important; }
+                    .room-price div { text-align: center; }
                 }
             `}</style>
         </div>

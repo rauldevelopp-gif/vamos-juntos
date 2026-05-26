@@ -9,7 +9,17 @@ export async function getPublicHotels() {
             orderBy: { name: 'asc' },
             include: {
                 rooms: {
-                    where: { status: 'Activa' }
+                    where: { status: 'Activa' },
+                    select: {
+                        id: true,
+                        type: true,
+                        maxCapacity: true,
+                        basePrice: true,
+                        gallery: true,
+                        amenities: true,
+                        cancellationPolicy: true,
+                        status: true
+                    }
                 }
             }
         });
