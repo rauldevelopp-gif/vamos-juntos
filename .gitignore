@@ -40,3 +40,6 @@ next-env.d.ts
 prisma/*.db
 prisma/*.db-journal
 .env
+
+# user uploads (avoid filename too long errors and bloating the repo)
+/public/uploads/

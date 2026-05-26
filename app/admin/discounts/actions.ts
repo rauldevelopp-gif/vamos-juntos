@@ -98,3 +98,34 @@ export async function validateDiscountCode(code: string, packageId: number) {
         return { success: false, error: 'Error al validar el código' };
     }
 }
+
+export async function validateDiscountCodeForHotel(code: string, hotelId: number) {
+    try {
+        const discountCode = await prisma.discountCode.findUnique({
+            where: { code }
+        });
+
+        if (!discountCode) {
+            return { success: false, error: 'Código inválido' };
+        }
+
+        if (discountCode.used) {
+            return { success: false, error: 'El código ya ha sido utilizado' };
+        }
+
+        // Verify code belongs to the hotel's operator
+        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
+        if (!hotel) {
+            return { success: false, error: 'Hotel no encontrado' };
+        }
+
+        if (discountCode.userId !== hotel.userId) {
+            return { success: false, error: 'Este código de descuento no es válido para este hotel' };
+        }
+
+        return { success: true, data: { id: discountCode.id, code: discountCode.code, discount: discountCode.discount } };
+    } catch (error) {
+        console.error('Error validating hotel discount code:', error);
+        return { success: false, error: 'Error al validar el código' };
+    }
+}

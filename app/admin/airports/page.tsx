@@ -209,7 +209,7 @@ export default function AirportsPage() {
                     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
                     background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);
                     display: flex; align-items: center; justify-content: center;
-                    z-index: 1000; animation: fadeIn 0.3s ease;
+                    z-index: 9999; animation: fadeIn 0.3s ease;
                 }
                 .modal-content {
                     width: 90%; max-width: 800px; border-radius: 25px; padding: 0;

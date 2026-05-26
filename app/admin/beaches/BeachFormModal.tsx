@@ -83,7 +83,7 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, overflowY: 'auto', padding: '2rem'
+            zIndex: 9999, overflowY: 'auto', padding: '2rem'
         }}>
             <div className="glass-panel" onClick={e => e.stopPropagation()} style={{
                 background: 'var(--bg-card)', border: '1px solid var(--border-glass)',

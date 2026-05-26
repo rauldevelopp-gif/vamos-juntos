@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Home, Package, LogOut, User, Search, ChevronDown, Key, LayoutDashboard } from 'lucide-react';
+import { Home, Package, LogOut, User, Search, ChevronDown, Key, LayoutDashboard, Hotel } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
@@ -50,6 +50,10 @@ export const Navbar = ({ session, username }: { session: unknown, username: stri
           <Link href="/packages" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Package size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
             <span className="btn-text-mobile-hide">{t('nav_packages')}</span>
+          </Link>
+          <Link href="/hotels" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Hotel size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
+            <span className="btn-text-mobile-hide">Hoteles</span>
           </Link>
           <Link href="/tracking" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Search size={18} strokeWidth={2} className="mobile-only-icon-lucide" />

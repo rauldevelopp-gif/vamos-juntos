@@ -650,6 +650,13 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
                             )}
                         </div>
 
+                        <button
+                            onClick={handlePaymentSuccess}
+                            style={{ width: '100%', padding: '1rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 900, cursor: 'pointer', marginBottom: '1.5rem' }}
+                        >
+                            Simular Pago (Dev)
+                        </button>
+
                         {activeTab === 'stripe' && clientSecret && stripePromise && (
                             <Elements stripe={stripePromise} options={{ clientSecret }}>
                                 <StripeCheckoutForm clientSecret={clientSecret} onPaymentSuccess={handlePaymentSuccess} />

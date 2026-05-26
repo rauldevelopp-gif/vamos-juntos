@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
+import Image from 'next/image';
+import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import Testimonials from '../components/Testimonials';
 import { getPackages } from './admin/package/actions';
 import { useLanguage } from '../context/LanguageContext';
@@ -13,8 +14,9 @@ import EntityGrid from '../components/EntityGrid';
 import { getPublicYachts } from './admin/yachts/actions';
 import { getPublicBeaches } from './admin/beaches/actions';
 import { getPublicAttractions } from './admin/attractions/actions';
+import { getPublicHotels } from './hotels/actions';
 
-import Image from 'next/image';
+import HotelCard, { WhatsAppIcon } from '../components/HotelCard';
 
 interface PackageItem {
     id: string;
@@ -42,6 +44,7 @@ interface Package {
         name: string;
         photo: string | null;
         taxis?: { model: string }[];
+        phone?: string;
     };
     createdAt: Date;
 }
@@ -95,6 +98,7 @@ export default function Home() {
   const [yachts, setYachts] = useState<any[]>([]);
   const [beaches, setBeaches] = useState<any[]>([]);
   const [attractions, setAttractions] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
   const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
@@ -102,17 +106,19 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [pkgRes, yachtRes, beachRes, attrRes] = await Promise.all([
+      const [pkgRes, yachtRes, beachRes, attrRes, hotelRes] = await Promise.all([
         getPackages(),
         getPublicYachts(),
         getPublicBeaches(),
-        getPublicAttractions()
+        getPublicAttractions(),
+        getPublicHotels()
       ]);
       
       if (pkgRes.success && pkgRes.data) setPackages(pkgRes.data.slice(0, 6));
       if (yachtRes.success && yachtRes.data) setYachts(yachtRes.data);
       if (beachRes.success && beachRes.data) setBeaches(beachRes.data);
       if (attrRes.success && attrRes.data) setAttractions(attrRes.data);
+      if (hotelRes.success && hotelRes.data) setHotels(hotelRes.data);
       
       setLoading(false);
     };
@@ -158,14 +164,13 @@ export default function Home() {
       {/* Featured Packages */}
       <section style={{ padding: '5rem 0' }}>
         <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
-            <div>
-              <h2 className="heading-2">{t('featured_packages')}</h2>
-              <p style={{ color: 'var(--text-muted)' }}>{t('featured_subtitle')}</p>
-            </div>
-            <Link href="/packages" className="link-action" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {t('view_all_destinations')} <ArrowRight size={16} />
-            </Link>
+          <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+            <h2 className="heading-1 float-animation" style={{ fontSize: '2.5rem', marginBottom: '1rem', textShadow: '0 5px 15px rgba(0,0,0,0.3)' }}>
+              <span className="text-gradient">Paquetes</span> Destacados
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+              {t('featured_subtitle')}
+            </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
@@ -211,6 +216,15 @@ export default function Home() {
                       >
                         <Info size={16} />
                       </button>
+                      <a 
+                        href={`https://wa.me/${pkg.driver?.phone?.replace(/\D/g, '') || '529981234567'}?text=${encodeURIComponent(`Hola, necesito más información sobre el paquete: ${pkg.name}.\nPuedes verlo aquí: ${typeof window !== 'undefined' ? window.location.origin : ''}/packages?reserve=${pkg.id}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ padding: '0.6rem', borderRadius: '12px', background: '#25d366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', border: 'none' }}
+                        title="Contactar por WhatsApp"
+                      >
+                        <WhatsAppIcon size={16} />
+                      </a>
                       <button 
                         onClick={() => setBookingPkg(mapApiToFrontend(pkg))}
                         className="btn-premium" 
@@ -223,6 +237,44 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+          
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <Link href="/packages" className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'inline-block', borderRadius: '50px' }}>
+              {t('view_all_destinations')}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Hotels Section */}
+      <section style={{ padding: '5rem 0', background: 'rgba(255,255,255,0.01)' }}>
+        <div className="container">
+          <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+            <h2 className="heading-1 float-animation" style={{ fontSize: '2.5rem', marginBottom: '1rem', textShadow: '0 5px 15px rgba(0,0,0,0.3)' }}>
+              <span className="text-gradient">Hoteles</span> de Lujo
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+              Alójate en los resorts y alojamientos boutique más exclusivos.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+            {loading ? (
+              Array(3).fill(0).map((_, i) => (
+                <div key={i} className="glass-card" style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Loader2 className="animate-spin" color="#8b5cf6" size={32} />
+                </div>
+              ))
+            ) : hotels.slice(0, 6).map((hotel) => (
+              <HotelCard key={hotel.id} hotel={hotel} />
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <Link href="/hotels" className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'inline-block', borderRadius: '50px' }}>
+              Ver todos los hoteles
+            </Link>
           </div>
         </div>
       </section>

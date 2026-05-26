@@ -296,7 +296,7 @@ function CatalogContent() {
                                     <p className="card-desc">{pkg.description}</p>
                                     <div className="card-footer" onClick={e => e.stopPropagation()}>
                                         <a 
-                                            href={`https://wa.me/${pkg.driver?.phone?.replace(/\D/g, '') || '529981234567'}?text=${encodeURIComponent(`Hola, deseo más información sobre: ${pkg.name}`)}`}
+                                            href={`https://wa.me/${pkg.driver?.phone?.replace(/\D/g, '') || '529981234567'}?text=${encodeURIComponent(`Hola, necesito más información sobre el paquete: ${pkg.name}.\nPuedes verlo aquí: ${typeof window !== 'undefined' ? window.location.origin : ''}/packages?reserve=${pkg.id}`)}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="btn-whatsapp-mini"

@@ -19,7 +19,8 @@ import {
     X,
     Calendar,
     Percent,
-    CreditCard
+    CreditCard,
+    BedDouble
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -30,6 +31,7 @@ const MENU_ITEMS = [
     { name: 'Solicitudes', href: '/admin/requests', icon: Clock },
     { name: 'Paquetes', href: '/admin/package', icon: Package },
     { name: 'Reservas', href: '/admin/reservations', icon: Calendar },
+    { name: 'Reservas Hotel', href: '/admin/hotel-reservations', icon: BedDouble },
     { name: 'Aeropuerto', href: '/admin/airports', icon: Plane },
     { name: 'Hoteles', href: '/admin/hotels', icon: Hotel },
     { name: 'Playas', href: '/admin/beaches', icon: Palmtree },
@@ -105,10 +107,12 @@ export default function Sidebar() {
                     transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
             >
-                {/* Fixed Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-glass)', flexShrink: 0 }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: 'white' }}>V</div>
-                    <h2 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Admin Hub</h2>
+                {/* Return Home Link (Replaces Header) */}
+                <div style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--border-glass)', flexShrink: 0 }}>
+                    <Link href="/" className="sidebar-link" style={{ color: 'var(--accent)', gap: '0.75rem', borderRadius: '12px', padding: '0.5rem' }}>
+                        <Home size={22} strokeWidth={2} />
+                        <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>Volver al Inicio</span>
+                    </Link>
                 </div>
 
                 {/* Scrollable Navigation Area */}
@@ -139,13 +143,7 @@ export default function Sidebar() {
                     })}
                 </nav>
 
-                {/* Return Home Link */}
-                <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '1rem', marginTop: 'auto' }}>
-                    <Link href="/" className="sidebar-link" style={{ color: 'var(--accent)', gap: '0.75rem' }}>
-                        <Home size={20} strokeWidth={1.5} />
-                        <span>Volver al Inicio</span>
-                    </Link>
-                </div>
+                <div style={{ marginTop: 'auto' }}></div>
             </aside>
 
             <style jsx>{`

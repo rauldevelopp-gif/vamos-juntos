@@ -30,6 +30,7 @@ model User {
   packageReservations PackageReservation[]
   discountCodes DiscountCode[]
   gatewaySettings GatewaySettings?
+  hotelReservations HotelReservation[]
 }
 
 model Driver {
@@ -132,6 +133,20 @@ model Hotel {
   state        String
   status       String   @default("Disponible")
   coordinates  String
+  
+  description  String?  @db.Text
+  category     String   @default("Estándar")
+  address      String?
+  phone        String?
+  email        String?
+  policies     String?  @db.Text
+  checkInTime  String   @default("15:00")
+  checkOutTime String   @default("11:00")
+  amenities    String[] @default([])
+  gallery      String[] @default([])
+  rooms        HotelRoom[]
+  hotelReservations HotelReservation[]
+
   reservations ReservationService[]
   userId       Int?
   user         User?    @relation(fields: [userId], references: [id])
@@ -296,4 +311,45 @@ model GatewaySettings {
   
   userId          Int      @unique
   user            User     @relation(fields: [userId], references: [id])
+}
+
+model HotelRoom {
+  id                 Int      @id @default(autoincrement())
+  hotelId            Int
+  hotel              Hotel    @relation(fields: [hotelId], references: [id])
+  type               String
+  maxCapacity        Int
+  quantity           Int
+  basePrice          Float
+  gallery            String[] @default([])
+  amenities          String[] @default([])
+  cancellationPolicy String?  @db.Text
+  status             String   @default("Activa")
+  reservations       HotelReservation[]
+}
+
+model HotelReservation {
+  id              Int      @id @default(autoincrement())
+  roomId          Int
+  room            HotelRoom @relation(fields: [roomId], references: [id])
+  hotelId         Int
+  hotel           Hotel    @relation(fields: [hotelId], references: [id])
+  userId          Int?     
+  user            User?    @relation(fields: [userId], references: [id])
+  
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  
+  checkInDate     String
+  checkOutDate    String
+  guests          Int
+  totalPrice      Float
+  discountCode    String?
+  discountAmount  Float?
+  status          String   @default("Confirmado") 
+  notes           String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

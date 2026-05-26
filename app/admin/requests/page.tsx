@@ -211,10 +211,10 @@ const AssignDriverModal = ({ pkg, taxis, onClose, onAssign, isAssigning }: {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '2rem',
-                zIndex: 10000
+                zIndex: 99990
             }}
         >
-            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%', padding: '2rem', maxHeight: '85vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10001 }}>
+            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%', padding: '2rem', maxHeight: '85vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 99991 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div>
                         <h2 style={{ margin: 0, fontSize: '1.5rem' }} className="text-gradient">Asignar Chófer</h2>
@@ -345,7 +345,7 @@ const AssignDriverModal = ({ pkg, taxis, onClose, onAssign, isAssigning }: {
                         align-items: center !important; 
                         justify-content: center !important; 
                         padding: 2rem !important; 
-                        z-index: 10000 !important;
+                        z-index: 99990 !important;
                     }
                     .driver-selection-card:hover {
                         background: rgba(139, 92, 246, 0.05) !important;
