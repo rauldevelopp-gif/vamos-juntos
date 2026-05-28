@@ -91,6 +91,81 @@
       "result": "SUCCESS",
       "tenantId": "default",
       "details": "El usuario confirmó la lectura y entendimiento de la advertencia push: \"Uso de reservas masivas\"."
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "username": "Admin",
+      "role": "ADMIN",
+      "timestamp": "2026-05-28T14:37:22.572Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "ADVERTENCIA_PUSH",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "Advertencia disciplinaria push enviada al usuario \"Juan\" con severidad [WARN]."
+    },
+    {
+      "id": 8,
+      "userId": 1,
+      "username": "Admin",
+      "role": "ADMIN",
+      "timestamp": "2026-05-28T14:38:26.084Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "ADVERTENCIA_PUSH",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "Advertencia disciplinaria push enviada al usuario \"Livan\" con severidad [WARN]."
+    },
+    {
+      "id": 9,
+      "userId": 1,
+      "username": "Admin",
+      "role": "ADMIN",
+      "timestamp": "2026-05-28T14:38:41.607Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "ADVERTENCIA_PUSH",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "Advertencia disciplinaria push enviada al usuario \"Carlos\" con severidad [WARN]."
+    },
+    {
+      "id": 10,
+      "userId": 1,
+      "username": "Admin",
+      "role": "ADMIN",
+      "timestamp": "2026-05-28T14:38:49.679Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "ADVERTENCIA_PUSH",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "Advertencia disciplinaria push enviada al usuario \"Carlos\" con severidad [WARN]."
+    },
+    {
+      "id": 11,
+      "userId": 2,
+      "username": "vamosjuntos.ci.app@gmail.com",
+      "role": "OPERATOR",
+      "timestamp": "2026-05-28T14:39:34.447Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "CONFIRMACION_ADVERTENCIA",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "El usuario confirmó la lectura y entendimiento de la advertencia push: \"Advertencia Operativa\"."
     }
   ],
   "userWarnings": [
@@ -104,6 +179,50 @@
       "behavior": "POPUP",
       "isRead": true,
       "createdAt": "2026-05-26T01:38:18.198Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "adminId": 1,
+      "title": "Advertencia Operativa",
+      "message": "Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.",
+      "severity": "WARN",
+      "behavior": "CONFIRM",
+      "isRead": true,
+      "createdAt": "2026-05-28T14:37:22.566Z"
+    },
+    {
+      "id": 3,
+      "userId": 5,
+      "adminId": 1,
+      "title": "Advertencia Operativa",
+      "message": "Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.",
+      "severity": "WARN",
+      "behavior": "CONFIRM",
+      "isRead": false,
+      "createdAt": "2026-05-28T14:38:26.077Z"
+    },
+    {
+      "id": 4,
+      "userId": 3,
+      "adminId": 1,
+      "title": "Advertencia Operativa",
+      "message": "Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.",
+      "severity": "WARN",
+      "behavior": "CONFIRM",
+      "isRead": false,
+      "createdAt": "2026-05-28T14:38:41.601Z"
+    },
+    {
+      "id": 5,
+      "userId": 3,
+      "adminId": 1,
+      "title": "Advertencia Operativa",
+      "message": "Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.",
+      "severity": "WARN",
+      "behavior": "CONFIRM",
+      "isRead": false,
+      "createdAt": "2026-05-28T14:38:49.673Z"
     }
   ],
   "incidents": [
@@ -126,6 +245,38 @@
       "action": "ADVERTENCIA",
       "reason": "Advertencia push enviada debido a múltiples cancelaciones consecutivas.",
       "createdAt": "2026-05-26T01:38:18.198Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "adminId": 1,
+      "action": "ADVERTENCIA",
+      "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: WARN]",
+      "createdAt": "2026-05-28T14:37:22.570Z"
+    },
+    {
+      "id": 3,
+      "userId": 5,
+      "adminId": 1,
+      "action": "ADVERTENCIA",
+      "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: WARN]",
+      "createdAt": "2026-05-28T14:38:26.082Z"
+    },
+    {
+      "id": 4,
+      "userId": 3,
+      "adminId": 1,
+      "action": "ADVERTENCIA",
+      "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: WARN]",
+      "createdAt": "2026-05-28T14:38:41.605Z"
+    },
+    {
+      "id": 5,
+      "userId": 3,
+      "adminId": 1,
+      "action": "ADVERTENCIA",
+      "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: WARN]",
+      "createdAt": "2026-05-28T14:38:49.677Z"
     }
   ],
   "userOverrides": [
@@ -744,7 +895,15 @@
       "whatsapp": "https://wa.me/529981234567",
       "status": "PUBLISHED",
       "version": 1,
-      "updatedAt": "2026-05-28T02:45:05.792Z"
+      "updatedAt": "2026-05-28T02:45:05.792Z",
+      "sectionsOrder": [
+        "hero",
+        "bio",
+        "multimedia",
+        "tours",
+        "testimonios",
+        "social"
+      ]
     },
     {
       "id": 2,
@@ -815,7 +974,15 @@
       "whatsapp": "https://wa.me/529981234568",
       "status": "PUBLISHED",
       "version": 1,
-      "updatedAt": "2026-05-28T02:45:05.792Z"
+      "updatedAt": "2026-05-28T02:45:05.792Z",
+      "sectionsOrder": [
+        "hero",
+        "bio",
+        "multimedia",
+        "tours",
+        "testimonios",
+        "social"
+      ]
     },
     {
       "id": 1779943515104,
@@ -828,7 +995,15 @@
       "updatedAt": "2026-05-28T04:45:15.105Z",
       "specialty": "Especialista VIP",
       "yearsExperience": 5,
-      "bio": "<p>Hola, bienvenido a mi perfil oficial de operador certificado.</p>"
+      "bio": "<p>Hola, bienvenido a mi perfil oficial de operador certificado.</p>",
+      "sectionsOrder": [
+        "hero",
+        "bio",
+        "multimedia",
+        "tours",
+        "testimonios",
+        "social"
+      ]
     },
     {
       "id": 1779943584272,
@@ -841,7 +1016,15 @@
       "updatedAt": "2026-05-28T04:46:24.272Z",
       "specialty": "Especialista VIP",
       "yearsExperience": 5,
-      "bio": "<p>Hola, bienvenido a mi perfil oficial de operador certificado.</p>"
+      "bio": "<p>Hola, bienvenido a mi perfil oficial de operador certificado.</p>",
+      "sectionsOrder": [
+        "hero",
+        "bio",
+        "multimedia",
+        "tours",
+        "testimonios",
+        "social"
+      ]
     }
   ]
 }

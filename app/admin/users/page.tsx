@@ -279,6 +279,8 @@ export default function UsersManagementPage() {
         return matchesSearch && matchesRole && matchesStatus;
     });
 
+
+
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', minHeight: '100vh', padding: '1rem 0' }}>
             {/* Header */}
@@ -297,7 +299,7 @@ export default function UsersManagementPage() {
                 </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: selectedUser ? '1fr 420px' : '1fr', gap: '2rem', transition: 'all 0.3s ease' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', transition: 'all 0.3s ease' }}>
                 {/* Users List Panel */}
                 <div className="glass-panel" style={{ padding: '1.5rem' }}>
                     {/* Filters Bar */}
@@ -341,26 +343,27 @@ export default function UsersManagementPage() {
                         </select>
                     </div>
 
-                    {/* Table View */}
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    {/* Table / List View */}
+                    <div className="desktop-only" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '24px', overflow: 'hidden' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
-                                <tr style={{ borderBottom: '1px solid var(--border-glass)', textAlign: 'left' }}>
-                                    {['ID', 'Nombre de Usuario', 'Nombre Completo', 'Email', 'Rol asignado', 'Estado Cuenta', 'Acciones'].map(h => (
-                                        <th key={h} style={{ padding: '0.8rem 0.5rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.72rem', textTransform: 'uppercase' }}>{h}</th>
+                                <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
+                                    {['Usuario / ID', 'Nombre / Email', 'Rol', 'Estado', 'Acciones'].map(h => (
+                                        <th key={h} style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading && users.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
-                                            <RefreshCw size={20} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
+                                        <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
+                                            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', margin: '0 auto' }} />
+                                            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Cargando usuarios...</p>
                                         </td>
                                     </tr>
                                 ) : filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Ningún usuario coincide con los filtros aplicados.</td>
+                                        <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Ningún usuario coincide con los filtros aplicados.</td>
                                     </tr>
                                 ) : (
                                     filteredUsers.map((u) => {
@@ -368,36 +371,39 @@ export default function UsersManagementPage() {
                                         return (
                                             <tr 
                                                 key={u.id} 
+                                                className="hover-row"
                                                 style={{ 
-                                                    borderBottom: '1px solid rgba(255,255,255,0.02)', 
+                                                    borderBottom: '1px solid var(--border-glass)', 
                                                     background: isFocused ? 'rgba(139,92,246,0.05)' : 'transparent',
-                                                    transition: 'all 0.2s' 
+                                                    transition: 'var(--transition-smooth)' 
                                                 }} 
-                                                className="table-row-hover"
                                             >
-                                                <td style={{ padding: '0.8rem 0.5rem', fontWeight: 700, color: 'var(--text-muted)' }}>#{u.id}</td>
-                                                <td style={{ padding: '0.8rem 0.5rem', fontWeight: 600, color: 'white' }}>{u.username}</td>
-                                                <td style={{ padding: '0.8rem 0.5rem', color: 'white' }}>{u.name}</td>
-                                                <td style={{ padding: '0.8rem 0.5rem', color: 'var(--text-muted)' }}>{u.email}</td>
-                                                <td style={{ padding: '0.8rem 0.5rem' }}>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 700, color: u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? 'var(--primary)' : 'white' }}>
-                                                        <Shield size={13} /> {u.role}
+                                                <td style={{ padding: '1.2rem' }}>
+                                                    <div style={{ fontWeight: 700, color: 'white', fontSize: '1.05rem' }}>{u.username}</div>
+                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ID #{u.id}</div>
+                                                </td>
+                                                <td style={{ padding: '1.2rem' }}>
+                                                    <div style={{ color: 'white', fontWeight: 500 }}>{u.name}</div>
+                                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{u.email}</div>
+                                                </td>
+                                                <td style={{ padding: '1.2rem' }}>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600, fontSize: '0.9rem', color: u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? 'var(--primary)' : 'white' }}>
+                                                        <Shield size={16} /> {u.role}
                                                     </span>
                                                 </td>
-                                                <td style={{ padding: '0.8rem 0.5rem' }}>
+                                                <td style={{ padding: '1.2rem' }}>
                                                     <span style={{
-                                                        padding: '0.2rem 0.5rem',
-                                                        borderRadius: '6px',
+                                                        padding: '0.4rem 0.8rem',
+                                                        borderRadius: '10px',
                                                         background: `${getStatusColor(u.status)}15`,
                                                         color: getStatusColor(u.status),
-                                                        fontSize: '0.72rem',
-                                                        fontWeight: 800,
-                                                        border: `1px solid ${getStatusColor(u.status)}33`
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: 700
                                                     }}>
                                                         {u.status}
                                                     </span>
                                                 </td>
-                                                <td style={{ padding: '0.8rem 0.5rem' }}>
+                                                <td style={{ padding: '1.2rem' }}>
                                                     <button
                                                         onClick={() => {
                                                             setSelectedUser(u);
@@ -405,9 +411,9 @@ export default function UsersManagementPage() {
                                                             setBlockStatus(u.status);
                                                         }}
                                                         className="btn-glass-nav"
-                                                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                                        style={{ padding: '0.5rem 1rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                                                     >
-                                                        <Eye size={12} /> Gestionar
+                                                        <Eye size={16} /> Gestionar
                                                     </button>
                                                 </td>
                                             </tr>
@@ -417,24 +423,86 @@ export default function UsersManagementPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {loading && users.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '4rem' }}>
+                                <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', margin: '0 auto' }} />
+                                <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Cargando usuarios...</p>
+                            </div>
+                        ) : filteredUsers.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>Ningún usuario coincide con los filtros.</div>
+                        ) : (
+                            filteredUsers.map((u) => (
+                                <div key={u.id} className="user-card-mobile" style={{
+                                    padding: '1.5rem',
+                                    borderRadius: '24px',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    background: selectedUser?.id === u.id ? 'rgba(139,92,246,0.1)' : 'rgba(255, 255, 255, 0.08)',
+                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+                                    transition: 'all 0.3s'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'white', marginBottom: '0.2rem' }}>{u.username}</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ID #{u.id}</div>
+                                        </div>
+                                        <span style={{
+                                            padding: '0.4rem 0.8rem',
+                                            borderRadius: '10px',
+                                            background: `${getStatusColor(u.status)}15`,
+                                            color: getStatusColor(u.status),
+                                            fontSize: '0.75rem',
+                                            fontWeight: 700
+                                        }}>
+                                            {u.status}
+                                        </span>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                        <div style={{ marginBottom: '0.3rem', color: 'white', fontWeight: 500 }}>{u.name}</div>
+                                        <div>{u.email}</div>
+                                    </div>
+                                    
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', padding: '1rem', marginBottom: '1.2rem', border: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <Shield size={16} color={u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? 'var(--primary)' : 'var(--text-muted)'} />
+                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white' }}>{u.role}</span>
+                                    </div>
+                                    
+                                    <button
+                                        onClick={() => {
+                                            setSelectedUser(u);
+                                            setNewRole(u.role);
+                                            setBlockStatus(u.status);
+                                        }}
+                                        className="btn-premium"
+                                        style={{ width: '100%', padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}
+                                    >
+                                        <Eye size={18} /> Gestionar Perfil
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
 
-                {/* Details Drawer / Control Panel */}
+                {/* Details Modal / Control Panel */}
                 {selectedUser && (
-                    <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', height: 'fit-content' }}>
-                        {/* Drawer Header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                            <div>
-                                <h3 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Ficha de Control Administrativo</h3>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Gestionando cuenta de: <strong>{selectedUser.username}</strong></span>
+                    <div className="modal-overlay" onClick={() => setSelectedUser(null)}>
+                        <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            {/* Drawer Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
+                                <div>
+                                    <h3 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Ficha de Control Administrativo</h3>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Gestionando cuenta de: <strong>{selectedUser.username}</strong></span>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedUser(null)} 
+                                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 800 }}
+                                >
+                                    X
+                                </button>
                             </div>
-                            <button 
-                                onClick={() => setSelectedUser(null)} 
-                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 800 }}
-                            >
-                                X
-                            </button>
-                        </div>
 
                         {/* Profile metrics */}
                         <div className="glass-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -650,8 +718,34 @@ export default function UsersManagementPage() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 )}
             </div>
+
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .desktop-only { display: none !important; }
+                    .mobile-only { display: flex !important; }
+                }
+                @media (min-width: 769px) {
+                    .desktop-only { display: block !important; }
+                    .mobile-only { display: none !important; }
+                }
+                .hover-row:hover { background: rgba(255, 255, 255, 0.02) !important; }
+                .modal-overlay {
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);
+                    display: flex; align-items: center; justify-content: center;
+                    z-index: 9999; animation: fadeIn 0.3s ease; padding: 1rem;
+                }
+                .modal-content {
+                    width: 100%; max-width: 550px; border-radius: 25px; padding: 0;
+                    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    max-height: 90vh; overflow-y: auto;
+                }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            `}</style>
         </div>
     );
 }
