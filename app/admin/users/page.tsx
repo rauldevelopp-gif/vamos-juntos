@@ -292,7 +292,7 @@ export default function UsersManagementPage() {
 
 
     return (
-        <div style={{ maxWidth: '1400px', margin: '0 auto', minHeight: '100vh', padding: '1rem 0' }}>
+        <div className="main-wrapper" style={{ maxWidth: '1400px', margin: '0 auto', minHeight: '100vh', padding: '1rem' }}>
             {/* Global Toast Notification */}
             {toastMsg && (
                 <div style={{
@@ -321,7 +321,7 @@ export default function UsersManagementPage() {
             )}
 
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <span className="text-gradient">👥 Gestión de Usuarios</span>
@@ -338,9 +338,9 @@ export default function UsersManagementPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', transition: 'all 0.3s ease' }}>
                 {/* Users List Panel */}
-                <div className="glass-panel" style={{ padding: '1.5rem' }}>
+                <div className="glass-panel glass-panel-main" style={{ padding: '1.5rem' }}>
                     {/* Filters Bar */}
-                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div className="filters-container" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                         <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
                             <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                             <input
@@ -479,31 +479,33 @@ export default function UsersManagementPage() {
                                     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
                                     transition: 'all 0.3s'
                                 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                        <div>
-                                            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'white', marginBottom: '0.2rem' }}>{u.username}</div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ID #{u.id}</div>
-                                        </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '1rem' }}>
+                                        <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'white' }}>{u.username}</div>
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ID #{u.id}</div>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '1.2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                        <div style={{ marginBottom: '0.3rem', color: 'white', fontWeight: 500 }}>{u.name}</div>
+                                        <div style={{ wordBreak: 'break-all' }}>{u.email}</div>
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
                                         <span style={{
                                             padding: '0.4rem 0.8rem',
                                             borderRadius: '10px',
                                             background: `${getStatusColor(u.status)}15`,
                                             color: getStatusColor(u.status),
                                             fontSize: '0.75rem',
-                                            fontWeight: 700
+                                            fontWeight: 700,
+                                            display: 'inline-flex',
+                                            alignItems: 'center'
                                         }}>
-                                            {u.status}
+                                            Estado: {u.status}
                                         </span>
-                                    </div>
-                                    
-                                    <div style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                                        <div style={{ marginBottom: '0.3rem', color: 'white', fontWeight: 500 }}>{u.name}</div>
-                                        <div>{u.email}</div>
-                                    </div>
-                                    
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', padding: '1rem', marginBottom: '1.2rem', border: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <Shield size={16} color={u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? 'var(--primary)' : 'var(--text-muted)'} />
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white' }}>{u.role}</span>
+                                        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '0.4rem 0.8rem', border: '1px solid var(--border-glass)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <Shield size={14} color={u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? 'var(--primary)' : 'var(--text-muted)'} />
+                                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>Rol: {u.role}</span>
+                                        </div>
                                     </div>
                                     
                                     <button
@@ -542,25 +544,25 @@ export default function UsersManagementPage() {
                             </div>
 
                         {/* Profile metrics */}
-                        <div className="glass-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div className="glass-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <div className="metrics-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Identificador:</span>
                                 <strong style={{ color: 'white', fontSize: '0.78rem' }}>ID #{selectedUser.id}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div className="metrics-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Nombre Completo:</span>
-                                <strong style={{ color: 'white', fontSize: '0.78rem' }}>{selectedUser.name}</strong>
+                                <strong style={{ color: 'white', fontSize: '0.78rem', textAlign: 'right' }}>{selectedUser.name}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div className="metrics-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Correo Electrónico:</span>
-                                <strong style={{ color: 'white', fontSize: '0.78rem' }}>{selectedUser.email}</strong>
+                                <strong style={{ color: 'white', fontSize: '0.78rem', textAlign: 'right', wordBreak: 'break-all' }}>{selectedUser.email}</strong>
                             </div>
                         </div>
 
                         {/* Action 1: Change User Role */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Cambiar Rol Operativo</label>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div className="modal-row-mobile" style={{ display: 'flex', gap: '0.5rem' }}>
                                 <select 
                                     value={newRole} 
                                     onChange={e => setNewRole(e.target.value)} 
@@ -587,7 +589,7 @@ export default function UsersManagementPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Estados de Bloqueo y Suspensiones</label>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <div className="modal-row-mobile" style={{ display: 'flex', gap: '0.5rem' }}>
                                     <select 
                                         value={blockStatus} 
                                         onChange={e => setBlockStatus(e.target.value)} 
@@ -680,7 +682,7 @@ export default function UsersManagementPage() {
                                 }}
                             />
 
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div className="modal-row-mobile" style={{ display: 'flex', gap: '0.5rem' }}>
                                 <select 
                                     value={warningSeverity} 
                                     onChange={e => setWarningSeverity(e.target.value)} 
@@ -738,18 +740,18 @@ export default function UsersManagementPage() {
                         </div>
 
                         {/* Action 4: Account Deletion (Logical / Physical) */}
-                        <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div className="modal-row-mobile" style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '1rem', display: 'flex', gap: '0.5rem' }}>
                             <button 
                                 onClick={() => handleDeleteUser('LOGICAL')}
                                 className="btn-glass-nav" 
-                                style={{ padding: '0.5rem', fontSize: '0.75rem', justifyContent: 'center', borderColor: 'rgba(239,68,68,0.2)', color: '#fca5a5' }}
+                                style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem', justifyContent: 'center', borderColor: 'rgba(239,68,68,0.2)', color: '#fca5a5' }}
                             >
                                 Eliminación Lógica
                             </button>
                             <button 
                                 onClick={() => handleDeleteUser('PHYSICAL')}
                                 className="btn-premium" 
-                                style={{ padding: '0.5rem', borderRadius: '8px', fontSize: '0.75rem', justifyContent: 'center', background: 'linear-gradient(135deg, var(--accent), #e11d48)' }}
+                                style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', fontSize: '0.75rem', justifyContent: 'center', background: 'linear-gradient(135deg, var(--accent), #e11d48)' }}
                             >
                                 Eliminación Física
                             </button>
@@ -763,6 +765,20 @@ export default function UsersManagementPage() {
                 @media (max-width: 768px) {
                     .desktop-only { display: none !important; }
                     .mobile-only { display: flex !important; }
+                    .main-wrapper { padding: 0.5rem !important; }
+                    .glass-panel-main { padding: 1rem !important; border-radius: 16px !important; }
+                    .filters-container { flex-direction: column !important; align-items: stretch !important; }
+                    .filters-container > div, .filters-container > select { width: 100% !important; min-width: 100% !important; }
+                    .user-card-mobile { padding: 1rem !important; border-radius: 16px !important; }
+                    .header-container { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
+                    .header-container button { width: 100% !important; justify-content: center !important; }
+                    
+                    /* Modal Mobile Fixes */
+                    .modal-content { padding: 1.25rem !important; border-radius: 20px !important; }
+                    .modal-row-mobile { flex-direction: column !important; align-items: stretch !important; }
+                    .modal-row-mobile > * { width: 100% !important; }
+                    .metrics-row { flex-direction: column !important; align-items: flex-start !important; gap: 0.15rem !important; }
+                    .metrics-row > strong { text-align: left !important; }
                 }
                 @media (min-width: 769px) {
                     .desktop-only { display: block !important; }

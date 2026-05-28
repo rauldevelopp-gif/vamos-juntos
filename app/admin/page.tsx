@@ -33,8 +33,11 @@ const kpiIcons = {
   topRestaurant: <Hotel size={24} color="#f59e0b" />, // restaurante top
 };
 
+import { getCurrentUserAction } from '@/app/admin/users/actions';
+
 export default function AdminDashboard() {
   const [kpis, setKpis] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +55,14 @@ export default function AdminDashboard() {
       }
     }
     fetchKPIs();
+
+    getCurrentUserAction()
+      .then(res => {
+        if (res.success && res.user) {
+          setUser(res.user);
+        }
+      })
+      .catch(e => console.error(e));
   }, []);
 
   const fmt = (value) => (typeof value === 'number' ? value.toLocaleString('es-MX') : value);
@@ -65,75 +76,86 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="admin-dashboard" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+    <div className="admin-dashboard" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem 0' }}>
+      
+      {/* Dashboard Header */}
+      <div style={{ width: '100%', marginBottom: '0.5rem' }}>
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '0 0 0.5rem 0' }} className="text-gradient">
+          Panel de Administración
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: 0 }}>
+          Bienvenido <strong style={{ color: 'white' }}>{user?.name || user?.username || 'Administrador'}</strong> a su panel de control y estadísticas.
+        </p>
+      </div>
+
       {/* KPI Grid */}
-      <section className="dashboard-stats-grid" style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+      <section className="dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
         {kpis && (
           <>
-            <div className="glass-card" style={{ padding: '1.5rem', border: kpis.totalReservations ? '2px solid #8b5cf6' : '' }}>
+            <div className="glass-card" style={{ padding: '1.2rem', border: kpis.totalReservations ? '1px solid #8b5cf6' : '' }}>
               {kpiIcons.totalReservations}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas Totales</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.totalReservations)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Reservas Totales</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{fmt(kpis.totalReservations)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.totalRevenue}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ingresos Generados</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>${fmt(kpis.totalRevenue)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Ingresos Generados</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>${fmt(kpis.totalRevenue)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.reservationsToday}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Reservas Hoy</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.reservationsToday)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Reservas Hoy</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{fmt(kpis.reservationsToday)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.newClients}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Nuevos Clientes</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.newClients)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Nuevos Clientes</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{fmt(kpis.newClients)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.conversion}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Tasa Conversión</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{kpis.conversion}%</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Tasa Conversión</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{kpis.conversion}%</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.availableServices}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Servicios Disponibles</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.availableServices)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Servicios Disp.</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{fmt(kpis.availableServices)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.occupiedServices}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Servicios Ocupados</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.occupiedServices)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Serv. Ocupados</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{fmt(kpis.occupiedServices)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.cancelations}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Cancelaciones</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>{fmt(kpis.cancelations)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Cancelaciones</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{fmt(kpis.cancelations)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.ticketPromedio}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Ticket Promedio</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0' }}>${fmt(kpis.ticketPromedio)}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Ticket Promedio</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>${fmt(kpis.ticketPromedio)}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.topDest}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Destino Top</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#3b82f6' }}>{kpis.topDest}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Destino Top</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6' }}>{kpis.topDest}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.topDriver}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Conductor Top</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#ec4899' }}>{kpis.topDriver}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Conductor Top</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ec4899' }}>{kpis.topDriver}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.topYacht}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Yate Top</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#06b6d4' }}>{kpis.topYacht}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Yate Top</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#06b6d4' }}>{kpis.topYacht}</div>
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.2rem' }}>
               {kpiIcons.topRestaurant}
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Restaurante Top</p>
-              <div style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.5rem 0', color: '#f59e0b' }}>{kpis.topRestaurant}</div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '0.2rem' }}>Rte. Top</p>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b' }}>{kpis.topRestaurant}</div>
             </div>
           </>
         )}
