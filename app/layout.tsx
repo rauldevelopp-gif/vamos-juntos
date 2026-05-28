@@ -33,6 +33,7 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const session = cookieStore.get('session');
   const username = cookieStore.get('username')?.value || null;
+  const userRole = cookieStore.get('user_role')?.value || null;
 
   // Check if "Quiénes Somos" section is published
   const db = getLocalDB();
@@ -46,7 +47,7 @@ export default async function RootLayout({
       <body>
         <LanguageProvider>
           <PWARegistration />
-          <Navbar session={session} username={username} isAboutUsPublished={isAboutUsPublished} />
+          <Navbar session={session} username={username} role={userRole} isAboutUsPublished={isAboutUsPublished} />
 
           <main style={{ minHeight: 'calc(100vh - 140px)', padding: '2rem 0' }}>
             {children}

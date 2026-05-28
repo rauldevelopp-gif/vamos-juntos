@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function getPublicHotels() {
     try {
@@ -78,11 +79,17 @@ export async function createHotelReservation(data: {
             });
         }
  
+        const user = await getCurrentUser();
+        // Generate unique locator code
+        const locatorCode = 'VJ-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
         const reservation = await prisma.hotelReservation.create({
             data: {
                 roomId: data.roomId,
                 hotelId: data.hotelId,
                 userId: room.hotel.userId,
+                customerId: user ? user.id : null,
+                locatorCode: locatorCode,
                 customerName: data.customerName,
                 customerEmail: data.customerEmail,
                 customerPhone: data.customerPhone,

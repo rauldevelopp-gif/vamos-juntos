@@ -76,6 +76,11 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
     const [processing, setProcessing] = useState(false);
     const [successData, setSuccessData] = useState<any>(null);
 
+    // Account claim state
+    const [password, setPassword] = useState('');
+    const [claiming, setClaiming] = useState(false);
+    const [claimSuccess, setClaimSuccess] = useState(false);
+
     // Calc nights & price
     const nights = (dates.checkIn && dates.checkOut)
         ? Math.max(1, Math.ceil((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / (1000 * 60 * 60 * 24)))
@@ -167,6 +172,35 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
         setProcessing(false);
     };
 
+    const handleClaimAccount = async () => {
+        if (!password || password.length < 6) {
+            alert('La contraseña debe tener al menos 6 caracteres');
+            return;
+        }
+        setClaiming(true);
+        try {
+            const res = await fetch('/api/auth/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: customer.email,
+                    name: customer.name,
+                    password,
+                    locatorCode: successData?.locatorCode
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setClaimSuccess(true);
+            } else {
+                alert(data.error || 'Error al crear la cuenta');
+            }
+        } catch (e) {
+            alert('Error de conexión');
+        }
+        setClaiming(false);
+    };
+
     // Step 4: Success screen
     if (step === 4) {
         return (
@@ -178,8 +212,8 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                 </p>
                 <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', marginBottom: '2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>Folio:</span>
-                        <strong>#{successData?.id.toString().padStart(5, '0')}</strong>
+                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>Localizador:</span>
+                        <strong style={{ color: '#8b5cf6', fontSize: '1.2rem' }}>{successData?.locatorCode}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                         <span style={{ color: 'rgba(255,255,255,0.5)' }}>Check-in:</span>
@@ -196,6 +230,34 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                         <strong>${finalPrice.toLocaleString()} USD</strong>
                     </div>
                 </div>
+
+                {!claimSuccess ? (
+                    <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', marginBottom: '2rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#8b5cf6', fontSize: '1.1rem' }}>¡Gestiona tu Reserva!</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 1rem 0' }}>Crea una contraseña ahora para guardar tus datos y acceder a un panel privado con tu historial.</p>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input 
+                                type="password" 
+                                placeholder="Crea tu contraseña" 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                            />
+                            <button 
+                                onClick={handleClaimAccount}
+                                disabled={claiming}
+                                style={{ padding: '0.8rem 1.5rem', borderRadius: '10px', background: '#8b5cf6', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+                            >
+                                {claiming ? '...' : 'Crear Cuenta'}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', marginBottom: '2rem' }}>
+                        <p style={{ margin: 0, color: '#10b981', fontWeight: 800 }}>¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tu correo.</p>
+                    </div>
+                )}
+
                 <button onClick={onCancel} className="btn-premium" style={{ padding: '1rem 2rem', borderRadius: '50px' }}>Volver al Hotel</button>
             </div>
         );

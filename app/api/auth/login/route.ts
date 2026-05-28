@@ -7,14 +7,13 @@ export async function POST(request: Request) {
     try {
         const { username, password } = await request.json();
 
-        // Try to find user with case-insensitive match if possible, 
-        // or just find first and check manually
+        // Try to find user by email or username
         const user = await prisma.user.findFirst({
-            where: { 
-                username: {
-                    equals: username,
-                    mode: 'insensitive' 
-                }
+            where: {
+                OR: [
+                    { username: { equals: username, mode: 'insensitive' } },
+                    { email: { equals: username, mode: 'insensitive' } }
+                ]
             },
         });
 
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
                 maxAge: 60 * 60 * 24,
             });
 
-            return NextResponse.json({ success: true });
+            return NextResponse.json({ success: true, role: user.role });
         }
 
         return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });

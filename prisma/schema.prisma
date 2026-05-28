@@ -27,10 +27,12 @@ model User {
   attractions  Attraction[]
   restaurants  Restaurant[]
   packages     Package[]
-  packageReservations PackageReservation[]
+  packageReservations PackageReservation[] @relation("OperatorPackageReservations")
+  packageReservationsAsCustomer PackageReservation[] @relation("CustomerPackageReservations")
   discountCodes DiscountCode[]
   gatewaySettings GatewaySettings?
-  hotelReservations HotelReservation[]
+  hotelReservations HotelReservation[] @relation("OperatorHotelReservations")
+  hotelReservationsAsCustomer HotelReservation[] @relation("CustomerHotelReservations")
 }
 
 model Driver {
@@ -269,7 +271,12 @@ model PackageReservation {
   packageId       Int
   package         Package  @relation(fields: [packageId], references: [id])
   userId          Int?     // Owner of the package
-  user            User?    @relation(fields: [userId], references: [id])
+  user            User?    @relation("OperatorPackageReservations", fields: [userId], references: [id])
+  
+  customerId      Int?
+  customerUser    User?    @relation("CustomerPackageReservations", fields: [customerId], references: [id])
+  locatorCode     String?  @unique
+
   
   customerName    String
   customerEmail   String
@@ -335,7 +342,11 @@ model HotelReservation {
   hotelId         Int
   hotel           Hotel    @relation(fields: [hotelId], references: [id])
   userId          Int?     
-  user            User?    @relation(fields: [userId], references: [id])
+  user            User?    @relation("OperatorHotelReservations", fields: [userId], references: [id])
+  
+  customerId      Int?
+  customerUser    User?    @relation("CustomerHotelReservations", fields: [customerId], references: [id])
+  locatorCode     String?  @unique
   
   customerName    String
   customerEmail   String

@@ -246,6 +246,7 @@ export async function createPackageReservation(data: {
     discountCode?: string;
 }) {
     try {
+        const user = await getCurrentUser();
         const pkg = await prisma.package.findUnique({ where: { id: data.packageId } });
         if (!pkg) throw new Error("Package not found");
  
@@ -269,10 +270,15 @@ export async function createPackageReservation(data: {
             }
         }
 
+        // Generate unique locator code
+        const locatorCode = 'VJ-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
         const reservation = await prisma.packageReservation.create({
             data: {
                 packageId: data.packageId,
                 userId: pkg.userId,
+                customerId: user ? user.id : null,
+                locatorCode: locatorCode,
                 customerName: data.customerName,
                 customerEmail: data.customerEmail,
                 customerPhone: data.customerPhone,

@@ -542,6 +542,11 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
   const [activeTab, setActiveTab] = useState<'stripe' | 'paypal'>('stripe');
   const [clientSecret, setClientSecret] = useState('');
   const [stripePromise, setStripePromise] = useState<any>(null);
+  
+  const [locatorCode, setLocatorCode] = useState<string>('');
+  const [password, setPassword] = useState('');
+  const [claiming, setClaiming] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
 
   useEffect(() => {
     fetch(`/api/checkout/config?packageId=${booking.packageId}`)
@@ -577,7 +582,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
     const feeAmount = booking.totalPrice - basePrice;
 
     try {
-      await createPackageReservation({
+      const res = await createPackageReservation({
         packageId: Number(booking.packageId) || 0,
         customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
         customerEmail: booking.customer.email,
@@ -592,11 +597,43 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         notes: booking.notes || '',
         discountCode: booking.discountCode
       });
+      if (res.success && res.data) {
+          setLocatorCode(res.data.locatorCode);
+      }
       setPaymentState('success');
     } catch (error) {
       console.error('Failed to save reservation', error);
       alert('Hubo un error al registrar la reserva.');
     }
+  };
+
+  const handleClaimAccount = async () => {
+      if (!password || password.length < 6) {
+          alert('La contraseña debe tener al menos 6 caracteres');
+          return;
+      }
+      setClaiming(true);
+      try {
+          const res = await fetch('/api/auth/claim', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  email: booking.customer.email,
+                  name: `${booking.customer.firstName} ${booking.customer.lastName}`,
+                  password,
+                  locatorCode: locatorCode
+              })
+          });
+          const data = await res.json();
+          if (data.success) {
+              setClaimSuccess(true);
+          } else {
+              alert(data.error || 'Error al crear la cuenta');
+          }
+      } catch (e) {
+          alert('Error de conexión');
+      }
+      setClaiming(false);
   };
 
   if (paymentState === 'pending') {
@@ -756,8 +793,8 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
 
         <div className="success-info-panel">
           <div className="info-header">
-            <span>Código de Reserva</span>
-            <strong className="code">#{booking.id}</strong>
+            <span>Código de Reserva / Localizador</span>
+            <strong className="code">{locatorCode || `#${booking.id}`}</strong>
           </div>
           <div className="info-body">
             <div className="info-row">
@@ -782,6 +819,33 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
             </div>
           </div>
         </div>
+
+        {!claimSuccess ? (
+            <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', margin: '0 auto 3rem auto', maxWidth: '450px' }}>
+                <h4 style={{ margin: '0 0 0.5rem 0', color: '#8b5cf6', fontSize: '1.1rem' }}>¡Gestiona tu Reserva!</h4>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 1rem 0' }}>Crea una contraseña ahora para guardar tus datos y acceder a un panel privado con tu historial.</p>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input 
+                        type="password" 
+                        placeholder="Crea tu contraseña" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                    />
+                    <button 
+                        onClick={handleClaimAccount}
+                        disabled={claiming}
+                        style={{ padding: '0.8rem 1.5rem', borderRadius: '10px', background: '#8b5cf6', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                        {claiming ? '...' : 'Crear Cuenta'}
+                    </button>
+                </div>
+            </div>
+        ) : (
+            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', margin: '0 auto 3rem auto', maxWidth: '450px' }}>
+                <p style={{ margin: 0, color: '#10b981', fontWeight: 800 }}>¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tu correo.</p>
+            </div>
+        )}
 
         <div className="success-actions">
           <button onClick={handleDownloadPDF} className="btn-sec">

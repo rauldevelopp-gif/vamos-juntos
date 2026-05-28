@@ -270,59 +270,76 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
     );
 };
 
+import { trackReservationAsGuest, getUserReservations } from './actions';
+
 export default function TrackingPage() {
     const { t } = useLanguage();
-    const [packages, setPackages] = useState<Package[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<'checking_auth' | 'guest_form' | 'dashboard' | 'guest_result'>('checking_auth');
+    
+    // Auth / Dashboard state
+    const [userReservations, setUserReservations] = useState<{ packages: any[], hotels: any[] }>({ packages: [], hotels: [] });
+    const [customPackages, setCustomPackages] = useState<Package[]>([]);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
-    const [hasNewConfirmed, setHasNewConfirmed] = useState(false);
+    
+    // Guest form state
+    const [email, setEmail] = useState('');
+    const [locatorCode, setLocatorCode] = useState('');
+    const [guestError, setGuestError] = useState('');
+    const [loadingGuest, setLoadingGuest] = useState(false);
+    
+    // Result state
+    const [previewItem, setPreviewItem] = useState<{type: 'package'|'hotel', data: any} | null>(null);
 
     useEffect(() => {
-        const fetchPackages = async () => {
+        const fetchAllData = async () => {
+            // 1. Fetch custom packages from local storage
+            let loadedCustom: Package[] = [];
             const clientId = localStorage.getItem('vamosJuntos_clientId');
-            if (!clientId) {
-                setLoading(false);
-                return;
-            }
-
-            const result = await getPackagesByClientId(clientId);
-            if (result.success && result.data) {
-                setPackages(result.data as unknown as Package[]);
-                
-                // Check if any package is confirmed
-                const confirmed = (result.data as Package[]).some((p) => p.status === 'Confirmado');
-                if (confirmed) {
-                    setHasNewConfirmed(true);
+            if (clientId) {
+                const result = await getPackagesByClientId(clientId);
+                if (result.success && result.data) {
+                    loadedCustom = result.data as unknown as Package[];
+                    setCustomPackages(loadedCustom);
                 }
             }
-            setLoading(false);
+
+            // 2. Check auth for purchased reservations
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user) {
+                        const dashRes = await getUserReservations();
+                        if (dashRes.success) {
+                            setUserReservations({ packages: dashRes.packages || [], hotels: dashRes.hotels || [] });
+                        }
+                        setViewMode('dashboard');
+                        return;
+                    }
+                }
+            } catch (e) {}
+            
+            setViewMode('guest_form');
         };
-        fetchPackages();
+        fetchAllData();
     }, []);
+
+    const handleGuestTrack = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setGuestError('');
+        setLoadingGuest(true);
+        const res = await trackReservationAsGuest(email, locatorCode.toUpperCase());
+        if (res.success && res.data) {
+            setPreviewItem({ type: res.type as 'package' | 'hotel', data: res.data });
+            setViewMode('guest_result');
+        } else {
+            setGuestError(res.error || 'No se encontró la reserva');
+        }
+        setLoadingGuest(false);
+    };
 
     return (
         <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto' }}>
-            {hasNewConfirmed && (
-                <div style={{ 
-                    background: 'rgba(16, 185, 129, 0.1)', 
-                    border: '1px solid rgba(16, 185, 129, 0.2)', 
-                    padding: '1.25rem', 
-                    borderRadius: '1.25rem', 
-                    marginBottom: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    animation: 'slideDown 0.5s ease-out'
-                }}>
-                    <div style={{ background: '#10b981', color: 'white', padding: '0.6rem', borderRadius: '50%', display: 'flex' }}>
-                        <Bell size={20} />
-                    </div>
-                    <div>
-                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1.1rem' }}>{t('request_confirmed_title')}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('request_confirmed_desc')}</div>
-                    </div>
-                </div>
-            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -331,67 +348,171 @@ export default function TrackingPage() {
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            {t('my_requests')}
+                            {viewMode === 'dashboard' ? 'Mi Panel de Reservas' : (viewMode === 'guest_result' ? 'Detalle de Reserva' : 'Seguimiento de Reservas')}
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            {t('tracking_subtitle')}
+                            {viewMode === 'dashboard' ? 'Historial de tus compras y cotizaciones a la medida.' : (viewMode === 'guest_result' ? 'Consulta la información y estatus de tu reserva.' : 'Consulta el estado de tus compras o paquetes personalizados.')}
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '1rem', borderRadius: '25px', minHeight: '400px' }}>
-                {loading ? (
+            <div className="glass-panel" style={{ padding: '2rem', borderRadius: '25px', minHeight: '400px' }}>
+                {viewMode === 'checking_auth' && (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem', color: 'var(--text-muted)' }}>
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-                        <p>{t('syncing_status')}</p>
+                        <p>Cargando panel...</p>
                     </div>
-                ) : packages.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '6rem' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.03)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                            <Clock size={32} color="var(--text-muted)" />
+                )}
+
+                {viewMode === 'guest_form' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+                            <h3 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.4rem' }}>Consulta tu Reserva</h3>
+                            <form onSubmit={handleGuestTrack} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: '0.4rem' }}>Correo Electrónico</label>
+                                    <input 
+                                        type="email" 
+                                        value={email} 
+                                        onChange={e => setEmail(e.target.value)} 
+                                        required
+                                        style={{ width: '100%', padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: '0.4rem' }}>Localizador (Ej. VJ-XXXXXX)</label>
+                                    <input 
+                                        type="text" 
+                                        value={locatorCode} 
+                                        onChange={e => setLocatorCode(e.target.value.toUpperCase())} 
+                                        required
+                                        style={{ width: '100%', padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }}
+                                    />
+                                </div>
+                                {guestError && <div style={{ color: '#ef4444', fontSize: '0.85rem', textAlign: 'center' }}>{guestError}</div>}
+                                <button 
+                                    type="submit" 
+                                    disabled={loadingGuest || !email || !locatorCode}
+                                    className="btn-premium"
+                                    style={{ padding: '1rem', borderRadius: '12px', marginTop: '1rem' }}
+                                >
+                                    {loadingGuest ? <Loader2 className="animate-spin" /> : 'Buscar Reserva'}
+                                </button>
+                            </form>
                         </div>
-                        <h3>{t('no_active_requests')}</h3>
-                        <p style={{ color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto 2rem' }}>{t('no_requests_desc')}</p>
-                        <Link href="/build" className="btn-premium" style={{ display: 'inline-block' }}>
-                            {t('btn_build')}
-                        </Link>
-                    </div>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {packages.map((pkg) => (
-                            <div key={pkg.id} className="tracking-card" onClick={() => setPreviewPkg(pkg)} style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '1.25rem', 
-                                padding: '1.25rem', 
-                                background: 'rgba(255,255,255,0.02)', 
-                                border: '1px solid var(--border-glass)', 
-                                borderRadius: '1.25rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s'
-                            }}>
 
-                                
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{pkg.name}</div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                        {t('created_at')} {new Date(pkg.createdAt).toLocaleDateString()}
-                                    </div>
-                                </div>
-
-                                <div style={{ textAlign: 'right' }}>
-                                    <StatusBadge status={pkg.status} />
-                                    <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>
-                                        ${pkg.price.toLocaleString()} USD
-                                    </div>
-                                </div>
-                                
-                                <div style={{ color: 'var(--text-muted)' }}>
-                                    <Eye size={20} />
+                        {customPackages.length > 0 && (
+                            <div>
+                                <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>Tus Paquetes Personalizados</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {customPackages.map((pkg) => (
+                                        <div key={pkg.id} className="tracking-card" onClick={() => setPreviewPkg(pkg)} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer', transition: 'all 0.3s' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{pkg.name}</div>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{t('created_at')} {new Date(pkg.createdAt).toLocaleDateString()}</div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <StatusBadge status={pkg.status} />
+                                                <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>${pkg.price.toLocaleString()} USD</div>
+                                            </div>
+                                            <div style={{ color: 'var(--text-muted)' }}><Eye size={20} /></div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
+                        )}
+                    </div>
+                )}
+
+                {viewMode === 'guest_result' && previewItem && (
+                    <div>
+                        <button onClick={() => setViewMode('guest_form')} style={{ background: 'none', border: 'none', color: '#8b5cf6', cursor: 'pointer', marginBottom: '1rem', fontWeight: 800 }}>
+                            ← Nueva Búsqueda
+                        </button>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '20px', padding: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                                <div>
+                                    <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem' }}>
+                                        {previewItem.type === 'package' ? previewItem.data.package.name : previewItem.data.hotel.name}
+                                    </h2>
+                                    <div style={{ color: 'var(--text-muted)' }}>Localizador: <strong style={{ color: 'white' }}>{previewItem.data.locatorCode}</strong></div>
+                                </div>
+                                <StatusBadge status={previewItem.data.status} />
+                            </div>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                                <div>
+                                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontWeight: 800 }}>Fecha</span>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{previewItem.type === 'package' ? previewItem.data.date : previewItem.data.checkInDate}</div>
+                                </div>
+                                <div>
+                                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontWeight: 800 }}>Total</span>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#10b981' }}>${previewItem.data.totalPrice} USD</div>
+                                </div>
+                            </div>
+                            <button className="btn-premium" style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}>
+                                Descargar Comprobante PDF
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {viewMode === 'dashboard' && (
+                    <div>
+                        {userReservations.packages.length === 0 && userReservations.hotels.length === 0 && customPackages.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '4rem' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.03)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                    <Clock size={32} color="var(--text-muted)" />
+                                </div>
+                                <h3>No tienes reservas activas</h3>
+                                <p style={{ color: 'var(--text-muted)' }}>Explora nuestros paquetes y hoteles.</p>
+                                <Link href="/" className="btn-premium" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>Ver Catálogo</Link>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {userReservations.packages.map(pkg => (
+                                    <div key={pkg.id} className="tracking-card" onClick={() => setPreviewItem({ type: 'package', data: pkg })} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer' }}>
+                                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '1rem', borderRadius: '12px' }}><Palmtree color="#8b5cf6" /></div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{pkg.package.name}</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{pkg.date}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <StatusBadge status={pkg.status} />
+                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>${pkg.totalPrice} USD</div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {userReservations.hotels.map(hot => (
+                                    <div key={hot.id} className="tracking-card" onClick={() => setPreviewItem({ type: 'hotel', data: hot })} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer' }}>
+                                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '12px' }}><Hotel color="#10b981" /></div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{hot.hotel.name}</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{hot.checkInDate} a {hot.checkOutDate}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <StatusBadge status={hot.status} />
+                                            <div style={{ fontWeight: 800, color: '#10b981', marginTop: '0.5rem' }}>${hot.totalPrice} USD</div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {customPackages.map((pkg) => (
+                                    <div key={`custom-${pkg.id}`} className="tracking-card" onClick={() => setPreviewPkg(pkg)} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer', transition: 'all 0.3s' }}>
+                                        <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '1rem', borderRadius: '12px' }}><Info color="#f59e0b" /></div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{pkg.name} (Personalizado)</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{t('created_at')} {new Date(pkg.createdAt).toLocaleDateString()}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <StatusBadge status={pkg.status} />
+                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>${pkg.price.toLocaleString()} USD</div>
+                                        </div>
+                                        <div style={{ color: 'var(--text-muted)' }}><Eye size={20} /></div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -402,13 +523,31 @@ export default function TrackingPage() {
                     border-color: var(--primary) !important;
                     transform: translateX(5px);
                 }
-                @keyframes slideDown {
-                    from { transform: translateY(-20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
             `}</style>
 
-            {/* Preview Flyer Modal */}
+            {/* If they click a row in dashboard, we could show PreviewFlyerModal, but for brevity we use a simple view or the modal if we update it */}
+            {previewItem && viewMode === 'dashboard' && (
+                <div className="modal-overlay" onClick={() => setPreviewItem(null)} style={{ zIndex: 2000, position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: '#111', padding: '3rem', borderRadius: '24px', width: '100%', maxWidth: '500px', border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
+                        <h2 style={{ marginBottom: '0.5rem' }}>{previewItem.type === 'package' ? previewItem.data.package.name : previewItem.data.hotel.name}</h2>
+                        <div style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Localizador: {previewItem.data.locatorCode}</div>
+                        <StatusBadge status={previewItem.data.status} />
+                        <div style={{ marginTop: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+                                <span>Pasajeros/Huéspedes</span>
+                                <strong>{previewItem.type === 'package' ? previewItem.data.passengers : previewItem.data.guests}</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+                                <span>Total</span>
+                                <strong style={{ color: '#10b981' }}>${previewItem.data.totalPrice} USD</strong>
+                            </div>
+                        </div>
+                        <button onClick={() => setPreviewItem(null)} className="btn-secondary" style={{ width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '12px' }}>Cerrar</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Package Flyer Modal */}
             {previewPkg && (
                 <PreviewFlyerModal 
                     pkg={previewPkg} 

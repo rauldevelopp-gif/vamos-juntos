@@ -10,10 +10,12 @@ import Image from 'next/image';
 export const Navbar = ({ 
   session, 
   username, 
+  role,
   isAboutUsPublished 
 }: { 
   session: unknown; 
   username: string | null; 
+  role?: string | null;
   isAboutUsPublished?: boolean; 
 }) => {
   const { t, language, setLanguage } = useLanguage();
@@ -161,12 +163,21 @@ export const Navbar = ({
                     </p>
                   </div>
                   
-                  <Link href="/admin" className="dropdown-item" style={{ 
-                    display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.8rem 1rem', color: 'white', textDecoration: 'none', borderRadius: '10px', transition: 'all 0.2s'
-                  }}>
-                    <LayoutDashboard size={18} color="var(--primary)" />
-                    <span style={{ fontWeight: 600 }}>Panel de Control</span>
-                  </Link>
+                  {role === 'USER' ? (
+                    <Link href="/tracking" className="dropdown-item" style={{ 
+                      display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.8rem 1rem', color: 'white', textDecoration: 'none', borderRadius: '10px', transition: 'all 0.2s'
+                    }}>
+                      <LayoutDashboard size={18} color="var(--primary)" />
+                      <span style={{ fontWeight: 600 }}>Panel de Reservas</span>
+                    </Link>
+                  ) : (
+                    <Link href="/admin" className="dropdown-item" style={{ 
+                      display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.8rem 1rem', color: 'white', textDecoration: 'none', borderRadius: '10px', transition: 'all 0.2s'
+                    }}>
+                      <LayoutDashboard size={18} color="var(--primary)" />
+                      <span style={{ fontWeight: 600 }}>Panel de Control</span>
+                    </Link>
+                  )}
 
                   <Link href="/settings" className="dropdown-item" style={{ 
                     display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.8rem 1rem', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '10px', transition: 'all 0.2s'

@@ -27,7 +27,12 @@ export default function LoginPage() {
             });
 
             if (res.ok) {
-                router.push('/admin');
+                const data = await res.json();
+                if (data.role === 'USER') {
+                    router.push('/tracking');
+                } else {
+                    router.push('/admin');
+                }
             } else {
                 setError('Credenciales inválidas. Intenta de nuevo.');
             }
