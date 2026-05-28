@@ -4,6 +4,7 @@ import "./globals.css";
 import PWARegistration from "./PWARegistration";
 import { LanguageProvider } from '../context/LanguageContext';
 import { Navbar } from '../components/Navbar';
+import { getLocalDB } from "@/lib/db-fallback";
 
 export const viewport: Viewport = {
   themeColor: "#05070a",
@@ -33,6 +34,10 @@ export default async function RootLayout({
   const session = cookieStore.get('session');
   const username = cookieStore.get('username')?.value || null;
 
+  // Check if "Quiénes Somos" section is published
+  const db = getLocalDB();
+  const isAboutUsPublished = db.aboutUs?.status === 'PUBLISHED';
+
   return (
     <html lang="es">
       <head>
@@ -41,7 +46,7 @@ export default async function RootLayout({
       <body>
         <LanguageProvider>
           <PWARegistration />
-          <Navbar session={session} username={username} />
+          <Navbar session={session} username={username} isAboutUsPublished={isAboutUsPublished} />
 
           <main style={{ minHeight: 'calc(100vh - 140px)', padding: '2rem 0' }}>
             {children}

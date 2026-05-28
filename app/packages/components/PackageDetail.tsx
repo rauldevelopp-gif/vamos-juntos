@@ -11,6 +11,7 @@ import {
   Star
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const RouteTimeline: React.FC<{ pkg: TourPackage }> = ({ pkg }) => {
   return (
@@ -105,10 +106,14 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
               Explora lo mejor de {pkg.pickup.name} con un servicio boutique personalizado.
             </p>
             
-            <div className="owner-badge" onClick={() => setShowOwnerInfo(true)}>
-              <ShieldCheck size={14} />
+            <Link 
+              href={`/operator/${pkg.owner?.slug || 'vamosjuntos-vip'}`}
+              className="owner-badge-link"
+              onClick={e => e.stopPropagation()}
+            >
+              <ShieldCheck size={16} />
               <span>Operado por: {pkg.owner?.name || 'VamosJuntos VIP'}</span>
-            </div>
+            </Link>
           </div>
         </div>
 
@@ -269,8 +274,45 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
         .pkg-title { font-size: 2.5rem; font-weight: 900; color: white; line-height: 1.1; margin-bottom: 0.5rem; }
         .pkg-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-bottom: 1rem; }
 
-        .owner-badge { display: inline-flex; alignItems: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; border-radius: 20px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.3s; }
-        .owner-badge:hover { background: rgba(16, 185, 129, 0.3); transform: translateY(-2px); }
+        .owner-badge-link { 
+            display: inline-flex !important; 
+            align-items: center !important; 
+            gap: 0.6rem !important; 
+            padding: 0.5rem 1.5rem !important; 
+            background: rgba(16, 185, 129, 0.08) !important; 
+            border: 1px solid rgba(16, 185, 129, 0.35) !important; 
+            color: #10b981 !important; 
+            border-radius: 100px !important; 
+            font-size: 0.85rem !important; 
+            font-weight: 700 !important; 
+            cursor: pointer !important; 
+            text-decoration: none !important; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: none !important;
+        }
+        .owner-badge-link span {
+            color: #10b981 !important;
+            text-decoration: none !important;
+            font-weight: 700 !important;
+        }
+        .owner-badge-link svg {
+            color: #10b981 !important;
+            flex-shrink: 0;
+        }
+        .owner-badge-link:hover { 
+            background: rgba(16, 185, 129, 0.16) !important; 
+            border-color: #34d399 !important; 
+            color: #34d399 !important; 
+            transform: translateY(-1px) !important; 
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important; 
+        }
+        .owner-badge-link:hover span {
+            color: #34d399 !important;
+            text-decoration: none !important;
+        }
+        .owner-badge-link:hover svg {
+            color: #34d399 !important;
+        }
 
         .owner-modal-container { width: 90%; max-width: 400px; background: #151515; border-radius: 24px; padding: 2rem; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 

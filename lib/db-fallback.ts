@@ -66,12 +66,257 @@ export interface LocalUserOverride {
     isDeleted: boolean;
 }
 
+export interface LocalAboutUsContent {
+    title: string;
+    subtitle: string;
+    description: string;
+    mission: string;
+    vision: string;
+    values: { id: string; name: string; description: string; icon: string }[];
+    
+    heroDesktopImage: string;
+    heroMobileImage: string;
+    heroVideoBg: string;
+    heroOpacity: number;
+    heroTitle: string;
+    heroCtaText: string;
+    heroCtaLink: string;
+
+    history: { id: string; year: string; title: string; description: string; image?: string }[];
+    team: { id: string; name: string; role: string; bio: string; photo: string; linkedin?: string; isFeatured: boolean }[];
+    gallery: { id: string; url: string; category: string; order: number; active: boolean }[];
+    stats: { id: string; value: string; suffix: string; label: string; icon: string }[];
+    testimonials: { id: string; clientName: string; clientPhoto: string; comment: string; country: string; rating: number; approved: boolean }[];
+
+    seoTitle: string;
+    seoDescription: string;
+    seoKeywords: string;
+    seoOgImage: string;
+    seoSlug: string;
+
+    status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED';
+    scheduledDate?: string;
+    version: number;
+    updatedAt: string;
+    updatedBy: string;
+}
+
+export interface LocalOperatorProfile {
+    id: number;
+    userId: number;
+    username: string; // matches userOverrides username
+    name: string;
+    slug: string;
+    role?: string;
+
+    // Info General
+    photo?: string;
+    banner?: string;
+    specialty?: string;
+    yearsExperience?: number;
+    bio?: string;
+    languages?: string[];
+    location?: string;
+
+    // Multimedia
+    gallery?: string[];
+    videoBg?: string;
+    youtubeEmbeds?: string[];
+    tiktokEmbeds?: string[];
+
+    // Especialidades
+    specialties?: string[];
+
+    // Certificaciones
+    certifications?: { name: string; issuer: string; year: string }[];
+
+    // Redes Sociales
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+    youtube?: string;
+    whatsapp?: string;
+    website?: string;
+
+    // Estadísticas
+    stats?: { label: string; value: string; suffix?: string }[];
+
+    // Testimonios
+    testimonials?: { clientName: string; clientPhoto: string; comment: string; rating: number }[];
+
+    // SEO
+    seoTitle?: string;
+    seoDescription?: string;
+    seoKeywords?: string;
+
+    status: 'DRAFT' | 'PUBLISHED';
+    updatedAt: string;
+    version: number;
+}
+
 interface LocalDatabase {
     auditLogs: LocalAuditLog[];
     userWarnings: LocalUserWarning[];
     incidents: LocalIncident[];
     disciplinaryActions: LocalDisciplinaryAction[];
     userOverrides: LocalUserOverride[];
+    aboutUs: LocalAboutUsContent;
+    aboutUsVersions: LocalAboutUsContent[];
+    operatorProfiles?: LocalOperatorProfile[];
+}
+
+function getDefaultOperatorProfiles(): LocalOperatorProfile[] {
+    return [
+        {
+            id: 1,
+            userId: 5,
+            username: 'livan',
+            name: 'Livan Jorrin Valdes',
+            slug: 'livan-jorrin-valdes',
+            role: 'OPERATOR',
+            photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80',
+            banner: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80',
+            specialty: 'Luxury Yacht Captain & Riviera Maya Deep Sea Guide',
+            yearsExperience: 12,
+            bio: '<p>Hola, soy Livan. Llevo más de una década navegando por las aguas del Caribe y coordinando experiencias marítimas exclusivas. Mi filosofía es simple: la seguridad de mis pasajeros es lo primero, y su diversión lo segundo.</p><p>Me especializo en tours de yates de súper lujo, excursiones de pesca deportiva extrema, y nado guiado con el majestuoso tiburón ballena.</p>',
+            languages: ['Español', 'Inglés'],
+            location: 'Cancún & Riviera Maya',
+            gallery: [
+                'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+            ],
+            videoBg: 'https://assets.mixkit.co/videos/preview/mixkit-caribbean-beach-with-palm-trees-1507-large.mp4',
+            youtubeEmbeds: ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+            specialties: ['Luxury Travel', 'Yate Privado', 'Pesca Deportiva', 'Snorkel Exclusivo', 'VIP Services'],
+            certifications: [
+                { name: 'Capitán de Altura Clase A', issuer: 'Marina Mercante de México', year: '2016' },
+                { name: 'Primeros Auxilios y Rescate Marítimo', issuer: 'Cruz Roja Internacional', year: '2022' }
+            ],
+            stats: [
+                { label: 'Tours Realizados', value: '350', suffix: '+' },
+                { label: 'Clientes Satisfechos', value: '1200', suffix: '+' },
+                { label: 'Puntuación Promedio', value: '4.9', suffix: ' ★' }
+            ],
+            testimonials: [
+                {
+                    clientName: 'Mark Wahlberg',
+                    clientPhoto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80',
+                    comment: 'Livan hizo que nuestro día de yate fuera inolvidable. Su conocimiento del mar y su amabilidad fueron excepcionales.',
+                    rating: 5
+                },
+                {
+                    clientName: 'Emily Watson',
+                    clientPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+                    comment: 'El mejor guía de yates que hemos tenido en Cancún. El servicio fue impecable y de altísimo nivel.',
+                    rating: 5
+                }
+            ],
+            instagram: 'https://instagram.com/livan_vip_cancun',
+            facebook: 'https://facebook.com/livan_vip_cancun',
+            whatsapp: 'https://wa.me/529981234567',
+            status: 'PUBLISHED',
+            version: 1,
+            updatedAt: new Date().toISOString()
+        },
+        {
+            id: 2,
+            userId: 3,
+            username: 'carlos',
+            name: 'Carlos Mendoza',
+            slug: 'carlos-mendoza',
+            role: 'OPERATOR',
+            photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=250&q=80',
+            banner: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+            specialty: 'VIP Private Transportation Specialist',
+            yearsExperience: 8,
+            bio: '<p>Hola, soy Carlos Mendoza. Coordino y garantizo la logística de traslados ejecutivos en Suburban, SUV Premium y vehículos deportivos en toda la Riviera Maya.</p><p>Mi objetivo es que tu traslado no sea solo un viaje, sino una experiencia de confort absoluto y puntualidad rigurosa.</p>',
+            languages: ['Español', 'Inglés', 'Portugués'],
+            location: 'Playa del Carmen',
+            gallery: [
+                'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80'
+            ],
+            specialties: ['VIP Transport', 'Luxury SUV', 'Logística Corporativa', 'Seguridad Ejecutiva'],
+            certifications: [
+                { name: 'Conducción Defensiva y Evasiva', issuer: 'Secretaría de Seguridad', year: '2020' },
+                { name: 'Servicio de Chofer de Protocolo', issuer: 'VIP Academy', year: '2021' }
+            ],
+            stats: [
+                { label: 'Traslados Completados', value: '800', suffix: '+' },
+                { label: 'Clientes Corporativos', value: '150', suffix: '+' },
+                { label: 'Puntualidad Certificada', value: '100', suffix: '%' }
+            ],
+            testimonials: [
+                {
+                    clientName: 'David Beckham',
+                    clientPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+                    comment: 'La puntualidad de Carlos y el confort del traslado SUV Premium fueron del más alto nivel durante mi estancia.',
+                    rating: 5
+                }
+            ],
+            instagram: 'https://instagram.com/carlos_transporte_vip',
+            whatsapp: 'https://wa.me/529981234568',
+            status: 'PUBLISHED',
+            version: 1,
+            updatedAt: new Date().toISOString()
+        }
+    ];
+}
+
+function getDefaultAboutUs(): LocalAboutUsContent {
+    return {
+        title: 'Quiénes Somos',
+        subtitle: 'Conectando viajeros con experiencias inolvidables',
+        description: 'En VamosJuntos, creemos que viajar no es solo cambiar de lugar, sino transformar la perspectiva. Llevamos más de 15 años diseñando itinerarios de ensueño y brindando servicios logísticos premium de yates, traslados y hoteles en la Riviera Maya.',
+        mission: 'Facilitar experiencias de viaje seguras, premium y memorables a través de tecnología innovadora y un servicio al cliente humano y卓越.',
+        vision: 'Convertirnos en la plataforma líder de turismo experiencial y gestión de flotas premium en Latinoamérica para el año 2030.',
+        values: [
+            { id: 'val-1', name: 'Calidad Premium', description: 'Cuidamos cada detalle de la experiencia para garantizar la excelencia.', icon: 'Award' },
+            { id: 'val-2', name: 'Seguridad Total', description: 'Protocolos rigurosos para la total tranquilidad de nuestros clientes.', icon: 'ShieldCheck' },
+            { id: 'val-3', name: 'Pasión por el Servicio', description: 'Hacemos del viaje de cada cliente un recuerdo inolvidable.', icon: 'Heart' }
+        ],
+        heroDesktopImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80',
+        heroMobileImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1080&h=1350&q=80',
+        heroVideoBg: 'https://assets.mixkit.co/videos/preview/mixkit-caribbean-beach-with-palm-trees-1507-large.mp4',
+        heroOpacity: 40,
+        heroTitle: 'Tu Viaje Soñado Comienza Aquí',
+        heroCtaText: 'Explorar Paquetes',
+        heroCtaLink: '/packages',
+        history: [
+            { id: 'hist-1', year: '2011', title: 'Fundación de la Empresa', description: 'Iniciamos operaciones en Cancún con solo 2 taxis y un sueño.', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80' },
+            { id: 'hist-2', year: '2018', title: 'Expansión de Flotas', description: 'Añadimos servicios marítimos incorporando nuestro primer yate privado.', image: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80' },
+            { id: 'hist-3', year: '2026', title: 'Digitalización Completa', description: 'Lanzamos el portal administrativo y app VamosJuntos con control interno.', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80' }
+        ],
+        team: [
+            { id: 'member-1', name: 'Alejandro Ruiz', role: 'Director Ejecutivo (CEO)', bio: 'Apasionado del turismo y la Riviera Maya con más de 20 años de experiencia.', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=250&q=80', linkedin: 'https://linkedin.com/in/alejandroruiz', isFeatured: true },
+            { id: 'member-2', name: 'Laura Gómez', role: 'Directora de Operaciones', bio: 'Especialista en logística hotelera, de flotas y experiencia del cliente.', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80', linkedin: 'https://linkedin.com/in/lauragomez', isFeatured: true },
+            { id: 'member-3', name: 'Carlos Mendoza', role: 'Coordinador Operativo de Transportes', bio: 'Encargado de la flota de conductores, horarios y transferencias.', photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=250&q=80', isFeatured: false }
+        ],
+        gallery: [
+            { id: 'gal-1', url: 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=800&q=80', category: 'Playas', order: 1, active: true },
+            { id: 'gal-2', url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80', category: 'Hoteles', order: 2, active: true },
+            { id: 'gal-3', url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=800&q=80', category: 'Yates', order: 3, active: true }
+        ],
+        stats: [
+            { id: 'stat-1', value: '500', suffix: '+', label: 'Hoteles Asociados', icon: 'Hotel' },
+            { id: 'stat-2', value: '1', suffix: 'M+', label: 'Turistas Satisfechos', icon: 'Smile' },
+            { id: 'stat-3', value: '15', suffix: ' Años', label: 'De Experiencia', icon: 'Calendar' }
+        ],
+        testimonials: [
+            { id: 'test-1', clientName: 'Sophia Loren', clientPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', comment: 'El servicio de yates fue espectacular. Totalmente recomendable para familias.', country: 'Italia', rating: 5, approved: true },
+            { id: 'test-2', clientName: 'Mark Wahlberg', clientPhoto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80', comment: 'Una excelente organización de los traslados y el hotel. Muy profesionales.', country: 'EE.UU.', rating: 5, approved: true }
+        ],
+        seoTitle: 'Quiénes Somos | VamosJuntos Riviera Maya',
+        seoDescription: 'Conoce la historia, misión, visión y equipo de VamosJuntos, la agencia líder en traslados, yates y hoteles en la Riviera Maya.',
+        seoKeywords: 'quienes somos, agencia de viajes, Riviera Maya, yates, traslados Cancún',
+        seoOgImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+        seoSlug: 'quienes-somos',
+        status: 'PUBLISHED',
+        version: 1,
+        updatedAt: new Date().toISOString(),
+        updatedBy: 'Admin'
+    };
 }
 
 function initializeDB(): LocalDatabase {
@@ -82,7 +327,36 @@ function initializeDB(): LocalDatabase {
     if (fs.existsSync(DB_JSON_PATH)) {
         try {
             const data = fs.readFileSync(DB_JSON_PATH, 'utf-8');
-            return JSON.parse(data);
+            const db = JSON.parse(data);
+            
+            // Self-healing / extension block
+            let needsSave = false;
+            if (!db.aboutUs) {
+                db.aboutUs = getDefaultAboutUs();
+                needsSave = true;
+            }
+            if (!db.aboutUsVersions) {
+                db.aboutUsVersions = [db.aboutUs];
+                needsSave = true;
+            }
+            if (!db.operatorProfiles) {
+                db.operatorProfiles = getDefaultOperatorProfiles();
+                needsSave = true;
+            }
+            // Ensure Livan user overrides exist
+            if (!db.userOverrides) {
+                db.userOverrides = [];
+                needsSave = true;
+            }
+            if (!db.userOverrides.some((u: any) => u.username.toLowerCase() === 'livan')) {
+                db.userOverrides.push({ id: 5, username: 'Livan', name: 'Livan Jorrin Valdes', role: 'OPERATOR', status: 'ACTIVO', isDeleted: false });
+                needsSave = true;
+            }
+            if (needsSave) {
+                fs.writeFileSync(DB_JSON_PATH, JSON.stringify(db, null, 2), 'utf-8');
+            }
+            
+            return db;
         } catch (e) {
             console.error("Error reading JSON db, resetting:", e);
         }
@@ -109,9 +383,14 @@ function initializeDB(): LocalDatabase {
             { id: 1, username: 'Admin', name: 'System Administrator', role: 'ADMIN', status: 'ACTIVO', isDeleted: false },
             { id: 2, username: 'Juan', name: 'Juan Perez', role: 'USER', status: 'ACTIVO', isDeleted: false },
             { id: 3, username: 'Carlos', name: 'Carlos Mendoza', role: 'OPERATOR', status: 'ACTIVO', isDeleted: false },
-            { id: 4, username: 'Ana', name: 'Ana Gomez', role: 'AUDITOR', status: 'ACTIVO', isDeleted: false }
-        ]
+            { id: 4, username: 'Ana', name: 'Ana Gomez', role: 'AUDITOR', status: 'ACTIVO', isDeleted: false },
+            { id: 5, username: 'Livan', name: 'Livan Jorrin Valdes', role: 'OPERATOR', status: 'ACTIVO', isDeleted: false }
+        ],
+        aboutUs: getDefaultAboutUs(),
+        aboutUsVersions: [],
+        operatorProfiles: getDefaultOperatorProfiles()
     };
+    initialDB.aboutUsVersions = [initialDB.aboutUs];
     
     saveDB(initialDB);
     return initialDB;

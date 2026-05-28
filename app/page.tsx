@@ -15,6 +15,7 @@ import { getPublicYachts } from './admin/yachts/actions';
 import { getPublicBeaches } from './admin/beaches/actions';
 import { getPublicAttractions } from './admin/attractions/actions';
 import { getPublicHotels } from './hotels/actions';
+import { getAboutUsContentAction } from './admin/about-admin/actions';
 
 import HotelCard, { WhatsAppIcon } from '../components/HotelCard';
 
@@ -49,6 +50,19 @@ interface Package {
     createdAt: Date;
 }
 
+const slugify = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
+
 const mapApiToFrontend = (apiPkg: { 
     id: number;
     name?: string;
@@ -81,7 +95,7 @@ const mapApiToFrontend = (apiPkg: {
     dropoff: { id: 2, name: apiPkg.dropoff || 'Punto de destino', type: 'hotel' },
     vehicle: { id: apiPkg.vehicle?.id || 1, name: apiPkg.vehicle?.model || 'Luxury SUV', type: 'Premium', capacity: apiPkg.vehicle?.capacity || 8 },
     driver: { id: apiPkg.driver?.id || 1, name: apiPkg.driver?.name || 'Driver VIP' },
-    owner: apiPkg.user ? { name: apiPkg.user.name, email: apiPkg.user.email, role: apiPkg.user.role } : undefined,
+    owner: apiPkg.user ? { name: apiPkg.user.name, email: apiPkg.user.email, role: apiPkg.user.role, slug: slugify(apiPkg.user.name) } : undefined,
     items: items.map((item: { name?: string; type?: string } | string, idx: number) => ({
         id: idx,
         name: (typeof item === 'string' ? item : item.name) || 'Item',
@@ -103,15 +117,17 @@ export default function Home() {
   const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
   const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
+  const [aboutUs, setAboutUs] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [pkgRes, yachtRes, beachRes, attrRes, hotelRes] = await Promise.all([
+      const [pkgRes, yachtRes, beachRes, attrRes, hotelRes, aboutUsRes] = await Promise.all([
         getPackages(),
         getPublicYachts(),
         getPublicBeaches(),
         getPublicAttractions(),
-        getPublicHotels()
+        getPublicHotels(),
+        getAboutUsContentAction()
       ]);
       
       if (pkgRes.success && pkgRes.data) setPackages(pkgRes.data.slice(0, 6));
@@ -119,6 +135,10 @@ export default function Home() {
       if (beachRes.success && beachRes.data) setBeaches(beachRes.data);
       if (attrRes.success && attrRes.data) setAttractions(attrRes.data);
       if (hotelRes.success && hotelRes.data) setHotels(hotelRes.data);
+      
+      if (aboutUsRes.success && aboutUsRes.data && aboutUsRes.data.status === 'PUBLISHED') {
+        setAboutUs(aboutUsRes.data);
+      }
       
       setLoading(false);
     };
@@ -308,6 +328,66 @@ export default function Home() {
         viewMoreText="Ver todas las atracciones"
         accentColor="var(--accent)"
       />
+
+      {/* Dynamic Quiénes Somos Section */}
+      {aboutUs && (
+        <section style={{ padding: '6rem 0', background: 'rgba(5, 7, 10, 0.4)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+          <div className="container">
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '4rem', alignItems: 'center', flexWrap: 'wrap' }} className="quienes-grid">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: '50px', color: '#c4b5fd', fontWeight: 600, fontSize: '0.8rem', width: 'fit-content', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <Info size={14} /> Conoce Nuestra Historia
+                </div>
+                <h2 className="heading-1" style={{ fontSize: '2.8rem', lineHeight: '1.1', margin: 0 }}>
+                  {aboutUs.title} <br />
+                  <span className="text-gradient">{aboutUs.subtitle}</span>
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.7', margin: 0 }}>
+                  {aboutUs.description?.substring(0, 280)}...
+                </p>
+                <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                  {aboutUs.stats?.slice(0, 2).map((stat: any) => (
+                    <div key={stat.id} className="glass-card" style={{ padding: '1rem 2rem', minWidth: '160px', flex: '1 1 0px' }}>
+                      <span style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--primary)', display: 'block' }}>
+                        {stat.value}{stat.suffix}
+                      </span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: '1.5rem' }}>
+                  <Link href="/quienes-somos" className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', borderRadius: '50px', textDecoration: 'none' }}>
+                    <span>Conocer Más de Nosotros</span>
+                    <ArrowRight size={18} />
+                  </Link>
+                </div>
+              </div>
+              <div style={{ position: 'relative', height: '420px', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                <Image
+                  src={aboutUs.heroDesktopImage || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200'}
+                  alt="VamosJuntos Experience"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  unoptimized
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(5,7,10,0.85) 0%, rgba(5,7,10,0.2) 60%, transparent 100%)' }} />
+                <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem' }}>
+                  <p style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>"{aboutUs.mission || 'Nuestra misión es diseñar experiencias de viaje premium inolvidables.'}"</p>
+                  <span style={{ color: 'var(--primary)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '1px', display: 'block', marginTop: '0.5rem' }}>Nuestra Misión</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <style jsx>{`
+            @media (max-width: 992px) {
+              .quienes-grid {
+                grid-template-columns: 1fr !important;
+                gap: 2.5rem !important;
+              }
+            }
+          `}</style>
+        </section>
+      )}
 
       {/* Testimonials */}
       <Testimonials />

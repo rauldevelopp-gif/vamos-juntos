@@ -38,6 +38,7 @@ export interface Owner {
   name?: string;
   email?: string;
   role?: string;
+  slug?: string;
 }
 
 export interface TourPackage {

@@ -24,6 +24,19 @@ import Image from 'next/image';
 
 // --- HELPERS ---
 
+const slugify = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
+
 const mapApiToFrontend = (apiPkg: { 
   id: number; 
   name?: string; 
@@ -75,7 +88,8 @@ const mapApiToFrontend = (apiPkg: {
     owner: apiPkg.user ? {
         name: apiPkg.user.name,
         email: apiPkg.user.email,
-        role: apiPkg.user.role
+        role: apiPkg.user.role,
+        slug: slugify(apiPkg.user.name)
     } : undefined,
     items: items.map((item: { name?: string; type?: string } | string, idx: number) => ({
         id: idx,
