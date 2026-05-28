@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -20,14 +20,17 @@ import {
     Calendar,
     Percent,
     CreditCard,
-    BedDouble
+    BedDouble,
+    ShieldAlert,
+    Users,
+    Settings
 } from 'lucide-react';
+import { getCurrentUserAction } from '@/app/admin/users/actions';
 
 const MENU_ITEMS = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Reportes', href: '/admin/reports', icon: LayoutDashboard },
     { name: 'Cupones', href: '/admin/discounts', icon: Percent },
-    { name: 'Facturación', href: '/admin/billing', icon: CreditCard },
     { name: 'Solicitudes', href: '/admin/requests', icon: Clock },
     { name: 'Paquetes', href: '/admin/package', icon: Package },
     { name: 'Reservas', href: '/admin/reservations', icon: Calendar },
@@ -44,8 +47,26 @@ const MENU_ITEMS = [
 export default function Sidebar() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const [userLoading, setUserLoading] = useState(true);
+
+    useEffect(() => {
+        getCurrentUserAction()
+            .then(res => {
+                if (res.success && res.user) {
+                    setUser(res.user);
+                }
+                setUserLoading(false);
+            })
+            .catch(err => {
+                console.error("Error loading user in Sidebar:", err);
+                setUserLoading(false);
+            });
+    }, []);
 
     const toggleSidebar = () => setIsOpen(!isOpen);
+
+    const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.username?.toLowerCase() === 'admin';
 
     return (
         <>
@@ -141,6 +162,77 @@ export default function Sidebar() {
                             </Link>
                         );
                     })}
+
+                    {!userLoading && isSuperAdmin && (
+                        <>
+                            <div style={{ 
+                                height: '1px', 
+                                background: 'linear-gradient(90deg, transparent, var(--border-glass), transparent)', 
+                                margin: '0.75rem 0',
+                                flexShrink: 0 
+                            }} />
+                            
+                            <div style={{ 
+                                padding: '0 0.5rem 0.25rem 0.5rem', 
+                                fontSize: '0.65rem', 
+                                fontWeight: 800, 
+                                color: 'var(--text-muted)', 
+                                textTransform: 'uppercase', 
+                                letterSpacing: '1px',
+                                flexShrink: 0
+                            }}>
+                                Control Operativo 🔐
+                            </div>
+
+                            <Link 
+                                href="/admin/super-reports" 
+                                className={`sidebar-link ${pathname === '/admin/super-reports' ? 'active' : ''}`}
+                                style={{ 
+                                    borderRadius: '12px', 
+                                    gap: '0.75rem',
+                                    border: pathname === '/admin/super-reports' ? '1px solid rgba(139,92,246,0.3)' : '1px solid transparent',
+                                    background: pathname === '/admin/super-reports' ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
+                                    boxShadow: pathname === '/admin/super-reports' ? '0 0 15px rgba(139,92,246,0.1)' : 'none'
+                                }}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <ShieldAlert size={20} strokeWidth={pathname === '/admin/super-reports' ? 2.5 : 1.5} color={pathname === '/admin/super-reports' ? 'var(--primary)' : 'var(--text-muted)'} />
+                                <span style={{ fontWeight: pathname === '/admin/super-reports' ? 700 : 500 }}>Admin Reportes 🔐</span>
+                            </Link>
+
+                            <Link 
+                                href="/admin/users" 
+                                className={`sidebar-link ${pathname === '/admin/users' ? 'active' : ''}`}
+                                style={{ 
+                                    borderRadius: '12px', 
+                                    gap: '0.75rem',
+                                    border: pathname === '/admin/users' ? '1px solid rgba(139,92,246,0.3)' : '1px solid transparent',
+                                    background: pathname === '/admin/users' ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
+                                    boxShadow: pathname === '/admin/users' ? '0 0 15px rgba(139,92,246,0.1)' : 'none'
+                                }}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Users size={20} strokeWidth={pathname === '/admin/users' ? 2.5 : 1.5} color={pathname === '/admin/users' ? 'var(--primary)' : 'var(--text-muted)'} />
+                                <span style={{ fontWeight: pathname === '/admin/users' ? 700 : 500 }}>Usuarios 👥</span>
+                            </Link>
+
+                            <Link 
+                                href="/admin/billing" 
+                                className={`sidebar-link ${pathname === '/admin/billing' ? 'active' : ''}`}
+                                style={{ 
+                                    borderRadius: '12px', 
+                                    gap: '0.75rem',
+                                    border: pathname === '/admin/billing' ? '1px solid rgba(139,92,246,0.3)' : '1px solid transparent',
+                                    background: pathname === '/admin/billing' ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
+                                    boxShadow: pathname === '/admin/billing' ? '0 0 15px rgba(139,92,246,0.1)' : 'none'
+                                }}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Settings size={20} strokeWidth={pathname === '/admin/billing' ? 2.5 : 1.5} color={pathname === '/admin/billing' ? 'var(--primary)' : 'var(--text-muted)'} />
+                                <span style={{ fontWeight: pathname === '/admin/billing' ? 700 : 500 }}>Configuración ⚙️</span>
+                            </Link>
+                        </>
+                    )}
                 </nav>
 
                 <div style={{ marginTop: 'auto' }}></div>

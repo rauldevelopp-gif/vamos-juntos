@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { LogOut } from 'lucide-react';
+import WarningBanner from '@/components/WarningBanner';
 
 export default async function AdminLayout({
     children,
@@ -60,6 +61,8 @@ export default async function AdminLayout({
             <main className="main-content" style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
                 {children}
             </main>
+
+            <WarningBanner />
 
             <style dangerouslySetInnerHTML={{ __html: `
                 @media (max-width: 768px) {
