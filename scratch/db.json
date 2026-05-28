@@ -166,6 +166,66 @@
       "result": "SUCCESS",
       "tenantId": "default",
       "details": "El usuario confirmó la lectura y entendimiento de la advertencia push: \"Advertencia Operativa\"."
+    },
+    {
+      "id": 12,
+      "userId": 1,
+      "username": "Admin",
+      "role": "ADMIN",
+      "timestamp": "2026-05-28T14:48:04.883Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "ADVERTENCIA_PUSH",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "Advertencia disciplinaria push enviada al usuario \"Juan\" con severidad [CRITICAL]."
+    },
+    {
+      "id": 13,
+      "userId": 1,
+      "username": "Admin",
+      "role": "ADMIN",
+      "timestamp": "2026-05-28T14:50:18.635Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "ADVERTENCIA_PUSH",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "Advertencia disciplinaria push enviada al usuario \"Juan\" con severidad [CRITICAL]."
+    },
+    {
+      "id": 14,
+      "userId": 2,
+      "username": "vamosjuntos.ci.app@gmail.com",
+      "role": "OPERATOR",
+      "timestamp": "2026-05-28T14:51:03.885Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "CONFIRMACION_ADVERTENCIA",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "El usuario confirmó la lectura y entendimiento de la advertencia push: \"Advertencia Operativa\"."
+    },
+    {
+      "id": 15,
+      "userId": 2,
+      "username": "vamosjuntos.ci.app@gmail.com",
+      "role": "OPERATOR",
+      "timestamp": "2026-05-28T14:51:06.340Z",
+      "ipAddress": "127.0.0.1",
+      "device": "Desconocido",
+      "browser": "Navegador",
+      "actionType": "CONFIRMACION_ADVERTENCIA",
+      "module": "USUARIOS",
+      "result": "SUCCESS",
+      "tenantId": "default",
+      "details": "El usuario confirmó la lectura y entendimiento de la advertencia push: \"Advertencia Operativa\"."
     }
   ],
   "userWarnings": [
@@ -223,6 +283,28 @@
       "behavior": "CONFIRM",
       "isRead": false,
       "createdAt": "2026-05-28T14:38:49.673Z"
+    },
+    {
+      "id": 6,
+      "userId": 2,
+      "adminId": 1,
+      "title": "Advertencia Operativa",
+      "message": "Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.",
+      "severity": "CRITICAL",
+      "behavior": "CONFIRM",
+      "isRead": true,
+      "createdAt": "2026-05-28T14:48:04.879Z"
+    },
+    {
+      "id": 7,
+      "userId": 2,
+      "adminId": 1,
+      "title": "Advertencia Operativa",
+      "message": "Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.",
+      "severity": "CRITICAL",
+      "behavior": "CONFIRM",
+      "isRead": true,
+      "createdAt": "2026-05-28T14:50:18.631Z"
     }
   ],
   "incidents": [
@@ -277,6 +359,22 @@
       "action": "ADVERTENCIA",
       "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: WARN]",
       "createdAt": "2026-05-28T14:38:49.677Z"
+    },
+    {
+      "id": 6,
+      "userId": 2,
+      "adminId": 1,
+      "action": "ADVERTENCIA",
+      "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: CRITICAL]",
+      "createdAt": "2026-05-28T14:48:04.882Z"
+    },
+    {
+      "id": 7,
+      "userId": 2,
+      "adminId": 1,
+      "action": "ADVERTENCIA",
+      "reason": "Advertencia push enviada: \"Advertencia Operativa\" - [Severidad: CRITICAL]",
+      "createdAt": "2026-05-28T14:50:18.633Z"
     }
   ],
   "userOverrides": [

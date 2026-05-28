@@ -50,7 +50,10 @@ export async function getSystemUsers() {
     } catch (e) {
         // Fallback JSON db
         const db = getLocalDB();
-        users.push(...db.userOverrides.filter(u => !u.isDeleted));
+        users.push(...db.userOverrides.filter(u => !u.isDeleted).map(u => ({
+            ...u,
+            email: u.email || 'Sin correo'
+        })));
     }
 
     return { success: true, data: users };

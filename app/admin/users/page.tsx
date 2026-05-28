@@ -44,6 +44,14 @@ export default function UsersManagementPage() {
     const [warningBehavior, setWarningBehavior] = useState('CONFIRM'); // POPUP, ON_LOGIN, CONFIRM, PERSISTENT
     const [warningExpiry, setWarningExpiry] = useState('');
 
+    // Custom Toast Notification
+    const [toastMsg, setToastMsg] = useState<{title: string, message: string, type: 'success' | 'error'} | null>(null);
+
+    const showToast = (title: string, message: string, type: 'success' | 'error' = 'success') => {
+        setToastMsg({ title, message, type });
+        setTimeout(() => setToastMsg(null), 4000);
+    };
+
     useEffect(() => {
         getCurrentUserAction()
             .then(res => {
@@ -228,10 +236,12 @@ export default function UsersManagementPage() {
             warningExpiry || undefined
         );
         if (res.success) {
-            alert('Advertencia push disciplinaria enviada con éxito!');
+            showToast('¡Advertencia Enviada!', 'La advertencia push ha sido enviada al usuario con éxito.', 'success');
             setWarningTitle('Advertencia Operativa');
             setWarningMsg('Evite modificar tarifas o realizar cancelaciones masivas sin previa autorización.');
             handleRefresh();
+        } else {
+            showToast('Error', 'No se pudo enviar la advertencia.', 'error');
         }
     };
 
@@ -283,6 +293,33 @@ export default function UsersManagementPage() {
 
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', minHeight: '100vh', padding: '1rem 0' }}>
+            {/* Global Toast Notification */}
+            {toastMsg && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '2rem',
+                    right: '2rem',
+                    background: toastMsg.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : 'rgba(244, 63, 94, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${toastMsg.type === 'success' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(244, 63, 94, 0.5)'}`,
+                    color: 'white',
+                    padding: '1.2rem 1.5rem',
+                    borderRadius: '16px',
+                    boxShadow: '0 15px 40px rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    zIndex: 10000,
+                    animation: 'slideUpToast 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}>
+                    {toastMsg.type === 'success' ? <CheckCircle size={28} /> : <AlertTriangle size={28} />}
+                    <div>
+                        <div style={{ fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.15rem' }}>{toastMsg.title}</div>
+                        <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>{toastMsg.message}</div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
@@ -745,6 +782,7 @@ export default function UsersManagementPage() {
                 }
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                @keyframes slideUpToast { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
             `}</style>
         </div>
     );
