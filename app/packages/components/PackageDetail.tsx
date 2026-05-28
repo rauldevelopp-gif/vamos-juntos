@@ -274,44 +274,42 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
         .pkg-title { font-size: 2.5rem; font-weight: 900; color: white; line-height: 1.1; margin-bottom: 0.5rem; }
         .pkg-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-bottom: 1rem; }
 
-        .owner-badge-link { 
+        :global(.owner-badge-link) { 
             display: inline-flex !important; 
             align-items: center !important; 
             gap: 0.6rem !important; 
             padding: 0.5rem 1.5rem !important; 
-            background: rgba(16, 185, 129, 0.08) !important; 
-            border: 1px solid rgba(16, 185, 129, 0.35) !important; 
-            color: #10b981 !important; 
+            background: rgba(139, 92, 246, 0.1) !important; 
+            border: 1px solid rgba(139, 92, 246, 0.3) !important; 
+            color: #c4b5fd !important; 
             border-radius: 100px !important; 
             font-size: 0.85rem !important; 
             font-weight: 700 !important; 
             cursor: pointer !important; 
             text-decoration: none !important; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: none !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
         }
-        .owner-badge-link span {
-            color: #10b981 !important;
+        :global(.owner-badge-link span) {
+            color: #c4b5fd !important;
             text-decoration: none !important;
             font-weight: 700 !important;
         }
-        .owner-badge-link svg {
-            color: #10b981 !important;
+        :global(.owner-badge-link svg) {
+            color: #8b5cf6 !important;
             flex-shrink: 0;
         }
-        .owner-badge-link:hover { 
-            background: rgba(16, 185, 129, 0.16) !important; 
-            border-color: #34d399 !important; 
-            color: #34d399 !important; 
-            transform: translateY(-1px) !important; 
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important; 
+        :global(.owner-badge-link:hover) { 
+            background: rgba(139, 92, 246, 0.2) !important; 
+            border-color: #a78bfa !important; 
+            transform: translateY(-2px) !important; 
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25) !important; 
         }
-        .owner-badge-link:hover span {
-            color: #34d399 !important;
-            text-decoration: none !important;
+        :global(.owner-badge-link:hover span) {
+            color: white !important;
         }
-        .owner-badge-link:hover svg {
-            color: #34d399 !important;
+        :global(.owner-badge-link:hover svg) {
+            color: #a78bfa !important;
         }
 
         .owner-modal-container { width: 90%; max-width: 400px; background: #151515; border-radius: 24px; padding: 2rem; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }

@@ -51,7 +51,6 @@ export default function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [userLoading, setUserLoading] = useState(true);
-    const [configExpanded, setConfigExpanded] = useState(false);
 
     useEffect(() => {
         getCurrentUserAction()
@@ -66,13 +65,6 @@ export default function Sidebar() {
                 setUserLoading(false);
             });
     }, []);
-
-    // Auto-expand Configuration if active path is inside it
-    useEffect(() => {
-        if (pathname === '/admin/billing' || pathname === '/admin/about-admin' || pathname === '/admin/about-operator') {
-            setConfigExpanded(true);
-        }
-    }, [pathname]);
 
     const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -178,22 +170,17 @@ export default function Sidebar() {
                     {!userLoading && hasControlOperativo && (
                         <>
                             <div style={{ 
-                                height: '1px', 
-                                background: 'linear-gradient(90deg, transparent, var(--border-glass), transparent)', 
-                                margin: '0.75rem 0',
-                                flexShrink: 0 
-                            }} />
-                            
-                            <div style={{ 
-                                padding: '0 0.5rem 0.25rem 0.5rem', 
-                                fontSize: '0.65rem', 
-                                fontWeight: 800, 
-                                color: 'var(--text-muted)', 
-                                textTransform: 'uppercase', 
-                                letterSpacing: '1px',
+                                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                padding: '1.25rem 0.5rem 1rem 0.5rem', 
+                                color: '#10b981', // Verde
+                                borderTop: '1px solid var(--border-glass)',
+                                borderBottom: '1px solid var(--border-glass)',
+                                marginBottom: '0.5rem',
+                                marginTop: '0.5rem',
                                 flexShrink: 0
                             }}>
-                                Control Operativo
+                                <Settings size={22} strokeWidth={2} />
+                                <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>Configuración</span>
                             </div>
 
                             {isSuperAdmin && (
@@ -232,91 +219,49 @@ export default function Sidebar() {
                                 </>
                             )}
 
-                            <div 
-                                onClick={() => setConfigExpanded(!configExpanded)}
-                                className={`sidebar-link ${configExpanded ? 'active' : ''}`}
-                                style={{ 
-                                    borderRadius: '12px', 
-                                    gap: '0.75rem',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <Settings size={20} strokeWidth={configExpanded ? 2.5 : 1.5} color={configExpanded ? 'var(--primary)' : 'var(--text-muted)'} />
-                                    <span>Configuración</span>
-                                </div>
-                                {configExpanded ? <ChevronDown size={14} color="var(--text-muted)" /> : <ChevronRight size={14} color="var(--text-muted)" />}
-                            </div>
+                            {hasControlOperativo && (
+                                <Link 
+                                    href="/admin/billing" 
+                                    className={`sidebar-link ${pathname === '/admin/billing' ? 'active' : ''}`}
+                                    style={{ 
+                                        borderRadius: '12px', 
+                                        gap: '0.75rem'
+                                    }}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    <CreditCard size={20} strokeWidth={pathname === '/admin/billing' ? 2.5 : 1.5} color={pathname === '/admin/billing' ? 'var(--primary)' : 'var(--text-muted)'} />
+                                    <span style={{ fontWeight: pathname === '/admin/billing' ? 700 : 500 }}>Facturación</span>
+                                </Link>
+                            )}
 
-                            {configExpanded && (
-                                <div style={{ 
-                                    display: 'flex', 
-                                    flexDirection: 'column', 
-                                    gap: '0.25rem', 
-                                    paddingLeft: '1.25rem',
-                                    borderLeft: '1px solid var(--border-glass)',
-                                    marginLeft: '0.9rem',
-                                    marginTop: '0.2rem',
-                                    marginBottom: '0.4rem',
-                                    transition: 'all 0.2s'
-                                }}>
-                                    {isSuperAdmin && (
-                                        <>
-                                            <Link 
-                                                href="/admin/billing" 
-                                                className={`sidebar-link ${pathname === '/admin/billing' ? 'active' : ''}`}
-                                                style={{ 
-                                                    borderRadius: '10px', 
-                                                    gap: '0.6rem',
-                                                    padding: '0.4rem 0.75rem',
-                                                    fontSize: '0.8rem',
-                                                    background: pathname === '/admin/billing' ? 'rgba(139, 92, 246, 0.05)' : 'transparent',
-                                                }}
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                <CreditCard size={15} />
-                                                <span>Facturación / Pasarelas</span>
-                                            </Link>
+                            {isOperator && (
+                                <Link 
+                                    href="/admin/about-operator" 
+                                    className={`sidebar-link ${pathname === '/admin/about-operator' ? 'active' : ''}`}
+                                    style={{ 
+                                        borderRadius: '12px', 
+                                        gap: '0.75rem'
+                                    }}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    <Users size={20} strokeWidth={pathname === '/admin/about-operator' ? 2.5 : 1.5} color={pathname === '/admin/about-operator' ? '#06b6d4' : 'var(--text-muted)'} />
+                                    <span style={{ fontWeight: pathname === '/admin/about-operator' ? 700 : 500 }}>Quiénes Somos</span>
+                                </Link>
+                            )}
 
-                                            <Link 
-                                                href="/admin/about-admin" 
-                                                className={`sidebar-link ${pathname === '/admin/about-admin' ? 'active' : ''}`}
-                                                style={{ 
-                                                    borderRadius: '10px', 
-                                                    gap: '0.6rem',
-                                                    padding: '0.4rem 0.75rem',
-                                                    fontSize: '0.8rem',
-                                                    background: pathname === '/admin/about-admin' ? 'rgba(139, 92, 246, 0.05)' : 'transparent',
-                                                }}
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                <ShieldAlert size={15} color="var(--accent)" />
-                                                <span>Quiénes Somos (Admin)</span>
-                                            </Link>
-                                        </>
-                                    )}
-
-                                    {hasControlOperativo && (
-                                        <Link 
-                                            href="/admin/about-operator" 
-                                            className={`sidebar-link ${pathname === '/admin/about-operator' ? 'active' : ''}`}
-                                            style={{ 
-                                                borderRadius: '10px', 
-                                                gap: '0.6rem',
-                                                padding: '0.4rem 0.75rem',
-                                                fontSize: '0.8rem',
-                                                background: pathname === '/admin/about-operator' ? 'rgba(139, 92, 246, 0.05)' : 'transparent',
-                                            }}
-                                            onClick={() => setIsOpen(false)}
-                                        >
-                                            <Users size={15} color="#06b6d4" />
-                                            <span>Quiénes Somos (Operadores)</span>
-                                        </Link>
-                                    )}
-                                </div>
+                            {isSuperAdmin && (
+                                <Link 
+                                    href="/admin/about-admin" 
+                                    className={`sidebar-link ${pathname === '/admin/about-admin' ? 'active' : ''}`}
+                                    style={{ 
+                                        borderRadius: '12px', 
+                                        gap: '0.75rem'
+                                    }}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    <ShieldAlert size={20} strokeWidth={pathname === '/admin/about-admin' ? 2.5 : 1.5} color={pathname === '/admin/about-admin' ? 'var(--accent)' : 'var(--text-muted)'} />
+                                    <span style={{ fontWeight: pathname === '/admin/about-admin' ? 700 : 500 }}>Quiénes Somos</span>
+                                </Link>
                             )}
                         </>
                     )}

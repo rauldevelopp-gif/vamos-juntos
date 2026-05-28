@@ -94,6 +94,8 @@ export interface LocalAboutUsContent {
     seoOgImage: string;
     seoSlug: string;
 
+    sectionsOrder: string[];
+
     status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED';
     scheduledDate?: string;
     version: number;
@@ -148,6 +150,9 @@ export interface LocalOperatorProfile {
     seoTitle?: string;
     seoDescription?: string;
     seoKeywords?: string;
+
+    // Estructura Dinámica
+    sectionsOrder?: string[];
 
     status: 'DRAFT' | 'PUBLISHED';
     updatedAt: string;
@@ -269,7 +274,7 @@ function getDefaultAboutUs(): LocalAboutUsContent {
         title: 'Quiénes Somos',
         subtitle: 'Conectando viajeros con experiencias inolvidables',
         description: 'En VamosJuntos, creemos que viajar no es solo cambiar de lugar, sino transformar la perspectiva. Llevamos más de 15 años diseñando itinerarios de ensueño y brindando servicios logísticos premium de yates, traslados y hoteles en la Riviera Maya.',
-        mission: 'Facilitar experiencias de viaje seguras, premium y memorables a través de tecnología innovadora y un servicio al cliente humano y卓越.',
+        mission: 'Facilitar experiencias de viaje seguras, premium y memorables a través de tecnología innovadora y un servicio al cliente humano y excepcional.',
         vision: 'Convertirnos en la plataforma líder de turismo experiencial y gestión de flotas premium en Latinoamérica para el año 2030.',
         values: [
             { id: 'val-1', name: 'Calidad Premium', description: 'Cuidamos cada detalle de la experiencia para garantizar la excelencia.', icon: 'Award' },
@@ -312,6 +317,7 @@ function getDefaultAboutUs(): LocalAboutUsContent {
         seoKeywords: 'quienes somos, agencia de viajes, Riviera Maya, yates, traslados Cancún',
         seoOgImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
         seoSlug: 'quienes-somos',
+        sectionsOrder: ['hero', 'mission', 'stats', 'history', 'team', 'gallery', 'testimonials', 'cta'],
         status: 'PUBLISHED',
         version: 1,
         updatedAt: new Date().toISOString(),
@@ -334,6 +340,9 @@ function initializeDB(): LocalDatabase {
             if (!db.aboutUs) {
                 db.aboutUs = getDefaultAboutUs();
                 needsSave = true;
+            } else if (!db.aboutUs.sectionsOrder) {
+                db.aboutUs.sectionsOrder = ['hero', 'mission', 'stats', 'history', 'team', 'gallery', 'testimonials', 'cta'];
+                needsSave = true;
             }
             if (!db.aboutUsVersions) {
                 db.aboutUsVersions = [db.aboutUs];
@@ -354,6 +363,19 @@ function initializeDB(): LocalDatabase {
             }
             if (needsSave) {
                 fs.writeFileSync(DB_JSON_PATH, JSON.stringify(db, null, 2), 'utf-8');
+            }
+            
+            if (db.operatorProfiles && Array.isArray(db.operatorProfiles)) {
+                let patchedOperators = false;
+                db.operatorProfiles.forEach((op: any) => {
+                    if (!op.sectionsOrder || op.sectionsOrder.length === 0) {
+                        op.sectionsOrder = ['hero', 'bio', 'multimedia', 'tours', 'testimonios', 'social'];
+                        patchedOperators = true;
+                    }
+                });
+                if (patchedOperators) {
+                    needsSave = true;
+                }
             }
             
             return db;

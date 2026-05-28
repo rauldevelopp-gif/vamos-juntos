@@ -5,7 +5,7 @@ import {
     Activity, Award, Lock, ShieldAlert, Users, Settings, Save, RefreshCw, 
     Plus, Trash2, Edit3, Calendar, Upload, FileText, Globe, Layers, 
     Star, Heart, Check, X, ShieldCheck, ChevronRight, Eye, Trash, LinkedIn,
-    Image
+    Image, ListOrdered, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { getCurrentUserAction } from '@/app/admin/users/actions';
 import {
@@ -15,7 +15,7 @@ import {
     restoreAboutUsVersionAction
 } from './actions';
 
-type TabType = 'institucional' | 'hero' | 'historia' | 'equipo' | 'gallery' | 'stats' | 'testimonios' | 'seo' | 'versiones';
+type TabType = 'institucional' | 'hero' | 'historia' | 'equipo' | 'gallery' | 'stats' | 'testimonios' | 'seo' | 'estructura' | 'versiones';
 
 export default function AboutUsAdminPage() {
     // Auth States
@@ -195,6 +195,27 @@ export default function AboutUsAdminPage() {
         });
     };
 
+    const moveSection = (index: number, direction: 'up' | 'down') => {
+        const newOrder = [...(content.sectionsOrder || [])];
+        if (direction === 'up' && index > 0) {
+            [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+        } else if (direction === 'down' && index < newOrder.length - 1) {
+            [newOrder[index + 1], newOrder[index]] = [newOrder[index], newOrder[index + 1]];
+        }
+        setContent({ ...content, sectionsOrder: newOrder });
+    };
+
+    const sectionNames: Record<string, string> = {
+        hero: 'Banner Principal (Hero)',
+        mission: 'Misión, Visión y Valores',
+        stats: 'Estadísticas / Métricas',
+        history: 'Línea de Tiempo (Historia)',
+        team: 'Equipo Directivo',
+        gallery: 'Galería de Experiencias',
+        testimonials: 'Testimonios',
+        cta: 'Llamado a la Acción (CTA Final)'
+    };
+
     if (authLoading) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', gap: '1rem' }}>
@@ -305,21 +326,22 @@ export default function AboutUsAdminPage() {
     }
 
     const tabs: { key: TabType; name: string; icon: React.ElementType }[] = [
-        { key: 'institucional', name: '1. Información', icon: Award },
-        { key: 'hero', name: '2. Banner Hero', icon: Image },
-        { key: 'historia', name: '3. Historia Timeline', icon: Calendar },
-        { key: 'equipo', name: '4. Equipo Directivo', icon: Users },
-        { key: 'gallery', name: '5. Galería', icon: Upload },
-        { key: 'stats', name: '6. Estadísticas', icon: Settings },
-        { key: 'testimonios', name: '7. Testimonios', icon: Star },
-        { key: 'seo', name: '8. SEO & Meta', icon: Globe },
-        { key: 'versiones', name: '9. Historial Versiones', icon: Layers }
+        { key: 'institucional', name: 'Información', icon: Award },
+        { key: 'hero', name: 'Banner Hero', icon: Image },
+        { key: 'historia', name: 'Historia Timeline', icon: Calendar },
+        { key: 'equipo', name: 'Equipo Directivo', icon: Users },
+        { key: 'gallery', name: 'Galería', icon: Upload },
+        { key: 'stats', name: 'Estadísticas', icon: Settings },
+        { key: 'testimonios', name: 'Testimonios', icon: Star },
+        { key: 'estructura', name: 'Orden de Secciones', icon: ListOrdered },
+        { key: 'seo', name: 'SEO & Meta', icon: Globe },
+        { key: 'versiones', name: 'Historial Versiones', icon: Layers }
     ];
 
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', minHeight: '100vh', padding: '1rem 0' }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="header-top">
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <span className="text-gradient">🔒 Quiénes Somos (Admin)</span>
@@ -359,7 +381,7 @@ export default function AboutUsAdminPage() {
             )}
 
             {/* Slider Tabs */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem', marginBottom: '2rem' }}>
+            <div className="tabs-container">
                 {tabs.map(t => {
                     const isActive = activeTab === t.key;
                     const Icon = t.icon;
@@ -397,7 +419,7 @@ export default function AboutUsAdminPage() {
                 {activeTab === 'institucional' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <h3 style={{ margin: 0, color: 'white' }}>Información Corporativa Principal</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div className="grid-2">
                             <div className="input-group-full">
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>TÍTULO DE SECCIÓN</label>
                                 <input 
@@ -429,7 +451,7 @@ export default function AboutUsAdminPage() {
                             />
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1rem' }}>
+                        <div className="grid-2" style={{ marginTop: '1rem' }}>
                             <div className="input-group-full">
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <ShieldCheck size={14} color="#10b981" /> NUESTRA MISIÓN
@@ -463,7 +485,7 @@ export default function AboutUsAdminPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <h3 style={{ margin: 0, color: 'white' }}>Gestión Multimedia Hero Banner</h3>
                         
-                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+                        <div className="grid-2-1">
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                 <div className="input-group-full">
                                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>TÍTULO DE TEXTO EN EL BANNER</label>
@@ -475,7 +497,7 @@ export default function AboutUsAdminPage() {
                                     />
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="grid-2-gap1">
                                     <div className="input-group-full">
                                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>IMAGEN DE FONDO (DESKTOP)</label>
                                         <input 
@@ -496,7 +518,7 @@ export default function AboutUsAdminPage() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                                <div className="grid-2-1-gap1">
                                     <div className="input-group-full">
                                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>VIDEO DE FONDO (.MP4 MAX 30MB)</label>
                                         <input 
@@ -518,7 +540,7 @@ export default function AboutUsAdminPage() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="grid-2-gap1">
                                     <div className="input-group-full">
                                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>TEXTO BOTÓN CTA</label>
                                         <input 
@@ -596,7 +618,7 @@ export default function AboutUsAdminPage() {
                             <strong style={{ color: 'white', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Plus size={14} color="var(--primary)" /> Añadir Nuevo Hito Histórico
                             </strong>
-                            <div style={{ display: 'grid', gridTemplateColumns: '120px 2fr 2fr 1fr', gap: '1rem', alignItems: 'end' }}>
+                            <div className="grid-history">
                                 <div>
                                     <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>AÑO</label>
                                     <input 
@@ -694,7 +716,7 @@ export default function AboutUsAdminPage() {
                             <strong style={{ color: 'white', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Plus size={14} color="var(--primary)" /> Añadir Miembro del Equipo
                             </strong>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem' }}>
+                            <div className="grid-team-4">
                                 <div>
                                     <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>NOMBRE COMPLETO</label>
                                     <input 
@@ -736,7 +758,7 @@ export default function AboutUsAdminPage() {
                                     />
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                            <div className="flex-responsive-row">
                                 <div style={{ flex: 1 }}>
                                     <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>BIOGRAFÍA CORTA</label>
                                     <input 
@@ -804,7 +826,7 @@ export default function AboutUsAdminPage() {
                         <h3 style={{ margin: 0, color: 'white' }}>Galería Multimedia Corporativa</h3>
                         
                         {/* Drag & Drop simulator Upload */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+                        <div className="grid-2-1-gap15">
                             <div className="glass-card" style={{
                                 border: '2px dashed var(--border-glass)', borderRadius: '16px',
                                 padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -886,7 +908,7 @@ export default function AboutUsAdminPage() {
                         {/* Stat Add */}
                         <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.01)' }}>
                             <strong style={{ color: 'white', fontSize: '0.8rem' }}>Añadir Métrica / Logro Corporativo</strong>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr 1fr', gap: '1rem', alignItems: 'end' }}>
+                            <div className="grid-stat-4">
                                 <div>
                                     <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>CANTIDAD / NÚMERO</label>
                                     <input 
@@ -955,7 +977,7 @@ export default function AboutUsAdminPage() {
                         {/* Testimonial CRUD Add */}
                         <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.01)' }}>
                             <strong style={{ color: 'white', fontSize: '0.8rem' }}>Crear Nuevo Testimonio</strong>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 80px', gap: '1rem' }}>
+                            <div className="grid-test-4">
                                 <div>
                                     <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>NOMBRE CLIENTE</label>
                                     <input 
@@ -999,7 +1021,7 @@ export default function AboutUsAdminPage() {
                                     </select>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'end' }}>
+                            <div className="flex-responsive-row">
                                 <div style={{ flex: 1 }}>
                                     <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>COMENTARIO</label>
                                     <input 
@@ -1061,7 +1083,7 @@ export default function AboutUsAdminPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <h3 style={{ margin: 0, color: 'white' }}>Optimización de Motores de Búsqueda (SEO)</h3>
                         
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div className="grid-2">
                             <div className="input-group-full">
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>META TITLE (TÍTULO GOOGLE)</label>
                                 <input 
@@ -1092,7 +1114,7 @@ export default function AboutUsAdminPage() {
                             />
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div className="grid-2">
                             <div className="input-group-full">
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>KEYWORDS (PALABRAS CLAVE)</label>
                                 <input 
@@ -1111,6 +1133,69 @@ export default function AboutUsAdminPage() {
                                     onChange={e => setContent({...content, seoOgImage: e.target.value})} 
                                 />
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ORDEN DE SECCIONES */}
+                {activeTab === 'estructura' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ margin: 0, color: 'white' }}>Estructura y Orden de la Página</h3>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Define en qué orden aparecen las secciones en la vista pública.</span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {(!content.sectionsOrder || content.sectionsOrder.length === 0) && (
+                                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No hay secciones configuradas. Por favor, guarda para inicializar.</div>
+                            )}
+                            {content.sectionsOrder?.map((sectionKey: string, index: number) => (
+                                <div 
+                                    key={sectionKey} 
+                                    className="glass-card" 
+                                    style={{ 
+                                        padding: '1rem 1.5rem', 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        background: 'rgba(255,255,255,0.02)',
+                                        border: '1px solid var(--border-glass)'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <div style={{ 
+                                            width: '28px', height: '28px', borderRadius: '50%', 
+                                            background: 'rgba(139, 92, 246, 0.1)', color: 'var(--primary)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontWeight: 800, fontSize: '0.8rem'
+                                        }}>
+                                            {index + 1}
+                                        </div>
+                                        <div>
+                                            <strong style={{ color: 'white', display: 'block', fontSize: '0.9rem' }}>{sectionNames[sectionKey] || sectionKey}</strong>
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>ID interno: {sectionKey}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button 
+                                            onClick={() => moveSection(index, 'up')}
+                                            disabled={index === 0}
+                                            className="btn-glass-nav"
+                                            style={{ padding: '0.4rem', borderRadius: '8px', opacity: index === 0 ? 0.3 : 1, cursor: index === 0 ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            <ArrowUp size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={() => moveSection(index, 'down')}
+                                            disabled={index === content.sectionsOrder.length - 1}
+                                            className="btn-glass-nav"
+                                            style={{ padding: '0.4rem', borderRadius: '8px', opacity: index === content.sectionsOrder.length - 1 ? 0.3 : 1, cursor: index === content.sectionsOrder.length - 1 ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            <ArrowDown size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
@@ -1184,6 +1269,62 @@ export default function AboutUsAdminPage() {
                 .input-admin-premium:focus {
                     border-color: var(--primary);
                     background: rgba(139, 92, 246, 0.04);
+                }
+                
+                .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+                .tabs-container { display: flex; flex-wrap: wrap; gap: 0.4rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem; margin-bottom: 2rem; }
+                .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+                .grid-2-gap1 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+                .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+                .grid-2-1-gap1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+                .grid-2-1-gap15 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+                .grid-history { display: grid; grid-template-columns: 120px 2fr 2fr 1fr; gap: 1rem; align-items: end; }
+                .grid-team-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
+                .grid-stat-4 { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr; gap: 1rem; align-items: end; }
+                .grid-test-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 80px; gap: 1rem; }
+                .flex-responsive-row { display: flex; gap: 1.5rem; align-items: center; }
+                
+                @media (max-width: 992px) {
+                    .grid-history, .grid-team-4, .grid-test-4, .grid-stat-4 {
+                        grid-template-columns: 1fr 1fr;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .grid-2, .grid-2-gap1, .grid-2-1, .grid-2-1-gap1, .grid-2-1-gap15, 
+                    .grid-history, .grid-team-4, .grid-test-4, .grid-stat-4 {
+                        grid-template-columns: 1fr;
+                        gap: 1rem;
+                    }
+                    .flex-responsive-row {
+                        flex-direction: column;
+                        align-items: stretch;
+                        gap: 1rem;
+                    }
+                    .flex-responsive-row > button {
+                        width: 100%;
+                    }
+                    .tabs-container {
+                        flex-wrap: nowrap !important;
+                        overflow-x: auto;
+                        padding-bottom: 1rem !important;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: none;
+                    }
+                    .tabs-container::-webkit-scrollbar {
+                        display: none;
+                    }
+                    .tabs-container button {
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                    }
+                    .header-top { 
+                        flex-direction: column; 
+                        align-items: flex-start !important; 
+                    }
+                    .header-top > div:last-child { 
+                        width: 100%; 
+                        justify-content: space-between; 
+                    }
                 }
             `}</style>
         </div>

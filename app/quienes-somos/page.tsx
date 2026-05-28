@@ -61,11 +61,9 @@ export default async function QuienesSomosPage() {
     );
   }
 
-  return (
-    <div style={{ background: '#05070a', color: 'white', minHeight: '100vh', paddingBottom: '4rem' }}>
-      
-      {/* A. HERO BANNER WITH DYNAMIC MEDIA */}
-      <section style={{ position: 'relative', height: '80vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+  const sectionsMap: Record<string, React.ReactNode> = {
+    hero: (
+      <section key="hero" style={{ position: 'relative', height: '80vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         
         {/* Background Overlay */}
         <div style={{ 
@@ -75,37 +73,18 @@ export default async function QuienesSomosPage() {
           zIndex: 2 
         }} />
 
-        {/* Video Loop Background */}
-        {content.heroVideoBg ? (
-          <video 
-            src={content.heroVideoBg} 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            style={{ 
-              position: 'absolute', 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover', 
-              zIndex: 1, 
-              opacity: (100 - content.heroOpacity) / 100 
-            }} 
-          />
-        ) : (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-            {/* Desktop Image */}
-            <div className="desktop-only-bg" style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <Image 
-                src={content.heroDesktopImage || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80'} 
-                alt="VamosJuntos Hero" 
-                fill 
-                style={{ objectFit: 'cover', opacity: (100 - content.heroOpacity) / 100 }}
-                unoptimized
-              />
-            </div>
+        {/* Generated Image Background */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <Image 
+              src={'/about-us-hero.png'} 
+              alt="VamosJuntos Hero" 
+              fill 
+              style={{ objectFit: 'cover', opacity: (100 - content.heroOpacity) / 100 }}
+              unoptimized
+            />
           </div>
-        )}
+        </div>
 
         {/* Hero Text */}
         <div className="container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 2rem' }}>
@@ -153,9 +132,9 @@ export default async function QuienesSomosPage() {
           )}
         </div>
       </section>
-
-      {/* B. MISSION, VISION & VALUES */}
-      <section style={{ padding: '6rem 0', position: 'relative' }}>
+    ),
+    mission: (
+      <section key="mission" style={{ padding: '6rem 0', position: 'relative' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '4rem' }} className="mision-vision-grid">
             
@@ -215,10 +194,9 @@ export default async function QuienesSomosPage() {
           </div>
         </div>
       </section>
-
-      {/* C. STATS BLOCK (ANIMATED NUMBERS) */}
-      {content.stats && content.stats.length > 0 && (
-        <section style={{ padding: '4rem 0', background: 'rgba(139, 92, 246, 0.02)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+    ),
+    stats: content.stats && content.stats.length > 0 ? (
+        <section key="stats" style={{ padding: '4rem 0', background: 'rgba(139, 92, 246, 0.02)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
           <div className="container">
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${content.stats.length}, 1fr)`, gap: '2rem', textAlign: 'center' }} className="stats-grid">
               {content.stats.map((stat) => (
@@ -232,11 +210,9 @@ export default async function QuienesSomosPage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* D. INTERACTIVE TIMELINE / HISTORIA */}
-      {content.history && content.history.length > 0 && (
-        <section style={{ padding: '6rem 0' }}>
+    ) : null,
+    history: content.history && content.history.length > 0 ? (
+        <section key="history" style={{ padding: '6rem 0' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px' }}>Trayectoria y Crecimiento</span>
@@ -324,11 +300,9 @@ export default async function QuienesSomosPage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* E. EQUIPO CORPORATIVO / DE DIRECTIVOS */}
-      {content.team && content.team.length > 0 && (
-        <section style={{ padding: '6rem 0', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+    ) : null,
+    team: content.team && content.team.length > 0 ? (
+        <section key="team" style={{ padding: '6rem 0', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#06b6d4', textTransform: 'uppercase', letterSpacing: '2px' }}>Talento y Liderazgo</span>
@@ -396,11 +370,9 @@ export default async function QuienesSomosPage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* F. DYNAMIC MEDIA GALLERY */}
-      {content.gallery && content.gallery.length > 0 && (
-        <section style={{ padding: '6rem 0' }}>
+    ) : null,
+    gallery: content.gallery && content.gallery.length > 0 ? (
+        <section key="gallery" style={{ padding: '6rem 0' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px' }}>Experiencias de Ensueño</span>
@@ -422,11 +394,9 @@ export default async function QuienesSomosPage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* G. TESTIMONIALS SLIDER */}
-      {content.testimonials && content.testimonials.filter(t => t.approved).length > 0 && (
-        <section style={{ padding: '6rem 0', background: 'rgba(5, 7, 10, 0.4)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+    ) : null,
+    testimonials: content.testimonials && content.testimonials.filter((t: any) => t.approved).length > 0 ? (
+        <section key="testimonials" style={{ padding: '6rem 0', background: 'rgba(5, 7, 10, 0.4)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#06b6d4', textTransform: 'uppercase', letterSpacing: '2px' }}>Opiniones Reales</span>
@@ -460,10 +430,9 @@ export default async function QuienesSomosPage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* H. CALL TO ACTION FINAL */}
-      <section style={{ padding: '6rem 0' }}>
+    ) : null,
+    cta: (
+      <section key="cta" style={{ padding: '6rem 0' }}>
         <div className="container">
           <div className="glass-panel" style={{ 
             borderRadius: '30px', 
@@ -493,6 +462,16 @@ export default async function QuienesSomosPage() {
           </div>
         </div>
       </section>
+    )
+  };
+
+  const defaultOrder = ['hero', 'mission', 'stats', 'history', 'team', 'gallery', 'testimonials', 'cta'];
+  const orderToRender = content.sectionsOrder?.length ? content.sectionsOrder : defaultOrder;
+
+  return (
+    <div style={{ background: '#05070a', color: 'white', minHeight: '100vh', paddingBottom: '4rem' }}>
+      
+      {orderToRender.map((sectionKey: string) => sectionsMap[sectionKey])}
 
       {/* CUSTOM STYLE INJECTIONS FOR MEDIA AND TIMELINE RESPONSIVENESS */}
       <style dangerouslySetInnerHTML={{ __html: `

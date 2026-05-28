@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import {
     Activity, Lock, ShieldCheck, Save, RefreshCw, Star, Heart, Check, X, 
     Upload, Trash2, Edit3, ShieldAlert, Award, FileText, ChevronRight, Play, Eye,
-    Globe, HelpCircle, Plus, Trash, Star as StarIcon, MapPin, PlusCircle, Link as LinkIcon
+    Globe, HelpCircle, Plus, Trash, Star as StarIcon, MapPin, PlusCircle, Link as LinkIcon,
+    ListOrdered, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { getCurrentUserAction } from '@/app/admin/users/actions';
 import {
@@ -12,7 +13,7 @@ import {
     saveOperatorAboutUsContentAction
 } from './actions';
 
-type TabType = 'general' | 'multimedia' | 'specialties' | 'testimonios' | 'certificaciones' | 'social' | 'seo';
+type TabType = 'general' | 'multimedia' | 'specialties' | 'testimonios' | 'certificaciones' | 'social' | 'seo' | 'estructura';
 
 export default function AboutUsOperatorPage() {
     // Auth States
@@ -235,14 +236,35 @@ export default function AboutUsOperatorPage() {
     }
 
     const tabs: { key: TabType; name: string; icon: React.ElementType }[] = [
-        { key: 'general', name: '1. Información General', icon: Award },
-        { key: 'multimedia', name: '2. Multimedia & Enlaces', icon: Upload },
-        { key: 'specialties', name: '3. Especialidades & Logros', icon: Heart },
-        { key: 'testimonios', name: '4. Testimonios Clientes', icon: Star },
-        { key: 'certificaciones', name: '5. Certificaciones', icon: ShieldCheck },
-        { key: 'social', name: '6. Redes Sociales', icon: Globe },
-        { key: 'seo', name: '7. Configuración SEO', icon: Globe }
+        { key: 'general', name: 'Información General', icon: Award },
+        { key: 'multimedia', name: 'Multimedia & Enlaces', icon: Upload },
+        { key: 'specialties', name: 'Especialidades & Logros', icon: Heart },
+        { key: 'testimonios', name: 'Testimonios Clientes', icon: Star },
+        { key: 'certificaciones', name: 'Certificaciones', icon: ShieldCheck },
+        { key: 'social', name: 'Redes Sociales', icon: Globe },
+        { key: 'seo', name: 'Configuración SEO', icon: Globe },
+        { key: 'estructura', name: 'Orden de Secciones', icon: ListOrdered }
     ];
+
+    const moveSection = (index: number, direction: 'up' | 'down') => {
+        if (!content || !content.sectionsOrder) return;
+        const newOrder = [...content.sectionsOrder];
+        if (direction === 'up' && index > 0) {
+            [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+        } else if (direction === 'down' && index < newOrder.length - 1) {
+            [newOrder[index + 1], newOrder[index]] = [newOrder[index], newOrder[index + 1]];
+        }
+        setContent({ ...content, sectionsOrder: newOrder });
+    };
+
+    const sectionNames: Record<string, string> = {
+        'hero': 'Banner Hero & Foto',
+        'bio': 'Biografía & Filosofía',
+        'multimedia': 'Galería & Videos',
+        'tours': 'Tours Destacados',
+        'testimonios': 'Testimonios de Clientes',
+        'social': 'Redes Sociales & Contacto'
+    };
 
     const specialtyOptions = ['Luxury Travel', 'Adventure', 'Food Tours', 'Eco Tourism', 'VIP Services', 'Yate Privado', 'Cultura Maya', 'Pesca Deportiva', 'Snorkel Exclusivo'];
 
@@ -775,9 +797,90 @@ export default function AboutUsOperatorPage() {
                     </div>
                 )}
 
+                {/* TAB 8: ESTRUCTURA / ORDEN DE SECCIONES */}
+                {activeTab === 'estructura' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <h3 style={{ margin: 0, color: 'white' }}>Orden de Secciones Públicas</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '600px' }}>
+                            Define en qué orden aparecerán las secciones en tu página pública. Arrastra o usa las flechas para reordenar los bloques de contenido.
+                        </p>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '600px' }}>
+                            {content.sectionsOrder?.map((sectionKey: string, index: number) => (
+                                <div key={sectionKey} className="glass-card" style={{ 
+                                    padding: '1rem 1.5rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'space-between',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--border-glass)',
+                                    background: 'rgba(255,255,255,0.02)'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <div style={{ 
+                                            width: '28px', height: '28px', borderRadius: '50%', 
+                                            background: 'rgba(139, 92, 246, 0.1)', color: 'var(--primary)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontWeight: 800, fontSize: '0.8rem'
+                                        }}>
+                                            {index + 1}
+                                        </div>
+                                        <span style={{ fontWeight: 600, color: 'white' }}>
+                                            {sectionNames[sectionKey] || sectionKey}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button 
+                                            onClick={() => moveSection(index, 'up')}
+                                            disabled={index === 0}
+                                            style={{
+                                                padding: '0.4rem', borderRadius: '8px',
+                                                background: index === 0 ? 'transparent' : 'rgba(255,255,255,0.05)',
+                                                border: 'none', color: index === 0 ? 'rgba(255,255,255,0.2)' : 'white',
+                                                cursor: index === 0 ? 'not-allowed' : 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}
+                                        >
+                                            <ArrowUp size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={() => moveSection(index, 'down')}
+                                            disabled={index === (content.sectionsOrder?.length || 0) - 1}
+                                            style={{
+                                                padding: '0.4rem', borderRadius: '8px',
+                                                background: index === (content.sectionsOrder?.length || 0) - 1 ? 'transparent' : 'rgba(255,255,255,0.05)',
+                                                border: 'none', color: index === (content.sectionsOrder?.length || 0) - 1 ? 'rgba(255,255,255,0.2)' : 'white',
+                                                cursor: index === (content.sectionsOrder?.length || 0) - 1 ? 'not-allowed' : 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}
+                                        >
+                                            <ArrowDown size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
             </div>
             
-            <style jsx>{`
+            <style jsx global>{`
+                .input-admin-premium {
+                    width: 100%;
+                    padding: 0.75rem 1rem;
+                    border-radius: 10px;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid var(--border-glass);
+                    color: white;
+                    font-size: 0.85rem;
+                    outline: none;
+                    transition: all 0.2s;
+                }
+                .input-admin-premium:focus {
+                    border-color: var(--primary);
+                    background: rgba(139, 92, 246, 0.04);
+                }
                 .input-label {
                     display: block; 
                     font-size: 0.72rem; 

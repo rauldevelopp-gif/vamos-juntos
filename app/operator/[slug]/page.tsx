@@ -6,7 +6,7 @@ import {
   Award, ShieldCheck, Heart, Calendar, Users, 
   Settings, Star, Globe, Layers, ArrowRight, Play, CheckCircle2, 
   MapPin, MessageSquare, Briefcase, Smile, Sparkles, BookOpen,
-  Instagram, Facebook, Video, FileText, Compass, ExternalLink, ShieldAlert
+  Instagram as InstagramLucide, Facebook as FacebookLucide, Video, FileText, Compass, ExternalLink, ShieldAlert
 } from 'lucide-react';
 import { getLocalDB } from '@/lib/db-fallback';
 import prisma from '@/lib/db';
@@ -34,6 +34,14 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
     </svg>
   );
+}
+
+function Facebook(props: any) {
+  return <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>;
+}
+
+function Instagram(props: any) {
+  return <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>;
 }
 
 export default async function OperatorProfilePage({ params }: { params: { slug: string } }) {
@@ -65,11 +73,9 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
     console.error("Error loading operator tours:", error);
   }
 
-  return (
-    <div style={{ background: '#05070a', color: 'white', minHeight: '100vh', paddingBottom: '5rem' }}>
-      
-      {/* A. HERO PRINCIPAL WITH BRANDED MEDIA */}
-      <section style={{ position: 'relative', height: '65vh', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', paddingBottom: '3rem' }}>
+  const sectionsMap: Record<string, React.ReactNode> = {
+    hero: (
+      <section key="hero" style={{ position: 'relative', height: '65vh', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', paddingBottom: '3rem' }}>
         {/* Background Image / Banner */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
           <Image 
@@ -143,9 +149,9 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
           </div>
         </div>
       </section>
-
-      {/* B. BIOGRAFÍA Y FILOSOFÍA DE SERVICIO */}
-      <section style={{ padding: '5rem 0' }}>
+    ),
+    bio: (
+      <section key="bio" style={{ padding: '5rem 0' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '4rem' }} className="details-grid">
           
           {/* Description & Bio */}
@@ -220,10 +226,9 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
 
         </div>
       </section>
-
-      {/* C. MULTIMEDIA GALLERY / EMBEDS */}
-      {((profile.gallery && profile.gallery.length > 0) || (profile.youtubeEmbeds && profile.youtubeEmbeds.length > 0)) && (
-        <section style={{ padding: '5rem 0', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+    ),
+    multimedia: ((profile.gallery && profile.gallery.length > 0) || (profile.youtubeEmbeds && profile.youtubeEmbeds.length > 0)) ? (
+        <section key="multimedia" style={{ padding: '5rem 0', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span className="info-badge" style={{ background: 'rgba(139,92,246,0.1)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.2)' }}>Multimedia</span>
@@ -244,11 +249,9 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
             )}
           </div>
         </section>
-      )}
-
-      {/* D. EXPERIENCIAS DESTACADAS (TOURS ASOCIADOS) */}
-      {operatorTours.length > 0 && (
-        <section style={{ padding: '6rem 0' }}>
+    ) : null,
+    tours: operatorTours.length > 0 ? (
+        <section key="tours" style={{ padding: '6rem 0' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span className="info-badge" style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#22d3ee', border: '1px solid rgba(6, 182, 212, 0.2)' }}>Explorar Catálogo</span>
@@ -281,11 +284,9 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
             </div>
           </div>
         </section>
-      )}
-
-      {/* E. TESTIMONIOS */}
-      {profile.testimonials && profile.testimonials.length > 0 && (
-        <section style={{ padding: '6rem 0', background: 'rgba(5, 7, 10, 0.4)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+    ) : null,
+    testimonios: profile.testimonials && profile.testimonials.length > 0 ? (
+        <section key="testimonios" style={{ padding: '6rem 0', background: 'rgba(5, 7, 10, 0.4)', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
           <div className="container">
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
               <span className="info-badge" style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' }}>Valoraciones</span>
@@ -318,10 +319,9 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
             </div>
           </div>
         </section>
-      )}
-
-      {/* F. REDES SOCIALES Y CTA FINAL */}
-      <section style={{ padding: '6rem 0' }}>
+    ) : null,
+    social: (
+      <section key="social" style={{ padding: '6rem 0' }}>
         <div className="container">
           <div className="glass-panel" style={{ 
             borderRadius: '30px', 
@@ -368,6 +368,16 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
           </div>
         </div>
       </section>
+    )
+  };
+
+  const defaultOrder = ['hero', 'bio', 'multimedia', 'tours', 'testimonios', 'social'];
+  const orderToRender = profile.sectionsOrder?.length ? profile.sectionsOrder : defaultOrder;
+
+  return (
+    <div style={{ background: '#05070a', color: 'white', minHeight: '100vh', paddingBottom: '5rem' }}>
+      
+      {orderToRender.map((sectionKey: string) => sectionsMap[sectionKey])}
 
       {/* CUSTOM STYLE INJECTIONS FOR RESPONSIVENESS */}
       <style dangerouslySetInnerHTML={{ __html: `
