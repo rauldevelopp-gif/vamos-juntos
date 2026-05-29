@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { Link, usePathname, useRouter } from '../navigation';
 import { Home, Package, LogOut, User, Search, ChevronDown, Key, LayoutDashboard, Hotel, Info } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useState, useRef, useEffect } from 'react';
@@ -21,6 +21,8 @@ export const Navbar = ({
   const { t, language, setLanguage } = useLanguage();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -31,6 +33,15 @@ export const Navbar = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleLanguageSwitch = () => {
+    const nextLang = language === 'es' ? 'en' : 'es';
+    setLanguage(nextLang);
+    // Explicitly set next-intl cookie
+    document.cookie = `NEXT_LOCALE=${nextLang}; path=/; max-age=31536000; SameSite=Lax`;
+    // Update path dynamically keeping current sub-page
+    router.replace(pathname, { locale: nextLang });
+  };
   
   return (
     <header style={{
@@ -63,7 +74,7 @@ export const Navbar = ({
           </Link>
           <Link href="/hotels" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Hotel size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
-            <span className="btn-text-mobile-hide">Hoteles</span>
+            <span className="btn-text-mobile-hide">{t('nav_hotels')}</span>
           </Link>
           <Link href="/tracking" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Search size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
@@ -72,12 +83,12 @@ export const Navbar = ({
           {isAboutUsPublished && (
             <Link href="/quienes-somos" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Info size={18} strokeWidth={2} className="mobile-only-icon-lucide" />
-              <span className="btn-text-mobile-hide">Quiénes Somos</span>
+              <span className="btn-text-mobile-hide">{t('about_history_title')}</span>
             </Link>
           )}
           <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.5rem' }}>
             <button
-              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+              onClick={handleLanguageSwitch}
               style={{
                 background: 'rgba(255,255,255,0.05)',
                 border: '1px solid var(--border-glass)',

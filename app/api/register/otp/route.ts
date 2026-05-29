@@ -37,29 +37,55 @@ export async function POST(req: NextRequest) {
 
             otpStore.set(email.toLowerCase(), { code: otp, expiresAt, userData });
 
+            const cookieLocale = req.cookies.get('NEXT_LOCALE')?.value || 'es';
+            const isEn = cookieLocale === 'en';
+            const subject = isEn 
+                ? `${otp} — Your VamosJuntos Verification Code` 
+                : `${otp} — Tu código de verificación VamosJuntos`;
+
+            const html = isEn ? `
+                <div style="font-family: Arial, sans-serif; background: #05070a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 480px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; color: #8b5cf6;">VAMOS JUNTOS</h1>
+                        <p style="color: #94a3b8; margin-top: 0.5rem; font-size: 0.9rem;">Account Verification</p>
+                    </div>
+                    <div style="background: #0f0f1a; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 2rem; text-align: center;">
+                        <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Your verification code is:</p>
+                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: 0.5rem; color: #8b5cf6; margin: 1rem 0; font-family: monospace;">${otp}</div>
+                        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
+                            ⏱ Valid for <strong style="color: #f8fafc;">4 minutes</strong>.<br/>
+                            Do not share this code with anyone.
+                        </p>
+                    </div>
+                    <p style="color: #475569; font-size: 0.75rem; text-align: center; margin-top: 1.5rem;">
+                        If you did not request this registration, please ignore this message.
+                    </p>
+                </div>
+            ` : `
+                <div style="font-family: Arial, sans-serif; background: #05070a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 480px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; color: #8b5cf6;">VAMOS JUNTOS</h1>
+                        <p style="color: #94a3b8; margin-top: 0.5rem; font-size: 0.9rem;">Verificación de cuenta</p>
+                    </div>
+                    <div style="background: #0f0f1a; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 2rem; text-align: center;">
+                        <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Tu código de verificación es:</p>
+                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: 0.5rem; color: #8b5cf6; margin: 1rem 0; font-family: monospace;">${otp}</div>
+                        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
+                            ⏱ Válido por <strong style="color: #f8fafc;">4 minutos</strong>.<br/>
+                            No compartas este código con nadie.
+                        </p>
+                    </div>
+                    <p style="color: #475569; font-size: 0.75rem; text-align: center; margin-top: 1.5rem;">
+                        Si no solicitaste este registro, ignora este mensaje.
+                    </p>
+                </div>
+            `;
+
             const { error } = await resend.emails.send({
                 from: process.env.RESEND_FROM || 'VamosJuntos <onboarding@resend.dev>',
                 to: [email],
-                subject: `${otp} — Tu código de verificación VamosJuntos`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; background: #05070a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 480px; margin: 0 auto;">
-                        <div style="text-align: center; margin-bottom: 2rem;">
-                            <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; color: #8b5cf6;">VAMOS JUNTOS</h1>
-                            <p style="color: #94a3b8; margin-top: 0.5rem; font-size: 0.9rem;">Verificación de cuenta</p>
-                        </div>
-                        <div style="background: #0f0f1a; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 2rem; text-align: center;">
-                            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Tu código de verificación es:</p>
-                            <div style="font-size: 3rem; font-weight: 900; letter-spacing: 0.5rem; color: #8b5cf6; margin: 1rem 0; font-family: monospace;">${otp}</div>
-                            <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
-                                ⏱ Válido por <strong style="color: #f8fafc;">4 minutos</strong>.<br/>
-                                No compartas este código con nadie.
-                            </p>
-                        </div>
-                        <p style="color: #475569; font-size: 0.75rem; text-align: center; margin-top: 1.5rem;">
-                            Si no solicitaste este registro, ignora este mensaje.
-                        </p>
-                    </div>
-                `,
+                subject,
+                html,
             });
 
             if (error) {
@@ -95,6 +121,7 @@ export async function POST(req: NextRequest) {
             const uData = record.userData || {};
             const tempPassword = Math.random().toString(36).slice(-8); // Generate an 8-char random password
             const hashedPassword = crypto.createHash('sha256').update(tempPassword).digest('hex');
+            const cookieLocale = req.cookies.get('NEXT_LOCALE')?.value || 'es';
 
             await prisma.user.create({
                 data: {
@@ -103,6 +130,7 @@ export async function POST(req: NextRequest) {
                     name: uData.fullName || 'Usuario',
                     password: hashedPassword,
                     role: (uData.userType || 'OPERATOR').toUpperCase(),
+                    language: cookieLocale
                 }
             });
 

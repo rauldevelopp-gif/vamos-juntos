@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface EntityCardProps {
     title: string;
@@ -15,6 +16,8 @@ interface EntityCardProps {
 }
 
 export default function EntityCard({ title, subtitle, priceLabel, gallery, badge, accentColor, onClick }: EntityCardProps) {
+    const { language } = useLanguage();
+    const isEn = language === 'en';
     const activeColor = accentColor || 'var(--primary)';
     const images = gallery && gallery.length > 0 ? gallery : ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop'];
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -131,7 +134,7 @@ export default function EntityCard({ title, subtitle, priceLabel, gallery, badge
                 )}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'auto' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: activeColor, fontWeight: 600, fontSize: '0.9rem' }}>
-                        <span>Ver detalles</span>
+                        <span>{isEn ? 'View details' : 'Ver detalles'}</span>
                         <ChevronRight size={16} />
                     </div>
                 </div>

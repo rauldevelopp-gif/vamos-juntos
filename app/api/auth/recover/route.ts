@@ -38,26 +38,48 @@ export async function POST(req: NextRequest) {
 
             otpStore.set(email.toLowerCase(), { code: otp, expiresAt });
 
+            const isEn = existingUser.language === 'en';
+            const subject = isEn 
+                ? `${otp} — VamosJuntos Password Recovery` 
+                : `${otp} — Recuperación de contraseña VamosJuntos`;
+
+            const html = isEn ? `
+                <div style="font-family: Arial, sans-serif; background: #05070a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 480px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; color: #8b5cf6;">VAMOS JUNTOS</h1>
+                        <p style="color: #94a3b8; margin-top: 0.5rem; font-size: 0.9rem;">Password Recovery</p>
+                    </div>
+                    <div style="background: #0f0f1a; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 2rem; text-align: center;">
+                        <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Your code to recover your password is:</p>
+                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: 0.5rem; color: #8b5cf6; margin: 1rem 0; font-family: monospace;">${otp}</div>
+                        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
+                            ⏱ Valid for <strong style="color: #f8fafc;">4 minutes</strong>.<br/>
+                            If you did not request this change, please ignore this message.
+                        </p>
+                    </div>
+                </div>
+            ` : `
+                <div style="font-family: Arial, sans-serif; background: #05070a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 480px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; color: #8b5cf6;">VAMOS JUNTOS</h1>
+                        <p style="color: #94a3b8; margin-top: 0.5rem; font-size: 0.9rem;">Recuperación de contraseña</p>
+                    </div>
+                    <div style="background: #0f0f1a; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 2rem; text-align: center;">
+                        <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Tu código para recuperar la contraseña es:</p>
+                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: 0.5rem; color: #8b5cf6; margin: 1rem 0; font-family: monospace;">${otp}</div>
+                        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
+                            ⏱ Válido por <strong style="color: #f8fafc;">4 minutos</strong>.<br/>
+                            Si no solicitaste este cambio, ignora este mensaje.
+                        </p>
+                    </div>
+                </div>
+            `;
+
             const { error } = await resend.emails.send({
                 from: process.env.RESEND_FROM || 'VamosJuntos <onboarding@resend.dev>',
                 to: [existingUser.email || email], // Send to their actual registered email
-                subject: `${otp} — Recuperación de contraseña VamosJuntos`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; background: #05070a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 480px; margin: 0 auto;">
-                        <div style="text-align: center; margin-bottom: 2rem;">
-                            <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; color: #8b5cf6;">VAMOS JUNTOS</h1>
-                            <p style="color: #94a3b8; margin-top: 0.5rem; font-size: 0.9rem;">Recuperación de contraseña</p>
-                        </div>
-                        <div style="background: #0f0f1a; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 2rem; text-align: center;">
-                            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Tu código para recuperar la contraseña es:</p>
-                            <div style="font-size: 3rem; font-weight: 900; letter-spacing: 0.5rem; color: #8b5cf6; margin: 1rem 0; font-family: monospace;">${otp}</div>
-                            <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
-                                ⏱ Válido por <strong style="color: #f8fafc;">4 minutos</strong>.<br/>
-                                Si no solicitaste este cambio, ignora este mensaje.
-                            </p>
-                        </div>
-                    </div>
-                `,
+                subject,
+                html,
             });
 
             if (error) {

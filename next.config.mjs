@@ -1,3 +1,7 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     typescript: {
@@ -11,6 +15,13 @@ const nextConfig = {
             bodySizeLimit: '10mb',
         },
     },
+    webpack: (config) => {
+        config.ignoreWarnings = [
+            { module: /node_modules\/next-intl/ },
+            { message: /Build dependencies behind this expression are ignored/ }
+        ];
+        return config;
+    },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

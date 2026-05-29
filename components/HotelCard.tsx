@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Info, Star, ChevronLeft, ChevronRight, X, MapPin, Clock, Phone, Mail, BedDouble, Users, CheckCircle2, Wifi, Waves, Dumbbell, UtensilsCrossed } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { getTranslatedValue } from '../lib/i18n-utils';
 
 export const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +21,16 @@ const amenityIcons: Record<string, any> = {
     'Restaurante': UtensilsCrossed,
 };
 
+const amenityTranslations: Record<string, Record<string, string>> = {
+    'WiFi': { es: 'WiFi', en: 'WiFi' },
+    'Alberca': { es: 'Alberca', en: 'Pool' },
+    'Gimnasio': { es: 'Gimnasio', en: 'Gym' },
+    'Restaurante': { es: 'Restaurante', en: 'Restaurant' },
+};
+
 function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void }) {
+    const { language } = useLanguage();
+    const isEn = language === 'en';
     const [roomImageIndexes, setRoomImageIndexes] = useState<Record<number, number>>({});
 
     const getRoomImageIndex = (roomId: number) => roomImageIndexes[roomId] || 0;
@@ -30,6 +41,11 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
     const mainImage = hotel.gallery?.length > 0
         ? hotel.gallery[0]
         : 'https://images.unsplash.com/photo-1542314831-c6a4d1409e1c?q=80&w=2070&auto=format&fit=crop';
+
+    const hotelName = getTranslatedValue(hotel.name, language);
+    const hotelDesc = getTranslatedValue(hotel.description, language);
+    const hotelCategory = getTranslatedValue(hotel.category, language);
+    const hotelCity = getTranslatedValue(hotel.city, language);
 
     return (
         <div
@@ -49,7 +65,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
             >
                 {/* Hero image */}
                 <div style={{ position: 'relative', height: '260px', flexShrink: 0, borderRadius: '28px 28px 0 0', overflow: 'hidden' }}>
-                    <Image src={mainImage} alt={hotel.name} fill style={{ objectFit: 'cover' }} unoptimized />
+                    <Image src={mainImage} alt={hotelName} fill style={{ objectFit: 'cover' }} unoptimized />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0f0f0f 0%, transparent 50%)' }} />
 
                     {/* Close button */}
@@ -69,7 +85,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                     {/* Stars & category badge */}
                     <div style={{ position: 'absolute', top: '1rem', left: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <span style={{ background: '#8b5cf6', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, color: 'white' }}>
-                            {hotel.category}
+                            {hotelCategory}
                         </span>
                     </div>
 
@@ -81,7 +97,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                             ))}
                         </div>
                         <h2 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0, textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
-                            {hotel.name}
+                            {hotelName}
                         </h2>
                     </div>
                 </div>
@@ -91,7 +107,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                     {/* Info row */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.2rem', marginBottom: '1.5rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-                            <MapPin size={15} color="#8b5cf6" /> {hotel.address || hotel.location}, {hotel.city}
+                            <MapPin size={15} color="#8b5cf6" /> {hotel.address || hotel.location}, {hotelCity}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
                             <Clock size={15} color="#8b5cf6" /> Check-in {hotel.checkInTime} · Check-out {hotel.checkOutTime}
@@ -109,9 +125,9 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                     </div>
 
                     {/* Description */}
-                    {hotel.description && (
+                    {hotelDesc && (
                         <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
-                            {hotel.description}
+                            {hotelDesc}
                         </p>
                     )}
 
@@ -119,14 +135,15 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                     {hotel.amenities?.length > 0 && (
                         <div style={{ marginBottom: '1.5rem' }}>
                             <h3 style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>
-                                Amenidades
+                                {isEn ? 'Amenities' : 'Amenidades'}
                             </h3>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 {hotel.amenities.map((a: string, i: number) => {
                                     const Icon = amenityIcons[a] || CheckCircle2;
+                                    const localizedAmenity = amenityTranslations[a]?.[language] || a;
                                     return (
                                         <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.82rem', color: '#c4b5fd' }}>
-                                            <Icon size={13} /> {a}
+                                            <Icon size={13} /> {localizedAmenity}
                                         </span>
                                     );
                                 })}
@@ -138,19 +155,20 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                     {hotel.rooms?.length > 0 && (
                         <div style={{ marginBottom: '1.5rem' }}>
                             <h3 style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>
-                                Tipos de Habitación
+                                {isEn ? 'Room Types' : 'Tipos de Habitación'}
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                                 {hotel.rooms.map((room: any) => {
                                     const roomImages = room.gallery?.length > 0 ? room.gallery : null;
                                     const imgIdx = getRoomImageIndex(room.id);
+                                    const roomType = getTranslatedValue(room.type, language);
                                     return (
                                         <div key={room.id} style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                                             {/* Room image */}
                                             <div style={{ width: '140px', flexShrink: 0, position: 'relative', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 {roomImages ? (
                                                     <>
-                                                        <Image src={roomImages[imgIdx]} alt={room.type} fill style={{ objectFit: 'cover' }} unoptimized />
+                                                        <Image src={roomImages[imgIdx]} alt={roomType} fill style={{ objectFit: 'cover' }} unoptimized />
                                                         {roomImages.length > 1 && (
                                                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px', zIndex: 2 }}>
                                                                 <button onClick={() => setRoomImageIndex(room.id, (imgIdx - 1 + roomImages.length) % roomImages.length)}
@@ -172,14 +190,14 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                                             {/* Room info */}
                                             <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.4rem' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>{room.type}</h4>
+                                                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>{roomType}</h4>
                                                     <div style={{ textAlign: 'right' }}>
                                                         <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'white' }}>${room.basePrice.toLocaleString()}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>por noche</div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{isEn ? 'per night' : 'por noche'}</div>
                                                     </div>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>
-                                                    <Users size={13} /> Hasta {room.maxCapacity} huéspedes
+                                                    <Users size={13} /> {isEn ? `Up to ${room.maxCapacity} guests` : `Hasta ${room.maxCapacity} huéspedes`}
                                                 </div>
                                                 {room.amenities?.length > 0 && (
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.2rem' }}>
@@ -191,7 +209,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                                                     </div>
                                                 )}
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontSize: '0.78rem', marginTop: '0.2rem' }}>
-                                                    <CheckCircle2 size={12} /> Cancelación Gratuita
+                                                    <CheckCircle2 size={12} /> {isEn ? 'Free Cancellation' : 'Cancelación Gratuita'}
                                                 </div>
                                             </div>
                                         </div>
@@ -211,7 +229,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                             textDecoration: 'none', boxShadow: '0 8px 20px rgba(139,92,246,0.35)'
                         }}
                     >
-                        <BedDouble size={18} /> Ver Habitaciones y Reservar
+                        <BedDouble size={18} /> {isEn ? 'View Rooms & Book' : 'Ver Habitaciones y Reservar'}
                     </Link>
                 </div>
             </div>
@@ -220,6 +238,9 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
 }
 
 export default function HotelCard({ hotel }: { hotel: any }) {
+    const { language } = useLanguage();
+    const isEn = language === 'en';
+
     const startingPrice = hotel.rooms?.length > 0
         ? Math.min(...hotel.rooms.map((r: any) => r.basePrice))
         : null;
@@ -237,15 +258,24 @@ export default function HotelCard({ hotel }: { hotel: any }) {
         setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
     };
 
+    const name = getTranslatedValue(hotel.name, language);
+    const description = getTranslatedValue(hotel.description, language);
+    const category = getTranslatedValue(hotel.category, language);
+    const city = getTranslatedValue(hotel.city, language);
+
+    const whatsappPrefilledText = isEn 
+        ? `Hello, I need more information about the hotel: ${name}.\nYou can view it here: ${typeof window !== 'undefined' ? window.location.origin : ''}/hotels/${hotel.id}`
+        : `Hola, necesito más información sobre el hotel: ${name}.\nPuedes verlo aquí: ${typeof window !== 'undefined' ? window.location.origin : ''}/hotels/${hotel.id}`;
+
     return (
         <>
             {showModal && <HotelDetailModal hotel={hotel} onClose={() => setShowModal(false)} />}
 
             <div className="glass-card hotel-card-hover" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ height: '220px', background: 'rgba(255,255,255,0.05)', position: 'relative' }}>
-                    <Image src={images[currentIndex]} alt={hotel.name} fill style={{ objectFit: 'cover' }} unoptimized />
+                    <Image src={images[currentIndex]} alt={name} fill style={{ objectFit: 'cover' }} unoptimized />
                     <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#8b5cf6', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 700, color: 'white', zIndex: 10 }}>
-                        {hotel.category}
+                        {category}
                     </div>
 
                     {images.length > 1 && (
@@ -263,35 +293,35 @@ export default function HotelCard({ hotel }: { hotel: any }) {
                 </div>
 
                 <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{hotel.name}</h3>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</h3>
                     <div style={{ display: 'flex', gap: '2px', marginBottom: '0.5rem' }}>
                         {Array(hotel.stars || 5).fill(0).map((_, i) => (
                             <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" strokeWidth={0} />
                         ))}
                     </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', height: '3rem', overflow: 'hidden' }}>
-                        {hotel.description || 'Una experiencia única en ' + hotel.city}
+                        {description || (isEn ? 'A unique experience in ' : 'Una experiencia única en ') + city}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                    <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                         <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-                            {startingPrice ? `$${startingPrice.toLocaleString()}` : '-'} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>/noche</small>
+                            {startingPrice ? `$${startingPrice.toLocaleString()}` : '-'} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>/{isEn ? 'night' : 'noche'}</small>
                         </span>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            {/* Info → ahora abre modal */}
+                            {/* Info → abre modal */}
                             <button
                                 onClick={() => setShowModal(true)}
                                 className="btn-secondary"
                                 style={{ padding: '0.6rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                title="Detalles del Hotel"
+                                title={isEn ? 'Hotel Details' : 'Detalles del Hotel'}
                             >
                                 <Info size={16} />
                             </button>
                             <a
-                                href={`https://wa.me/${hotel.phone?.replace(/\D/g, '') || '529981234567'}?text=${encodeURIComponent(`Hola, necesito más información sobre el hotel: ${hotel.name}.\nPuedes verlo aquí: ${typeof window !== 'undefined' ? window.location.origin : ''}/hotels/${hotel.id}`)}`}
+                                href={`https://wa.me/${hotel.phone?.replace(/\D/g, '') || '529981234567'}?text=${encodeURIComponent(whatsappPrefilledText)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{ padding: '0.6rem', borderRadius: '12px', background: '#25d366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', border: 'none' }}
-                                title="Contactar por WhatsApp"
+                                title={isEn ? 'Contact via WhatsApp' : 'Contactar por WhatsApp'}
                             >
                                 <WhatsAppIcon size={16} />
                             </a>
@@ -300,7 +330,7 @@ export default function HotelCard({ hotel }: { hotel: any }) {
                                 className="btn-premium"
                                 style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, justifyContent: 'center', textDecoration: 'none' }}
                             >
-                                Reservar
+                                {isEn ? 'Book' : 'Reservar'}
                             </Link>
                         </div>
                     </div>

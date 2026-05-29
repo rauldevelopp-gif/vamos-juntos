@@ -1,5 +1,7 @@
 import EntityCard from './EntityCard';
 import Link from 'next/link';
+import { useLanguage } from '../context/LanguageContext';
+import { getTranslatedValue } from '../lib/i18n-utils';
 
 interface GridItem {
     id: number;
@@ -20,13 +22,19 @@ interface GridItem {
 interface EntityGridProps {
     title: React.ReactNode;
     subtitle: React.ReactNode;
+    items: GridItem[];
     viewMoreLink?: string;
     viewMoreText?: string;
     accentColor?: string;
 }
 
-export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewMoreText = "Ver todos", accentColor }: EntityGridProps) {
+export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewMoreText, accentColor }: EntityGridProps) {
+    const { language } = useLanguage();
+    const isEn = language === 'en';
+
     if (!items || items.length === 0) return null;
+
+    const defaultViewMoreText = viewMoreText || (isEn ? "View all" : "Ver todos");
 
     return (
         <section style={{ padding: '5rem 0' }}>
@@ -39,17 +47,31 @@ export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewM
                 <div className="entity-grid">
                     {items.map((item) => {
                         const price = item.price_day || item.price;
-                        const priceLabel = price ? `Desde $${price} USD` : undefined;
+                        const priceLabelText = isEn ? "From" : "Desde";
+                        const priceLabel = price ? `${priceLabelText} $${price} USD` : undefined;
                         
                         let cardSubtitle = '';
-                        if (item.capacity) cardSubtitle = `Capacidad cómoda: ${item.capacity} personas`;
-                        else if (item.type) cardSubtitle = item.type;
-                        else if (item.description_long) cardSubtitle = item.description_long.substring(0, 50) + '...';
+                        const localizedDescription = getTranslatedValue(item.description_long || item.description, language);
+                        const localizedType = getTranslatedValue(item.type, language);
+
+                        if (item.capacity) {
+                            cardSubtitle = isEn 
+                                ? `Comfortable capacity: ${item.capacity} people` 
+                                : `Capacidad cómoda: ${item.capacity} personas`;
+                        } else if (localizedType) {
+                            cardSubtitle = localizedType;
+                        } else if (localizedDescription) {
+                            cardSubtitle = localizedDescription.substring(0, 50) + '...';
+                        }
 
                         let badge = item.popularity || item.status || (item.brand ? 'POPULAR' : undefined);
-                        if (badge === 'Activo' || badge === 'Abierta') badge = 'DISPONIBLE';
+                        if (badge === 'Activo' || badge === 'Abierta' || badge === 'DISPONIBLE') {
+                            badge = isEn ? 'AVAILABLE' : 'DISPONIBLE';
+                        } else if (badge) {
+                            badge = getTranslatedValue(badge, language);
+                        }
 
-                        const cardTitle = item.brand ? `${item.brand} ${item.name}` : item.name;
+                        const cardTitle = item.brand ? `${item.brand} ${getTranslatedValue(item.name, language)}` : getTranslatedValue(item.name, language);
 
                         return (
                             <div key={item.id} style={{ display: 'flex', justifyContent: 'center' }}>
@@ -69,7 +91,7 @@ export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewM
                 {viewMoreLink && (
                     <div style={{ textAlign: 'center', marginTop: '3rem' }}>
                         <Link href={viewMoreLink} className="btn-premium" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'inline-block', borderRadius: '50px' }}>
-                            {viewMoreText}
+                            {defaultViewMoreText}
                         </Link>
                     </div>
                 )}

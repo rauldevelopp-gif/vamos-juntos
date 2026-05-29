@@ -17,6 +17,7 @@ model User {
   name      String?
   status    String  @default("ACTIVO")
   isDeleted Boolean @default(false)
+  language  String  @default("es")
   reservations Reservation[]
   drivers      Driver[]
   taxis        Taxi[]
@@ -73,7 +74,7 @@ model Taxi {
 
 model Yacht {
   id           Int      @id @default(autoincrement())
-  name         String
+  name         String?
   brand        String
   model        String
   year         Int
@@ -84,7 +85,7 @@ model Yacht {
   location     String
   coordinates  String
   availability Boolean  @default(true)
-  description_long String?  @db.Text
+  description_long String?
   gallery      String[] @default([])
   crew         Crew[]
   reservations ReservationService[]
@@ -130,7 +131,7 @@ model Airport {
 
 model Hotel {
   id           Int      @id @default(autoincrement())
-  name         String
+  name         String?
   location     String
   stars        Int      @default(5)
   city         String
@@ -138,8 +139,8 @@ model Hotel {
   status       String   @default("Disponible")
   coordinates  String
   
-  description  String?  @db.Text
-  category     String   @default("Estándar")
+  description  String?
+  category     String?
   address      String?
   phone        String?
   email        String?
@@ -158,14 +159,14 @@ model Hotel {
 
 model Beach {
   id           Int      @id @default(autoincrement())
-  name         String
+  name         String?
   type         String
   city         String
   state        String
   status       String   @default("Abierta")
   coordinates  String
   popularity   String   @default("Media")
-  description_long String?  @db.Text
+  description_long String?
   gallery      String[] @default([])
   reservations ReservationService[]
   userId       Int?
@@ -174,14 +175,14 @@ model Beach {
 
 model Attraction {
   id              Int      @id @default(autoincrement())
-  name            String
+  name            String?
   category        String
   city            String
   state           String
   status          String   @default("Abierto")
   coordinates     String
   recommendedTime String   @default("2 Horas")
-  description_long String?  @db.Text
+  description_long String?
   gallery         String[] @default([])
   reservations    ReservationService[]
   userId          Int?
@@ -249,8 +250,8 @@ model ReservationService {
 
 model Package {
   id          Int      @id @default(autoincrement())
-  name        String
-  description String?  @db.Text
+  name        String?
+  description String?
   status      String   @default("Borrador")
   price       Float
   sales       Int      @default(0)
