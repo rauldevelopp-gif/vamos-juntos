@@ -417,6 +417,14 @@
       "role": "OPERATOR",
       "status": "ACTIVO",
       "isDeleted": false
+    },
+    {
+      "id": 6,
+      "username": "livan.jorrin474",
+      "name": "livan.jorrin474",
+      "role": "USER",
+      "status": "ACTIVO",
+      "isDeleted": false
     }
   ],
   "aboutUs": {

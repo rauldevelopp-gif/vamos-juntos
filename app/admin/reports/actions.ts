@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -90,6 +92,7 @@ export async function getAdminDashboardKPIs() {
         const clientCount = Math.max(clientsUnique.length, 3);
         const conversionRate = totalReservations > 0 ? 6.8 : 5.4; // % conversion
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             data: {
@@ -273,6 +276,7 @@ export async function getComprehensiveFinancialReports() {
             return (a + b) || 1;
         }
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             timeline,
@@ -367,6 +371,7 @@ export async function getClientReports() {
             { label: 'May', clientes: 28, tasaRetorno: 24 }
         ];
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             topClients,
@@ -416,6 +421,7 @@ export async function getPackageReports() {
         // Package occupancy simulator (passengers booked vs maximum target capacity)
         const averageOccupancy = 78.4; // 78.4% target occupancy rate across tours
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             topSold,
@@ -505,6 +511,7 @@ export async function getTaxiDriverReports() {
             { plate: 'VJP-1234', brand: 'Toyota Camry', status: 'Revisión Frenos', date: '2026-06-02', cost: 95 }
         ];
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             topDrivers,
@@ -558,6 +565,7 @@ export async function getYachtReports() {
             { name: 'Mantenimiento', value: 1, fill: '#f59e0b' }
         ];
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             topYachts,
@@ -598,6 +606,7 @@ export async function getRestaurantReports() {
             );
         }
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             data: reports
@@ -632,6 +641,7 @@ export async function getDestinationReports() {
             { name: 'Cenote Azul Quintana Roo', category: 'Ecoturismo', city: 'Playa del Carmen', bookings: 34 }
         ];
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             hotspots: destinations,
@@ -667,6 +677,7 @@ export async function getOperationalReports() {
             { id: 'C2', reason: 'Clima adverso advertencia puerto', customer: 'Alejandro Sanz', frequency: 1, provider: 'Ocean Voyager Yacht' }
         ];
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             hourlyDistribution,
@@ -697,6 +708,7 @@ export async function getMarketingReports() {
             { name: 'Facebook', value: 180, fill: '#1877f2' }
         ];
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             campaigns: activeCampaigns,
@@ -768,6 +780,7 @@ export async function getSystemLogs() {
         // Sort by timestamp loosely
         const logs = systemLogsList.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 30);
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             logs
@@ -792,6 +805,7 @@ export async function getDriverRankings() {
         });
         // Simulate bookings count based on rating (higher rating -> more bookings)
         const data = drivers.map(d => ({ name: d.name, Puntuacion: Math.round(d.rating * 20) }));
+        revalidatePath('/admin', 'layout');
         return { success: true, data };
     } catch (e) {
         console.error("Error in getDriverRankings:", e);
@@ -810,6 +824,7 @@ export async function getPopularDestinations() {
             select: { name: true, bookings: true }
         });
         const data = destinations.map(d => ({ name: d.name, Selecciones: d.bookings }));
+        revalidatePath('/admin', 'layout');
         return { success: true, data };
     } catch (e) {
         console.error("Error in getPopularDestinations:", e);
@@ -838,6 +853,7 @@ export async function getAvailabilityStats() {
         const yachtTotal = yachts.length;
         const yachtAvailable = yachts.filter(y => y.status === 'Disponible').length;
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             drivers: { data: driverData, total: driverTotal, available: driverAvailable },
@@ -873,6 +889,7 @@ export async function getRevenueDetailsByMonth(monthLabel: string) {
                 isEstimate: false
             });
         }
+        revalidatePath('/admin', 'layout');
         return { success: true, data: daily };
     } catch (e) {
         console.error("Error in getRevenueDetailsByMonth:", e);
@@ -895,6 +912,7 @@ export async function getYachtsDetails(isAvailable: boolean) {
             capacity: y.capacity ?? 0,
             location: y.location ?? 'Desconocido'
         }));
+        revalidatePath('/admin', 'layout');
         return { success: true, data };
     } catch (e) {
         console.error("Error in getYachtsDetails:", e);
@@ -1336,6 +1354,7 @@ export async function getDetailedReservations(filters?: {
             }
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: filtered };
     } catch (e) {
         console.error("Error in getDetailedReservations:", e);

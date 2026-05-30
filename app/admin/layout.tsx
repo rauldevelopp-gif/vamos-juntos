@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import { LogOut } from 'lucide-react';
 import WarningBanner from '@/components/WarningBanner';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({
     children,
 }: {

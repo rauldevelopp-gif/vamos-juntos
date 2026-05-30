@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { getLocalDB, writeLocalDB } from '@/lib/db-fallback';
 import { logAuditEvent } from '@/lib/audit';
 import { getCurrentUser } from '@/lib/auth';
@@ -55,7 +57,8 @@ export async function getOperatorAboutUsContentAction() {
         });
     }
     
-    return { success: true, data: profile };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: profile };
 }
 
 // 2. Save Operator specific profile (Operator)
@@ -105,5 +108,6 @@ export async function saveOperatorAboutUsContentAction(params: any) {
         details: `El operador "${activeUser.username}" actualizó sus contenidos de perfil público (Versión #${savedProfile!.version}).`
     });
 
-    return { success: true, data: savedProfile };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: savedProfile };
 }

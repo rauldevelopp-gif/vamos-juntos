@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -24,6 +26,7 @@ export async function getGatewaySettings() {
             });
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: settings };
     } catch (error) {
         console.error('Error fetching gateway settings:', error);
@@ -63,6 +66,7 @@ export async function saveGatewaySettings(data: {
             }
         });
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: settings };
     } catch (error) {
         console.error('Error saving gateway settings:', error);

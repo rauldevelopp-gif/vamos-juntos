@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+export const dynamic = 'force-dynamic';
+
 
 // In-memory OTP store — in production replace with Redis or a DB table
 const otpStore = new Map<string, { code: string; expiresAt: number; userData?: unknown }>();

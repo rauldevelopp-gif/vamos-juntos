@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { getLocalDB, writeLocalDB, LocalAboutUsContent } from '@/lib/db-fallback';
 import { logAuditEvent } from '@/lib/audit';
 import { getCurrentUser } from '@/lib/auth';
@@ -28,13 +30,15 @@ async function getSessionUser() {
 // 1. Fetch current active content
 export async function getAboutUsContentAction() {
     const db = getLocalDB();
-    return { success: true, data: db.aboutUs };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: db.aboutUs };
 }
 
 // 2. Fetch all saved versions
 export async function getAboutUsVersionsAction() {
     const db = getLocalDB();
-    return { success: true, data: db.aboutUsVersions || [] };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: db.aboutUsVersions || [] };
 }
 
 // 3. Save new content version (Admin)
@@ -78,7 +82,8 @@ export async function saveAboutUsContentAction(newContent: Omit<LocalAboutUsCont
         details: `El administrador actualizó los contenidos corporativos de "Quiénes Somos" a la versión #${savedContent!.version}.`
     });
 
-    return { success: true, data: savedContent };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: savedContent };
 }
 
 // 4. Restore a specific version
@@ -125,5 +130,6 @@ export async function restoreAboutUsVersionAction(versionNumber: number) {
         details: `El administrador restauró la versión de contenidos de "Quiénes Somos" a partir de la versión anterior #${versionNumber}.`
     });
 
-    return { success: true, data: restoredContent };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: restoredContent };
 }

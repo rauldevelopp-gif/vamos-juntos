@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { prisma } from '@/lib/prisma';
 import { getLocalDB, writeLocalDB } from '@/lib/db-fallback';
 import { logAuditEvent } from '@/lib/audit';
@@ -101,7 +103,8 @@ export async function getSuperAuditLogs(filters?: {
     // Sort descending by timestamp
     filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    return { success: true, data: filtered };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: filtered };
 }
 
 // 2. Fetch Incident Alerts and Disciplinaries
@@ -124,7 +127,8 @@ export async function getIncidentsAndAlerts() {
         const db = getLocalDB();
         incidents.push(...db.incidents);
     }
-    return { success: true, data: incidents };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: incidents };
 }
 
 // 3. Resolve Incident
@@ -156,7 +160,8 @@ export async function resolveIncidentAction(incidentId: number) {
         details: `Incidente ID #${incidentId} marcado como RESUELTO.`
     });
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 4. Trigger Data Export Log Event (crucial to trigger anomaly detector if user abuses)
@@ -173,7 +178,8 @@ export async function triggerExportLogAction() {
         details: `El administrador exportó el historial completo de auditoría a archivo CSV.`
     });
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 5. Fetch Technical and System Performance Logs (Simulation with live stats)
@@ -196,7 +202,8 @@ export async function getSystemPerformanceLogs() {
         { id: 'err-4', timestamp: new Date(Date.now() - 7200000).toLocaleTimeString(), level: 'ERROR', service: 'Google Maps API', message: 'Quota limit exceeded for Geocoding request on Riviera Maya coordinates.' }
     ];
 
-    return {
+    revalidatePath('/admin', 'layout');
+        return {
         success: true,
         latencyLogs,
         errorLogs,

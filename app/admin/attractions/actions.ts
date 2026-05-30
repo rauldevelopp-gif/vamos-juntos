@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -22,6 +24,7 @@ export async function getAttractions() {
             });
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: attractions };
     } catch (error) {
         console.error('Error fetching attractions:', error);
@@ -39,6 +42,7 @@ export async function createAttraction(data: any) {
                 userId: user.id
             }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: newAttraction };
     } catch (error) {
         return { success: false, error: 'Error al crear atracción' };
@@ -59,6 +63,7 @@ export async function updateAttraction(id: number, data: any) {
             where: { id },
             data
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: updated };
     } catch (error) {
         return { success: false, error: 'Error al actualizar atracción' };
@@ -85,6 +90,7 @@ export async function getPublicAttractions() {
         const attractions = await prisma.attraction.findMany({
             orderBy: { name: 'asc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: attractions };
     } catch (error) {
         return { success: false, error: 'Error al obtener atracciones' };

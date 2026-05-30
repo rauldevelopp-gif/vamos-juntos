@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { getLocalDB, writeLocalDB } from '@/lib/db-fallback';
 import { cookies } from 'next/headers';
+export const dynamic = 'force-dynamic';
+
 
 export async function GET() {
     try {

@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -23,6 +25,7 @@ export async function getAirports() {
             });
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: airports };
     } catch (error) {
         console.error('Error fetching airports:', error);
@@ -60,6 +63,7 @@ export async function deleteAirport(id: number) {
         await prisma.airport.delete({
             where: { id }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true };
     } catch (error) {
         console.error('Error deleting airport:', error);

@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -17,6 +19,7 @@ export async function getTaxis() {
             },
             orderBy: { plate: 'asc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: taxis };
     } catch (error) {
         console.error('Error fetching taxis:', error);

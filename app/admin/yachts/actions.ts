@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -38,6 +40,7 @@ export async function getYachts() {
             console.log(`getYachts: Seeded and refetched ${yachts.length} yachts.`);
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: JSON.parse(JSON.stringify(yachts)) };
     } catch (error: unknown) {
         console.error("Error fetching yachts:", error);
@@ -61,6 +64,7 @@ export async function createYacht(data: any) {
                 userId: user.id
             }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: newYacht };
     } catch (error: unknown) {
         return { success: false, error: 'Error al crear yate' };
@@ -82,6 +86,7 @@ export async function updateYacht(id: number, data: any) {
             where: { id },
             data
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: updatedYacht };
     } catch (error: unknown) {
         return { success: false, error: 'Error al actualizar yate' };
@@ -172,6 +177,7 @@ export async function getPublicYachts() {
             include: { crew: true },
             orderBy: { id: 'asc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: JSON.parse(JSON.stringify(yachts)) };
     } catch (error: unknown) {
         return { success: false, error: 'Error al obtener yates' };

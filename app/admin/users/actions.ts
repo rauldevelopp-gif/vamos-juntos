@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { prisma } from '@/lib/prisma';
 import { getLocalDB, writeLocalDB } from '@/lib/db-fallback';
 import { logAuditEvent } from '@/lib/audit';
@@ -56,7 +58,8 @@ export async function getSystemUsers() {
         })));
     }
 
-    return { success: true, data: users };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: users };
 }
 
 // 2. Update User Role
@@ -103,7 +106,8 @@ export async function updateUserRoleAction(targetUserId: number, newRole: string
         details: `Rol del usuario "${targetUsername}" modificado a ${newRole} por el administrador.`
     });
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 3. Suspend/Block User Status
@@ -165,7 +169,8 @@ export async function updateUserStatusAction(targetUserId: number, newStatus: st
         details: `El estado del usuario "${targetUsername}" fue actualizado a [${newStatus}] por motivo: ${reason}`
     });
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 5. Send customizable user warning push notes
@@ -244,7 +249,8 @@ export async function sendUserWarningAction(
         details: `Advertencia disciplinaria push enviada al usuario "${targetUsername}" con severidad [${severity}].`
     });
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 6. Delete user account
@@ -311,7 +317,8 @@ export async function deleteUserAction(targetUserId: number, deletionType: 'LOGI
         });
     }
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 7. Get Disciplinary Logs of a specific user
@@ -330,7 +337,8 @@ export async function getUserDisciplinaryHistory(userId: number) {
             };
         });
 
-    return { success: true, data: history };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: history };
 }
 
 // 8. Fetch active unread warnings for current user
@@ -358,7 +366,8 @@ export async function getActiveUserWarnings() {
         warnings.push(...db.userWarnings.filter(w => w.userId === admin.id && !w.isRead));
     }
 
-    return { success: true, data: warnings };
+    revalidatePath('/admin', 'layout');
+        return { success: true, data: warnings };
 }
 
 // 9. Mark warning as read
@@ -393,13 +402,15 @@ export async function markWarningAsReadAction(warningId: number) {
         details: `El usuario confirmó la lectura y entendimiento de la advertencia push: "${warningTitle}".`
     });
 
-    return { success: true };
+    revalidatePath('/admin', 'layout');
+        return { success: true };
 }
 
 // 10. Get currently logged-in user profile (for client components like sidebar & route protection)
 export async function getCurrentUserAction() {
     try {
         const admin = await getSessionUser();
+        revalidatePath('/admin', 'layout');
         return { 
             success: true, 
             user: {

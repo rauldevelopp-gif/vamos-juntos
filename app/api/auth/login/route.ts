@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
+export const dynamic = 'force-dynamic';
+
 
 export async function POST(request: Request) {
     try {

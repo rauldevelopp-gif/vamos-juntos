@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -14,6 +16,7 @@ export async function getDiscountCodes() {
             where: whereClause,
             orderBy: { createdAt: 'desc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: codes };
     } catch (error) {
         console.error('Error fetching discount codes:', error);
@@ -41,6 +44,7 @@ export async function createDiscountCode(data: { code: string; discount: number 
                 userId: user.id
             }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: newCode };
     } catch (error) {
         console.error('Error creating discount code:', error);
@@ -61,6 +65,7 @@ export async function deleteDiscountCode(id: number) {
         await prisma.discountCode.delete({
             where: { id }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true };
     } catch (error) {
         console.error('Error deleting discount code:', error);
@@ -92,6 +97,7 @@ export async function validateDiscountCode(code: string, packageId: number) {
             return { success: false, error: 'Este código de descuento no es válido para este paquete' };
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: { id: discountCode.id, code: discountCode.code, discount: discountCode.discount } };
     } catch (error) {
         console.error('Error validating discount code:', error);
@@ -123,6 +129,7 @@ export async function validateDiscountCodeForHotel(code: string, hotelId: number
             return { success: false, error: 'Este código de descuento no es válido para este hotel' };
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: { id: discountCode.id, code: discountCode.code, discount: discountCode.discount } };
     } catch (error) {
         console.error('Error validating hotel discount code:', error);

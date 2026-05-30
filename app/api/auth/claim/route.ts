@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         const { email, name, password, locatorCode } = await request.json();

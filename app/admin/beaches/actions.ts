@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -22,6 +24,7 @@ export async function getBeaches() {
             });
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: beaches };
     } catch (error) {
         console.error('Error fetching beaches:', error);
@@ -39,6 +42,7 @@ export async function createBeach(data: any) {
                 userId: user.id
             }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: newBeach };
     } catch (error) {
         return { success: false, error: 'Error al crear playa' };
@@ -59,6 +63,7 @@ export async function updateBeach(id: number, data: any) {
             where: { id },
             data
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: updated };
     } catch (error) {
         return { success: false, error: 'Error al actualizar playa' };
@@ -85,6 +90,7 @@ export async function getPublicBeaches() {
         const beaches = await prisma.beach.findMany({
             orderBy: { name: 'asc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: beaches };
     } catch (error) {
         return { success: false, error: 'Error al obtener playas' };

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+export const dynamic = 'force-dynamic';
+
 
 // Ensure you set STRIPE_SECRET_KEY in your env
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_fallback', {

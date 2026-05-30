@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import prisma from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -25,6 +27,7 @@ export async function getPackages() {
             });
         }
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: packages };
     } catch (error) {
         console.error('Error fetching packages:', error);
@@ -64,6 +67,7 @@ export async function createPackage(data: {
                 userId: user.id
             }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: newPackage };
     } catch (error: unknown) {
         console.error('Error creating package:', error);
@@ -85,6 +89,7 @@ export async function getClientRequests() {
             include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
             orderBy: { createdAt: 'desc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: requests };
     } catch (error) {
         console.error('Error fetching client requests:', error);
@@ -99,6 +104,7 @@ export async function getPackagesByClientId(clientId: string) {
             include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
             orderBy: { createdAt: 'desc' }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: packages };
     } catch (error) {
         console.error('Error fetching client packages:', error);
@@ -115,6 +121,7 @@ export async function confirmPackage(id: number, driverId: number) {
                 driverId: driverId
             }
         });
+        revalidatePath('/admin', 'layout');
         return { success: true, data: updated };
     } catch (error: unknown) {
         console.error('Error creating package:', error);
@@ -221,6 +228,7 @@ export async function seedPremiumPackages() {
         for (const pkg of packagesData) {
             await prisma.package.create({ data: pkg });
         }
+        revalidatePath('/admin', 'layout');
         return { success: true };
     } catch (error) {
         console.error('Error seeding premium packages:', error);
@@ -296,6 +304,7 @@ export async function createPackageReservation(data: {
             }
         });
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: reservation };
     } catch (error) {
         console.error('Error creating package reservation:', error);
@@ -320,6 +329,7 @@ export async function getDashboardReservations() {
             take: 10
         });
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: reservations };
     } catch (error) {
         console.error('Error fetching dashboard reservations:', error);
@@ -343,6 +353,7 @@ export async function getAllReservations() {
             ]
         });
 
+        revalidatePath('/admin', 'layout');
         return { success: true, data: reservations };
     } catch (error) {
         console.error('Error fetching all reservations:', error);
@@ -373,6 +384,7 @@ export async function getDashboardStats() {
             })
         ]);
 
+        revalidatePath('/admin', 'layout');
         return {
             success: true,
             data: {
