@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect } from 'react';
 import {
     Activity, Lock, ShieldCheck, Save, RefreshCw, Star, Heart, Check, X, 
@@ -16,6 +17,8 @@ import {
 type TabType = 'general' | 'multimedia' | 'specialties' | 'testimonios' | 'certificaciones' | 'social' | 'seo' | 'estructura';
 
 export default function AboutUsOperatorPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     // Auth States
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
@@ -288,7 +291,7 @@ export default function AboutUsOperatorPage() {
                     </button>
                     <button onClick={() => handleSave()} disabled={saving} className="btn-premium" style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', borderRadius: '10px' }}>
                         <Save size={15} />
-                        {saving ? 'Guardando...' : 'Guardar y Publicar'}
+                        {saving ?tr("Guardando...") : 'Guardar y Publicar'}
                     </button>
                 </div>
             </div>

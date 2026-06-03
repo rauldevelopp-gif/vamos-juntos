@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, MapPin, X, Loader2, Camera, Edit2 } from 'lucide-react';
@@ -19,6 +20,8 @@ interface Attraction {
 }
 
 export default function AttractionsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [attractions, setAttractions] = useState<Attraction[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAttraction, setSelectedAttraction] = useState<Attraction | null>(null);
@@ -75,18 +78,18 @@ export default function AttractionsPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Camera size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay atracciones registradas</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Las nuevas atracciones aparecerán aquí.</p>
+                        <h3>{tr("No hay atracciones registradas")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Las nuevas atracciones aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Actividad / Tipo</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Ubicación</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Precio Base</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Mapa</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Ubicación")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Precio Base")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Mapa")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,8 +109,8 @@ export default function AttractionsPage() {
                                     <td style={{ padding: '1.2rem' }}>
                                         <span style={{ 
                                             padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', 
-                                            background: attraction.status === 'Activo' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                                            color: attraction.status === 'Activo' ? '#10b981' : '#f43f5e', border: '1px solid rgba(16, 185, 129, 0.2)'
+                                            background: attraction.status === tr("Activo") ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                                            color: attraction.status === tr("Activo") ? '#10b981' : '#f43f5e', border: '1px solid rgba(16, 185, 129, 0.2)'
                                         }}>
                                             {attraction.status}
                                         </span>
@@ -141,8 +144,8 @@ export default function AttractionsPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Camera size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay atracciones registradas</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Las nuevas atracciones aparecerán aquí.</p>
+                        <h3>{tr("No hay atracciones registradas")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Las nuevas atracciones aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>
@@ -167,13 +170,13 @@ export default function AttractionsPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ 
                                         padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700,
-                                        background: attraction.status === 'Activo' ? 'rgba(16, 185, 129, 0.1)' : '#f43f5e1a',
-                                        color: attraction.status === 'Activo' ? '#10b981' : '#f43f5e'
+                                        background: attraction.status === tr("Activo") ? 'rgba(16, 185, 129, 0.1)' : '#f43f5e1a',
+                                        color: attraction.status === tr("Activo") ? '#10b981' : '#f43f5e'
                                     }}>
                                         {attraction.status}
                                     </span>
                                     <button onClick={() => setSelectedAttraction(attraction)} className="btn-premium" style={{ padding: '0.8rem 1.2rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                                        <MapPin size={18} /> Ver Mapa
+                                        <MapPin size={18} /> {tr("Ver Mapa")}
                                     </button>
                                 </div>
                             </div>
@@ -199,7 +202,7 @@ export default function AttractionsPage() {
                             <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={`https://maps.google.com/maps?q=${selectedAttraction.coordinates}&t=k&z=17&ie=UTF8&iwloc=&output=embed`} allowFullScreen></iframe>
                         </div>
                         <div style={{ padding: '1.5rem', textAlign: 'right' }}>
-                            <button className="btn-premium" onClick={closeModal}>Cerrar Mapa</button>
+                            <button className="btn-premium" onClick={closeModal}>{tr("Cerrar Mapa")}</button>
                         </div>
                     </div>
                 </div>

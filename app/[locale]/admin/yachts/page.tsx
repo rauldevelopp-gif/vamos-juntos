@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -32,6 +33,8 @@ interface Yacht {
 }
 
 export default function YachtsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [yachts, setYachts] = useState<Yacht[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedYacht, setSelectedYacht] = useState<Yacht | null>(null);
@@ -96,18 +99,18 @@ export default function YachtsPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Anchor size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay yates registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos yates aparecerán aquí.</p>
+                        <h3>{tr("No hay yates registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos yates aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Embarcación / Eslora</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Ubicación</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Capacidad</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Ubicación")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Capacidad")}</th>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Tarifa Diaria</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Tripulación</th>
                             </tr>
                         </thead>
@@ -174,8 +177,8 @@ export default function YachtsPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Anchor size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay yates registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos yates aparecerán aquí.</p>
+                        <h3>{tr("No hay yates registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos yates aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>
@@ -199,13 +202,13 @@ export default function YachtsPage() {
                                     <MapPin size={16} color="var(--primary)" />
                                     <span>{yacht.location}</span>
                                     <button onClick={() => setMapYacht(yacht)} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, marginLeft: 'auto' }}>
-                                        Ver Mapa
+                                        {tr("Ver Mapa")}
                                     </button>
                                 </div>
 
                                 <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', padding: '1.2rem', marginBottom: '1.2rem', border: '1px solid var(--border-glass)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <div>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Capacidad</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{tr("Capacidad")}</div>
                                         <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                             <Users size={14} /> {yacht.capacity} PAX
                                         </div>

@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, BedDouble, CheckCircle2, Search, Clock, Users } from 'lucide-react';
@@ -26,6 +27,8 @@ interface Props {
 }
 
 export default function HotelReservationsList({ reservations }: Props) {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [dateFilter, setDateFilter] = useState('ALL');
@@ -45,9 +48,9 @@ export default function HotelReservationsList({ reservations }: Props) {
 
     const getCountdownLabel = (dateString: string) => {
         const days = getDaysDifference(dateString);
-        if (days < 0) return { text: 'Ya pasó', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
+        if (days < 0) return { text:tr("Ya pasó"), color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
         if (days === 0) return { text: 'Hoy', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
-        if (days === 1) return { text: 'Mañana', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
+        if (days === 1) return { text:tr("Mañana"), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
         return { text: `Faltan ${days} días`, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' };
     };
 
@@ -125,9 +128,9 @@ export default function HotelReservationsList({ reservations }: Props) {
                         onChange={e => setStatusFilter(e.target.value)}
                         style={{ flex: 1, padding: '0.8rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '14px', color: 'white', outline: 'none', cursor: 'pointer' }}
                     >
-                        <option value="ALL" style={{ background: '#111' }}>Todos los Estados</option>
+                        <option value="ALL" style={{ background: '#111' }}>{tr("Todos los Estados")}</option>
                         <option value="Confirmado" style={{ background: '#111' }}>Confirmado</option>
-                        <option value="Pendiente" style={{ background: '#111' }}>Pendiente</option>
+                        <option value={tr("Pendiente")} style={{ background: '#111' }}>{tr("Pendiente")}</option>
                         <option value="Cancelado" style={{ background: '#111' }}>Cancelado</option>
                     </select>
                     <select
@@ -135,10 +138,10 @@ export default function HotelReservationsList({ reservations }: Props) {
                         onChange={e => setDateFilter(e.target.value)}
                         style={{ flex: 1, padding: '0.8rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '14px', color: 'white', outline: 'none', cursor: 'pointer' }}
                     >
-                        <option value="ALL" style={{ background: '#111' }}>Todas las Fechas</option>
+                        <option value="ALL" style={{ background: '#111' }}>{tr("Todas las Fechas")}</option>
                         <option value="TODAY" style={{ background: '#111' }}>Check-in Hoy</option>
-                        <option value="UPCOMING" style={{ background: '#111' }}>Próximas</option>
-                        <option value="PAST" style={{ background: '#111' }}>Ya Pasaron</option>
+                        <option value="UPCOMING" style={{ background: '#111' }}>{tr("Próximas")}</option>
+                        <option value="PAST" style={{ background: '#111' }}>{tr("Ya Pasaron")}</option>
                     </select>
                 </div>
             </div>
@@ -148,18 +151,18 @@ export default function HotelReservationsList({ reservations }: Props) {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Cliente</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Cliente")}</th>
                             <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Hotel / Habitación</th>
                             <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Check-in / Check-out</th>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Monto</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Monto")}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filtered.length === 0 ? (
                             <tr>
                                 <td colSpan={5} style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    No se encontraron reservas con esos filtros.
+                                    {tr("No se encontraron reservas con esos filtros.")}
                                 </td>
                             </tr>
                         ) : (
@@ -230,7 +233,7 @@ export default function HotelReservationsList({ reservations }: Props) {
             <div className="mobile-only">
                 {filtered.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                        No hay reservas que coincidan.
+                        {tr("No hay reservas que coincidan.")}
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState } from 'react';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { createAttraction, updateAttraction } from './actions';
@@ -12,6 +13,8 @@ interface AttractionFormModalProps {
 }
 
 export default function AttractionFormModal({ attraction, onClose, onSuccess }: AttractionFormModalProps) {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: attraction?.name || '',
@@ -100,7 +103,7 @@ export default function AttractionFormModal({ attraction, onClose, onSuccess }: 
                 <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Nombre</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Nombre")}</label>
                             <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
@@ -108,7 +111,7 @@ export default function AttractionFormModal({ attraction, onClose, onSuccess }: 
                             <input required type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} placeholder="Ej: Eco-Arqueológico" />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Ciudad</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Ciudad")}</label>
                             <input required type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
@@ -116,7 +119,7 @@ export default function AttractionFormModal({ attraction, onClose, onSuccess }: 
                             <input required type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Coordenadas</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Coordenadas")}</label>
                             <input required type="text" value={formData.coordinates} onChange={e => setFormData({...formData, coordinates: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>

@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect } from 'react';
 import {
     BarChart2, DollarSign, Users, ShoppingCart, Settings, Package,
@@ -65,10 +66,10 @@ function KpiCard({ label, value, icon: Icon, color, trend, sub }: KpiCardProps) 
 // ─── Period Selector ──────────────────────────────────────────────────────────
 function PeriodSelector({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
     const options: { key: Period; label: string }[] = [
-        { key: 'semana', label: 'Semana' },
-        { key: 'mes', label: 'Mes' },
-        { key: 'trimestre', label: 'Trimestre' },
-        { key: 'año', label: 'Año' },
+        { key: 'semana', label:tr("Semana") },
+        { key: 'mes', label:tr("Mes") },
+        { key: 'trimestre', label:tr("Trimestre") },
+        { key: 'año', label:tr("Año") },
     ];
     return (
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 4, border: '1px solid var(--border-glass)', gap: 2 }}>
@@ -237,7 +238,7 @@ function ReservasModule({ period }: { period: Period }) {
         const headers = [
             'Código de Reserva', 'Consecutivo', 'Fecha de Creación', 'Fecha de Viaje', 'Fecha de Regreso',
             'Cliente Principal', 'Cantidad Pasajeros', 'Desglose Pax', 'Paquete', 'Destino', 'Hotel',
-            'Transporte', 'Estado', 'Valor Bruto', 'Descuento', 'Impuesto', 'Comisión', 'Total Pagado',
+            'Transporte',tr("Estado"), 'Valor Bruto', 'Descuento', 'Impuesto', 'Comisión',tr("Total Pagado"),
             'Saldo Pendiente', 'Usuario Creador', 'Agencia', 'Asesor', 'Canal Venta', 'Metodo Pago'
         ];
         const rows = reservations.map(r => [
@@ -269,8 +270,8 @@ function ReservasModule({ period }: { period: Period }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <SectionHeader 
-                title="Reporte de Reservas" 
-                subtitle="Gestión de reservas, conversiones por estados, destinos populares y ocupación de cupos" 
+                title={tr("Reporte de Reservas")} 
+                subtitle={tr("Gestión de reservas, conversiones por estados, destinos populares y ocupación de cupos")} 
                 icon={Calendar} 
                 color="#8b5cf6" 
             />
@@ -304,11 +305,11 @@ function ReservasModule({ period }: { period: Period }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     {/* KPIs Row */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
-                        <KpiCard label="Total Reservas" value={filteredCount} icon={Calendar} color="#8b5cf6" trend={12} sub="filtradas" />
-                        <KpiCard label="Reservas Activas" value={filteredActiveCount} icon={CheckCircle} color="#10b981" trend={8} />
+                        <KpiCard label={tr("Total Reservas")} value={filteredCount} icon={Calendar} color="#8b5cf6" trend={12} sub="filtradas" />
+                        <KpiCard label={tr("Reservas Activas")} value={filteredActiveCount} icon={CheckCircle} color="#10b981" trend={8} />
                         <KpiCard label="Canceladas" value={filteredCancelledCount} icon={X} color="#ef4444" trend={-5} />
-                        <KpiCard label="Ticket Promedio" value={`$${filteredAverageAmount.toLocaleString()}`} icon={DollarSign} color="#f59e0b" trend={3} />
-                        <KpiCard label="Conversión" value={`${filteredConversion}%`} icon={Target} color="#06b6d4" trend={1.2} sub="cotización → venta" />
+                        <KpiCard label={tr("Ticket Promedio")} value={`$${filteredAverageAmount.toLocaleString()}`} icon={DollarSign} color="#f59e0b" trend={3} />
+                        <KpiCard label={tr("Conversión")} value={`${filteredConversion}%`} icon={Target} color="#06b6d4" trend={1.2} sub="cotización → venta" />
                     </div>
 
                     {/* Filter Action Bar */}
@@ -317,7 +318,7 @@ function ReservasModule({ period }: { period: Period }) {
                             <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
                                 <input
                                     type="text"
-                                    placeholder="Buscar por cliente, código, paquete, hotel..."
+                                    placeholder={tr("Buscar por cliente, código, paquete, hotel...")}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     style={{
@@ -356,7 +357,7 @@ function ReservasModule({ period }: { period: Period }) {
                                 }}
                             >
                                 <Filter size={15} />
-                                <span>{showFilters ? 'Ocultar Filtros' : 'Filtros Avanzados'}</span>
+                                <span>{showFilters ?tr("Ocultar Filtros") :tr("Filtros Avanzados")}</span>
                             </button>
 
                             <button
@@ -378,7 +379,7 @@ function ReservasModule({ period }: { period: Period }) {
                                 }}
                             >
                                 <Download size={15} />
-                                <span>Exportar CSV</span>
+                                <span>{tr("Exportar CSV")}</span>
                             </button>
                         </div>
 
@@ -415,7 +416,7 @@ function ReservasModule({ period }: { period: Period }) {
 
                                 {/* Travel Date */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Fecha Viaje</label>
+                                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>{tr("Fecha Viaje")}</label>
                                     <input
                                         type="date"
                                         value={travelDate}
@@ -434,7 +435,7 @@ function ReservasModule({ period }: { period: Period }) {
 
                                 {/* Status */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Estado</label>
+                                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>{tr("Estado")}</label>
                                     <select
                                         value={status}
                                         onChange={(e) => setStatus(e.target.value)}
@@ -450,12 +451,12 @@ function ReservasModule({ period }: { period: Period }) {
                                     >
                                         <option value="Todos">Todos</option>
                                         <option value="Cotización">Cotización</option>
-                                        <option value="Pendiente">Pendiente</option>
+                                        <option value={tr("Pendiente")}>{tr("Pendiente")}</option>
                                         <option value="Parcialmente pagada">Parcialmente pagada</option>
-                                        <option value="Confirmada">Confirmada</option>
+                                        <option value={tr("Confirmada")}>{tr("Confirmada")}</option>
                                         <option value="En curso">En curso</option>
                                         <option value="Finalizada">Finalizada</option>
-                                        <option value="Cancelada">Cancelada</option>
+                                        <option value={tr("Cancelada")}>{tr("Cancelada")}</option>
                                         <option value="Reembolsada">Reembolsada</option>
                                     </select>
                                 </div>
@@ -614,7 +615,7 @@ function ReservasModule({ period }: { period: Period }) {
                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                                     <thead>
                                         <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                                            {['Código', 'Consecutivo', 'Cliente Principal', 'Destino', 'Fecha Viaje', 'Total', 'Estado', 'Ficha'].map(h => (
+                                            {['Código', 'Consecutivo', 'Cliente Principal', 'Destino',tr("Fecha Viaje"), 'Total',tr("Estado"), 'Ficha'].map(h => (
                                                 <th key={h} style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem' }}>{h}</th>
                                             ))}
                                         </tr>
@@ -669,18 +670,18 @@ function ReservasModule({ period }: { period: Period }) {
 
                     {/* Timeline area chart & distribution in bottom */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.25rem' }}>
-                        <ChartPanel title="Evolución de Reservas e Ingresos">
+                        <ChartPanel title={tr("Evolución de Reservas e Ingresos")}>
                             <TimelineAreaChart
                                 data={weeklyTimeline.map((d: any) => ({ label: d.label, Reservas: d.Reservas, Ingresos: d.Ingresos }))}
                                 series={[
                                     { key: 'Ingresos', color: '#8b5cf6', label: 'Ingresos ($)' },
-                                    { key: 'Reservas', color: '#06b6d4', label: 'Reservas' },
+                                    { key:tr("Reservas"), color: '#06b6d4', label:tr("Reservas") },
                                 ]}
                                 height={265}
                             />
                         </ChartPanel>
 
-                        <ChartPanel title="Distribución por Estado">
+                        <ChartPanel title={tr("Distribución por Estado")}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                 {statuses.map((s, i) => (
                                     <div key={i}>
@@ -701,7 +702,7 @@ function ReservasModule({ period }: { period: Period }) {
             {activeSubTab === 'estados' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                        <ChartPanel title="Métricas de Conversión y Flujo de Estados">
+                        <ChartPanel title={tr("Métricas de Conversión y Flujo de Estados")}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
                                 {[
                                     { stage: 'Cotización → Pendiente', conv: '85%', desc: 'Porcentaje de presupuestos que pasan a reserva pendiente.', color: '#8b5cf6' },
@@ -720,7 +721,7 @@ function ReservasModule({ period }: { period: Period }) {
                             </div>
                         </ChartPanel>
 
-                        <ChartPanel title="Tiempo Promedio de Permanencia en Cada Estado">
+                        <ChartPanel title={tr("Tiempo Promedio de Permanencia en Cada Estado")}>
                             <ComparativeBarChart
                                 data={[
                                     { category: 'Cotización', current: 3.2, previous: 4.1 },
@@ -791,7 +792,7 @@ function ReservasModule({ period }: { period: Period }) {
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                                        {['Destino', 'Reservas', 'Pasajeros', 'Ingresos USD', 'Cancelación %', 'Temporada Alta'].map(h => (
+                                        {['Destino',tr("Reservas"),tr("Pasajeros"), 'Ingresos USD', 'Cancelación %', 'Temporada Alta'].map(h => (
                                             <th key={h} style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem' }}>{h}</th>
                                         ))}
                                     </tr>
@@ -871,15 +872,15 @@ function ReservasModule({ period }: { period: Period }) {
                                 </thead>
                                 <tbody>
                                     {[
-                                        { item: 'Yate VIP Ocean Voyager (Isla M.)', cat: 'Yates', av: 40, sold: 32, blk: 8, pct: 80, over: '0%' },
+                                        { item: 'Yate VIP Ocean Voyager (Isla M.)', cat:tr("Yates"), av: 40, sold: 32, blk: 8, pct: 80, over: '0%' },
                                         { item: 'Cena Restaurante Porfirios Cancún', cat: 'Restaurante', av: 120, sold: 105, blk: 15, pct: 87.5, over: '0%' },
                                         { item: 'Excursión Ruinas de Tulum', cat: 'Tours', av: 80, sold: 78, blk: 4, pct: 97.5, over: '2.5%' },
                                         { item: 'Transfer Dreams Riviera Mercedes', cat: 'Transporte', av: 60, sold: 48, blk: 12, pct: 80, over: '0%' },
-                                        { item: 'Hotel Paradisus Cancún Suite de Lujo', cat: 'Hoteles', av: 30, sold: 22, blk: 8, pct: 73.3, over: '0%' }
+                                        { item: 'Hotel Paradisus Cancún Suite de Lujo', cat:tr("Hoteles"), av: 30, sold: 22, blk: 8, pct: 73.3, over: '0%' }
                                     ].map((srv, i) => (
                                         <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                                             <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, color: 'white' }}>{srv.item}</td>
-                                            <td style={{ padding: '0.75rem 0.5rem' }}><Badge label={srv.cat} color={srv.cat === 'Yates' ? '#06b6d4' : srv.cat === 'Tours' ? '#8b5cf6' : srv.cat === 'Transporte' ? '#ec4899' : '#10b981'} /></td>
+                                            <td style={{ padding: '0.75rem 0.5rem' }}><Badge label={srv.cat} color={srv.cat === tr("Yates") ? '#06b6d4' : srv.cat === 'Tours' ? '#8b5cf6' : srv.cat === 'Transporte' ? '#ec4899' : '#10b981'} /></td>
                                             <td style={{ padding: '0.75rem 0.5rem', color: 'white' }}>{srv.av - srv.sold - srv.blk}</td>
                                             <td style={{ padding: '0.75rem 0.5rem', color: 'white' }}>{srv.sold}</td>
                                             <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)' }}>{srv.blk}</td>
@@ -950,7 +951,7 @@ function ReservasModule({ period }: { period: Period }) {
                                     <div style={{ color: 'white', fontWeight: 600, marginTop: '0.15rem' }}>{selectedRes.createdAt}</div>
                                 </div>
                                 <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>Estado</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{tr("Estado")}</span>
                                     <div style={{ marginTop: '0.15rem' }}>
                                         <span style={{
                                             padding: '0.2rem 0.5rem',
@@ -1029,7 +1030,7 @@ function ReservasModule({ period }: { period: Period }) {
                                     <span style={{ color: 'white' }}>${selectedRes.grossValue.toLocaleString()}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Cupones</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{tr("Cupones")}</span>
                                     <span style={{ color: '#ef4444' }}>-${selectedRes.discounts.toLocaleString()}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1049,7 +1050,7 @@ function ReservasModule({ period }: { period: Period }) {
                                     <span style={{ color: 'white' }}>💳 {selectedRes.paymentMethod}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Total Pagado</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{tr("Total Pagado")}</span>
                                     <strong style={{ color: 'white' }}>${selectedRes.totalPaid.toLocaleString()} USD</strong>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1169,11 +1170,11 @@ function FinancieroModule({ period }: { period: Period }) {
                 <ChartPanel title="Distribución por Categoría">
                     <PremiumDonutChart
                         data={data?.categories || [
-                            { name: 'Yates', value: 42, fill: '#06b6d4' },
+                            { name:tr("Yates"), value: 42, fill: '#06b6d4' },
                             { name: 'Taxis', value: 18, fill: '#ec4899' },
-                            { name: 'Hoteles', value: 15, fill: '#8b5cf6' },
+                            { name:tr("Hoteles"), value: 15, fill: '#8b5cf6' },
                             { name: 'Excursiones', value: 13, fill: '#10b981' },
-                            { name: 'Restaurantes', value: 12, fill: '#f59e0b' },
+                            { name:tr("Restaurantes"), value: 12, fill: '#f59e0b' },
                         ]}
                         centerLabel="Ingresos"
                     />
@@ -1262,7 +1263,7 @@ function ClientesModule({ period }: { period: Period }) {
         { name: 'VIP', value: 12, fill: '#f59e0b' },
         { name: 'Corporativo', value: 8, fill: '#8b5cf6' },
         { name: 'Recurrente', value: data?.recurrentCount || 4, fill: '#10b981' },
-        { name: 'Nuevo', value: 24, fill: '#06b6d4' },
+        { name:tr("Nuevo"), value: 24, fill: '#06b6d4' },
         { name: 'Riesgo Abandono', value: 3, fill: '#ef4444' },
     ];
 
@@ -1424,7 +1425,7 @@ function VentasModule({ period }: { period: Period }) {
                         data={weeklyConversion.map(d => ({ label: d.label, Leads: d.Leads, Ventas: d.Ventas }))}
                         series={[
                             { key: 'Leads', color: '#8b5cf6', label: 'Leads' },
-                            { key: 'Ventas', color: '#f59e0b', label: 'Ventas' },
+                            { key:tr("Ventas"), color: '#f59e0b', label:tr("Ventas") },
                         ]}
                         height={260}
                     />
@@ -1530,7 +1531,7 @@ function OperativoModule({ period }: { period: Period }) {
                             current: h.reservas,
                             previous: Math.round(h.reservas * 0.9)
                         }))}
-                        currentLabel="Esta Semana"
+                        currentLabel={tr("Esta Semana")}
                         previousLabel="Semana Ant."
                         currentColor="#06b6d4"
                         previousColor="rgba(6,182,212,0.2)"
@@ -1924,10 +1925,10 @@ function BIModule({ period }: { period: Period }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
                 <KpiCard label="Revenue Total" value={`$${(kpiData.totalRevenue || 58900).toLocaleString()}`} icon={DollarSign} color="#10b981" trend={14} />
-                <KpiCard label="Reservas Activas" value={kpiData.totalReservations || 45} icon={Calendar} color="#8b5cf6" trend={12} />
+                <KpiCard label={tr("Reservas Activas")} value={kpiData.totalReservations || 45} icon={Calendar} color="#8b5cf6" trend={12} />
                 <KpiCard label="Clientes Nuevos" value={kpiData.newClients || 18} icon={Users} color="#06b6d4" trend={22} />
                 <KpiCard label="Destino Top" value={kpiData.topDest || 'Cancún'} icon={Map} color="#3b82f6" />
-                <KpiCard label="Conversión" value={`${kpiData.conversion || 6.8}%`} icon={Target} color="#f59e0b" trend={1.2} />
+                <KpiCard label={tr("Conversión")} value={`${kpiData.conversion || 6.8}%`} icon={Target} color="#f59e0b" trend={1.2} />
                 <KpiCard label="Reembolsos" value="3.1%" icon={ArrowDownRight} color="#ef4444" trend={-0.8} />
             </div>
 
@@ -2051,7 +2052,7 @@ function AdministrativoModule({ period }: { period: Period }) {
                 <TimelineAreaChart
                     data={activityWeekly.map(d => ({ label: d.label, Acciones: d.Acciones, Exportaciones: d.Exportaciones }))}
                     series={[
-                        { key: 'Acciones', color: '#8b5cf6', label: 'Acciones Registradas' },
+                        { key:tr("Acciones"), color: '#8b5cf6', label: 'Acciones Registradas' },
                         { key: 'Exportaciones', color: '#06b6d4', label: 'Exportaciones' },
                     ]}
                     height={240}
@@ -2068,19 +2069,21 @@ function AdministrativoModule({ period }: { period: Period }) {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 const REPORT_MODULES = [
-    { id: 'reservas', label: 'Reservas', icon: Calendar, color: '#8b5cf6', desc: 'General, estados, destinos, ocupación' },
-    { id: 'financiero', label: 'Financiero', icon: DollarSign, color: '#10b981', desc: 'Ingresos, CxC, rentabilidad, flujo caja' },
+    { id: 'reservas', label:tr("Reservas"), icon: Calendar, color: '#8b5cf6', desc: 'General, estados, destinos, ocupación' },
+    { id: 'financiero', label:tr("Financiero"), icon: DollarSign, color: '#10b981', desc: 'Ingresos, CxC, rentabilidad, flujo caja' },
     { id: 'clientes', label: 'Clientes', icon: Users, color: '#06b6d4', desc: 'Historial, fidelización, satisfacción' },
-    { id: 'ventas', label: 'Ventas', icon: ShoppingCart, color: '#f59e0b', desc: 'Asesores, embudo, cotizaciones' },
-    { id: 'operativo', label: 'Operativo', icon: Activity, color: '#06b6d4', desc: 'Check-in/out, itinerarios, incidencias' },
-    { id: 'proveedores', label: 'Proveedores', icon: Briefcase, color: '#ec4899', desc: 'Desempeño, pagos, SLA' },
-    { id: 'marketing', label: 'Marketing', icon: Target, color: '#a78bfa', desc: 'Campañas, canales, CAC, ROI' },
-    { id: 'destinos', label: 'Destinos', icon: Map, color: '#3b82f6', desc: 'Mapa, ranking, temporadas' },
-    { id: 'bi', label: 'BI Estratégico', icon: BarChart2, color: '#f43f5e', desc: 'Dashboard ejecutivo, forecast, comparativos' },
-    { id: 'admin', label: 'Administrativo', icon: Settings, color: '#94a3b8', desc: 'Usuarios, auditoría, alertas críticas' },
+    { id: 'ventas', label:tr("Ventas"), icon: ShoppingCart, color: '#f59e0b', desc: 'Asesores, embudo, cotizaciones' },
+    { id: 'operativo', label:tr("Operativo"), icon: Activity, color: '#06b6d4', desc: 'Check-in/out, itinerarios, incidencias' },
+    { id: 'proveedores', label:tr("Proveedores"), icon: Briefcase, color: '#ec4899', desc: 'Desempeño, pagos, SLA' },
+    { id: 'marketing', label:tr("Marketing"), icon: Target, color: '#a78bfa', desc: 'Campañas, canales, CAC, ROI' },
+    { id: 'destinos', label:tr("Destinos"), icon: Map, color: '#3b82f6', desc: 'Mapa, ranking, temporadas' },
+    { id: 'bi', label:tr("BI Estratégico"), icon: BarChart2, color: '#f43f5e', desc: 'Dashboard ejecutivo, forecast, comparativos' },
+    { id: 'admin', label:tr("Administrativo"), icon: Settings, color: '#94a3b8', desc: 'Usuarios, auditoría, alertas críticas' },
 ];
 
 export default function ReportsDashboard() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [activeModule, setActiveModule] = useState<string>('reservas');
     const [period, setPeriod] = useState<Period>('semana');
     const [refreshKey, setRefreshKey] = useState(0);
@@ -2108,7 +2111,7 @@ export default function ReportsDashboard() {
             {/* Page Header */}
             <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 className="heading-1" style={{ marginBottom: '0.25rem' }}>Centro de Reportes</h1>
+                    <h1 className="heading-1" style={{ marginBottom: '0.25rem' }}>{tr("Centro de Reportes")}</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                         Análisis completo con gráficas interactivas · {REPORT_MODULES.length} módulos disponibles
                     </p>
@@ -2121,13 +2124,13 @@ export default function ReportsDashboard() {
                         title="Actualizar datos"
                     >
                         <RefreshCw size={14} />
-                        <span>Actualizar</span>
+                        <span>{tr("Actualizar")}</span>
                     </button>
                     <button
                         style={{ background: 'var(--primary)', border: 'none', borderRadius: 10, padding: '0.45rem 1rem', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontFamily: 'inherit', fontWeight: 600 }}
                     >
                         <Download size={14} />
-                        <span>Exportar</span>
+                        <span>{tr("Exportar")}</span>
                     </button>
                 </div>
             </header>
@@ -2166,11 +2169,11 @@ export default function ReportsDashboard() {
 
             {/* Breadcrumb */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <span>Reportes</span>
+                <span>{tr("Reportes")}</span>
                 <ChevronRight size={14} />
                 <span style={{ color: currentModule.color, fontWeight: 600 }}>{currentModule.label}</span>
                 <span style={{ marginLeft: '0.5rem', padding: '0.2rem 0.6rem', background: 'rgba(255,255,255,0.05)', borderRadius: 6, border: '1px solid var(--border-glass)' }}>
-                    📅 {period === 'semana' ? 'Esta Semana' : period === 'mes' ? 'Este Mes' : period === 'trimestre' ? 'Este Trimestre' : 'Este Año'}
+                    📅 {period === 'semana' ?tr("Esta Semana") : period === 'mes' ? 'Este Mes' : period === 'trimestre' ? 'Este Trimestre' : 'Este Año'}
                 </span>
             </div>
 

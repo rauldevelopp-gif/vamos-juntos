@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect } from 'react';
 import {
     Users, Shield, AlertTriangle, CheckCircle, Search, Filter,
@@ -16,6 +17,8 @@ import {
 } from './actions';
 
 export default function UsersManagementPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
 
@@ -385,7 +388,7 @@ export default function UsersManagementPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
                                 <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
-                                    {['Usuario / ID', 'Nombre / Email', 'Rol', 'Estado', 'Acciones'].map(h => (
+                                    {['Usuario / ID', 'Nombre / Email',tr("Rol"),tr("Estado"),tr("Acciones")].map(h => (
                                         <th key={h} style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{h}</th>
                                     ))}
                                 </tr>

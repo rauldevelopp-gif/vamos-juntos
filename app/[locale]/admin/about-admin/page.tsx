@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect } from 'react';
 import {
     Activity, Award, Lock, ShieldAlert, Users, Settings, Save, RefreshCw, 
@@ -18,6 +19,8 @@ import {
 type TabType = 'institucional' | 'hero' | 'historia' | 'equipo' | 'gallery' | 'stats' | 'testimonios' | 'seo' | 'estructura' | 'versiones';
 
 export default function AboutUsAdminPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     // Auth States
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
@@ -357,7 +360,7 @@ export default function AboutUsAdminPage() {
                     </button>
                     <button onClick={handleSave} disabled={saving} className="btn-premium" style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', borderRadius: '10px' }}>
                         <Save size={15} />
-                        {saving ? 'Guardando...' : 'Publicar Cambios'}
+                        {saving ?tr("Guardando...") : 'Publicar Cambios'}
                     </button>
                 </div>
             </div>
@@ -886,7 +889,7 @@ export default function AboutUsAdminPage() {
                                     }} />
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.72rem' }}>
                                         <span style={{ color: 'white', background: 'rgba(255,255,255,0.05)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{img.category || 'General'}</span>
-                                        <span style={{ color: img.active ? '#10b981' : '#94a3b8', fontWeight: 700 }}>{img.active ? 'Activo' : 'Oculto'}</span>
+                                        <span style={{ color: img.active ? '#10b981' : '#94a3b8', fontWeight: 700 }}>{img.active ?tr("Activo") : 'Oculto'}</span>
                                     </div>
                                     <button 
                                         onClick={() => removeGalleryItem(img.id)}
@@ -1037,7 +1040,7 @@ export default function AboutUsAdminPage() {
                                     className="btn-premium" 
                                     style={{ padding: '0.5rem 1.5rem', borderRadius: '10px', fontSize: '0.78rem' }}
                                 >
-                                    Guardar
+                                    {tr("Guardar")}
                                 </button>
                             </div>
                         </div>

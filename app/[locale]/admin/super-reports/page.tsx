@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect, useRef } from 'react';
 import {
     ShieldAlert, Activity, Terminal, Users, DollarSign, Key,
@@ -29,6 +30,8 @@ type TabType =
     | 'sistema';
 
 export default function SuperReportsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
 
@@ -207,7 +210,7 @@ export default function SuperReportsPage() {
     const handleExportCSV = async () => {
         await triggerExportLogAction();
         
-        const headers = ['ID', 'Usuario', 'Rol', 'Fecha y Hora', 'IP', 'Dispositivo', 'Navegador', 'Acción', 'Módulo', 'Resultado', 'Empresa/Tenant', 'Detalle'];
+        const headers = ['ID',tr("Usuario"),tr("Rol"), 'Fecha y Hora', 'IP', 'Dispositivo', 'Navegador', 'Acción', 'Módulo', 'Resultado', 'Empresa/Tenant', 'Detalle'];
         const rows = auditLogs.map(l => [
             l.id, l.username, l.role, l.timestamp, l.ipAddress, l.device, l.browser, l.actionType, l.module, l.result, l.tenantId, l.details
         ]);
@@ -449,7 +452,7 @@ export default function SuperReportsPage() {
                                 <h4 style={{ color: 'white', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '1rem' }}>Módulos Más Utilizados (Operaciones)</h4>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                     {[
-                                        { name: 'Reservas', value: 82, pct: 45, color: '#8b5cf6' },
+                                        { name:tr("Reservas"), value: 82, pct: 45, color: '#8b5cf6' },
                                         { name: 'Paquetes Turísticos', value: 45, pct: 25, color: '#06b6d4' },
                                         { name: 'Seguridad / Autenticación', value: 31, pct: 17, color: '#f59e0b' },
                                         { name: 'Administrativo General', value: 24, pct: 13, color: '#10b981' }
@@ -540,10 +543,10 @@ export default function SuperReportsPage() {
                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                                         <thead>
                                             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                                <th style={{ padding: '0.4rem', color: 'var(--text-muted)' }}>Usuario</th>
+                                                <th style={{ padding: '0.4rem', color: 'var(--text-muted)' }}>{tr("Usuario")}</th>
                                                 <th style={{ padding: '0.4rem', color: 'var(--text-muted)' }}>IP / Ubicación</th>
                                                 <th style={{ padding: '0.4rem', color: 'var(--text-muted)' }}>Dispositivo</th>
-                                                <th style={{ padding: '0.4rem', color: 'var(--text-muted)' }}>Estado</th>
+                                                <th style={{ padding: '0.4rem', color: 'var(--text-muted)' }}>{tr("Estado")}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -669,7 +672,7 @@ export default function SuperReportsPage() {
                         <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative' }}>
                             <div style={{ borderBottom: '1px dashed var(--border-glass)', paddingBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                                 <strong style={{ color: 'white' }}>Ficha de Trazabilidad: {selectedResId}</strong>
-                                <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>Confirmada</span>
+                                <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>{tr("Confirmada")}</span>
                             </div>
 
                             {/* visual timeline line */}

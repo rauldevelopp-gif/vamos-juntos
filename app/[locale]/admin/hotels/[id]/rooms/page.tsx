@@ -1,11 +1,14 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, X, Bed, Loader2, Edit, Trash2, Upload } from 'lucide-react';
 import { getHotelRooms, saveHotelRoom, deleteHotelRoom } from '../../actions';
 
 export default function HotelRoomsPage({ params }: { params: { id: string } }) {
+  const { language } = useLanguage();
+  setLanguage(language);
     const hotelId = parseInt(params.id);
     const [rooms, setRooms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -127,7 +130,7 @@ export default function HotelRoomsPage({ params }: { params: { id: string } }) {
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Habitaciones
+                            {tr("Habitaciones")}
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
                             Gestiona el inventario y precios por noche.
@@ -207,7 +210,7 @@ export default function HotelRoomsPage({ params }: { params: { id: string } }) {
                                     <input type="text" value={formData.cancellationPolicy} onChange={e => setFormData({...formData, cancellationPolicy: e.target.value})} />
                                 </div>
                                 <div className="input-group">
-                                    <label>Estado</label>
+                                    <label>{tr("Estado")}</label>
                                     <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                                         <option value="Activa">Activa</option>
                                         <option value="Inactiva">Inactiva</option>
@@ -233,9 +236,9 @@ export default function HotelRoomsPage({ params }: { params: { id: string } }) {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Cancelar</button>
+                                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>{tr("Cancelar")}</button>
                                 <button type="submit" disabled={saving} className="btn-premium" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>
-                                    {saving ? 'Guardando...' : 'Guardar Habitación'}
+                                    {saving ?tr("Guardando...") : 'Guardar Habitación'}
                                 </button>
                             </div>
                         </form>

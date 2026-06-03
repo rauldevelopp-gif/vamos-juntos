@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState } from 'react';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { createBeach, updateBeach } from './actions';
@@ -12,13 +13,15 @@ interface BeachFormModalProps {
 }
 
 export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormModalProps) {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: beach?.name || '',
         type: beach?.type || 'Pública',
         city: beach?.city || '',
         state: beach?.state || '',
-        status: beach?.status || 'Abierta',
+        status: beach?.status ||tr("Abierta"),
         coordinates: beach?.coordinates || '',
         popularity: beach?.popularity || 'Media',
         description_long: beach?.description_long || '',
@@ -108,7 +111,7 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
                             <input required type="text" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} placeholder="Ej: Pública, Privada, Parque" />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Ciudad</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Ciudad")}</label>
                             <input required type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
@@ -116,7 +119,7 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
                             <input required type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Coordenadas</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Coordenadas")}</label>
                             <input required type="text" value={formData.coordinates} onChange={e => setFormData({...formData, coordinates: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>

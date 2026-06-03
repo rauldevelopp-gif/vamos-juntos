@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState } from 'react';
 import { X, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 import { createYacht, updateYacht } from './actions';
@@ -12,6 +13,8 @@ interface YachtFormModalProps {
 }
 
 export default function YachtFormModal({ yacht, onClose, onSuccess }: YachtFormModalProps) {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: yacht?.name || '',
@@ -118,7 +121,7 @@ export default function YachtFormModal({ yacht, onClose, onSuccess }: YachtFormM
                             <input required type="text" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Modelo</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Modelo")}</label>
                             <input required type="text" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
@@ -134,7 +137,7 @@ export default function YachtFormModal({ yacht, onClose, onSuccess }: YachtFormM
                             <input required type="number" value={formData.price_day} onChange={e => setFormData({...formData, price_day: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Ubicación</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Ubicación")}</label>
                             <input required type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                         <div>

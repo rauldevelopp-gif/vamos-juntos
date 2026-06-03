@@ -11,11 +11,16 @@ const nextConfig = {
         ignoreDuringBuilds: true,
     },
     experimental: {
+        webpackBuildWorker: false,
+        parallelServerCompiles: false,
         serverActions: {
             bodySizeLimit: '10mb',
         },
     },
-    webpack: (config) => {
+    webpack: (config, { dev }) => {
+        if (!dev) {
+            config.cache = false;
+        }
         config.ignoreWarnings = [
             { module: /node_modules\/next-intl/ },
             { message: /Build dependencies behind this expression are ignored/ }

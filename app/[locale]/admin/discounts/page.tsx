@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect } from 'react';
 import { Percent, Plus, Trash2, CheckCircle2, XCircle, Loader2, RefreshCw } from 'lucide-react';
 import { getDiscountCodes, createDiscountCode, deleteDiscountCode } from './actions';
@@ -13,6 +14,8 @@ interface DiscountCode {
 }
 
 export default function DiscountsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [codes, setCodes] = useState<DiscountCode[]>([]);
     const [loading, setLoading] = useState(true);
     const [newCode, setNewCode] = useState('');
@@ -48,13 +51,13 @@ export default function DiscountsPage() {
         setError('');
         
         if (!newCode || !newDiscount) {
-            setError('Por favor llena todos los campos');
+            setError(tr('Por favor llena todos los campos'));
             return;
         }
 
         const discountValue = parseFloat(newDiscount);
         if (isNaN(discountValue) || discountValue <= 0 || discountValue > 100) {
-            setError('El descuento debe ser un porcentaje entre 1 y 100');
+            setError(tr('El descuento debe ser un porcentaje entre 1 y 100'));
             return;
         }
 
@@ -65,18 +68,18 @@ export default function DiscountsPage() {
             setNewDiscount('');
             fetchCodes();
         } else {
-            setError(res.error || 'Error al crear código');
+            setError(res.error || tr('Error al crear código'));
         }
         setCreating(false);
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('¿Seguro que deseas eliminar este código?')) return;
+        if (!confirm(tr('¿Seguro que deseas eliminar este código?'))) return;
         const res = await deleteDiscountCode(id);
         if (res.success) {
             fetchCodes();
         } else {
-            alert(res.error || 'Error al eliminar');
+            alert(res.error || tr('Error al eliminar'));
         }
     };
 
@@ -84,16 +87,16 @@ export default function DiscountsPage() {
         <div className="discounts-container" style={{ padding: '2rem' }}>
             <h1 className="page-title" style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'white' }}>
                 <Percent size={32} style={{ color: 'var(--primary)' }} />
-                Gestionar Cupones
+                {tr("Gestionar Cupones")}
             </h1>
 
             <div className="discounts-grid" style={{ display: 'grid', gap: '2rem' }}>
                 {/* Form to create */}
                 <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '2rem', height: 'fit-content' }}>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'white' }}>Nuevo Código</h2>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'white' }}>{tr("Nuevo Código")}</h2>
                     <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Código Generado Automáticamente</label>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{tr("Código Generado Automáticamente")}</label>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px', color: '#8b5cf6', fontWeight: 900, letterSpacing: '0.1em', display: 'flex', alignItems: 'center' }}>
                                     {newCode}
@@ -104,20 +107,20 @@ export default function DiscountsPage() {
                                     style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '0 1rem', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                                    title="Regenerar Código"
+                                    title={tr("Regenerar Código")}
                                 >
                                     <RefreshCw size={18} />
                                 </button>
                             </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Porcentaje de Descuento (%)</label>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{tr("Porcentaje de Descuento (%)")}</label>
                             <input 
                                 type="number" 
                                 value={newDiscount}
                                 onChange={e => setNewDiscount(e.target.value)}
                                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px', color: 'white', fontWeight: 700 }}
-                                placeholder="Ej. 15"
+                                placeholder={tr("Ej. 15")}
                             />
                         </div>
                         
@@ -128,21 +131,21 @@ export default function DiscountsPage() {
                             disabled={creating}
                             style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: 900, textTransform: 'uppercase', cursor: creating ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}
                         >
-                            {creating ? <Loader2 size={18} className="animate-spin" /> : <><Plus size={18} /> Crear Código</>}
+                            {creating ? <Loader2 size={18} className="animate-spin" /> : <><Plus size={18} /> {tr("Crear Código")}</>}
                         </button>
                     </form>
                 </div>
 
                 {/* List of codes */}
                 <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '2rem' }}>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'white' }}>Códigos Creados</h2>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: 'white' }}>{tr("Códigos Creados")}</h2>
                     
                     {loading ? (
                         <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
                             <Loader2 size={32} className="animate-spin" style={{ color: 'var(--primary)' }} />
                         </div>
                     ) : codes.length === 0 ? (
-                        <p style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '2rem' }}>No hay códigos creados.</p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '2rem' }}>{tr("No hay códigos creados.")}</p>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             {codes.map(c => (
@@ -158,11 +161,11 @@ export default function DiscountsPage() {
                                         <div>
                                             {c.used ? (
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, background: 'rgba(239, 68, 68, 0.1)', padding: '0.25rem 0.5rem', borderRadius: '6px' }}>
-                                                    <XCircle size={14} /> Usado
+                                                    <XCircle size={14} /> {tr("Usado")}
                                                 </span>
                                             ) : (
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontSize: '0.75rem', fontWeight: 700, background: 'rgba(16, 185, 129, 0.1)', padding: '0.25rem 0.5rem', borderRadius: '6px' }}>
-                                                    <CheckCircle2 size={14} /> Disponible
+                                                    <CheckCircle2 size={14} /> {tr("Disponible")}
                                                 </span>
                                             )}
                                         </div>

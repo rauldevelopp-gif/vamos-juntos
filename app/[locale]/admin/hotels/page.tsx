@@ -1,11 +1,14 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, MapPin, X, Star, Loader2, Hotel as HotelIcon, Bed, Edit, Trash2, Upload } from 'lucide-react';
 import { getHotels, saveHotel, deleteHotel } from './actions';
 
 export default function HotelsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [hotels, setHotels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -168,19 +171,19 @@ export default function HotelsPage() {
                 
                 <button onClick={() => handleOpenForm()} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Añadir Hotel</span>
+                    <span className="btn-text-mobile-hide">{tr("Añadir Hotel")}</span>
                 </button>
             </div>
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '4rem' }}>
                     <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: '#8b5cf6' }} />
-                    <p style={{ color: 'var(--text-muted)' }}>Cargando hoteles...</p>
+                    <p style={{ color: 'var(--text-muted)' }}>{tr("Cargando hoteles...")}</p>
                 </div>
             ) : hotels.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '6rem', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
                     <HotelIcon size={48} color="var(--text-muted)" style={{ margin: '0 auto 1rem' }} />
-                    <h3>No hay hoteles registrados</h3>
+                    <h3>{tr("No hay hoteles registrados")}</h3>
                     <p style={{ color: 'var(--text-muted)' }}>Comienza agregando tu primer alojamiento.</p>
                 </div>
             ) : (
@@ -189,10 +192,10 @@ export default function HotelsPage() {
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
                                 <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>Hotel</th>
-                                <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>Estado</th>
+                                <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>{tr("Estado")}</th>
                                 <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>Categoría</th>
-                                <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>Ubicación</th>
-                                <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>Acciones</th>
+                                <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>{tr("Ubicación")}</th>
+                                <th style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.8rem' }}>{tr("Acciones")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -215,7 +218,7 @@ export default function HotelsPage() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td style={{ padding: '0.8rem 1rem' }} data-label="Estado">
+                                    <td style={{ padding: '0.8rem 1rem' }} data-label={tr("Estado")}>
                                         <span style={{ padding: '0.2rem 0.6rem', borderRadius: '15px', fontSize: '0.7rem', fontWeight: 700, background: hotel.status === 'Disponible' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)', color: hotel.status === 'Disponible' ? '#10b981' : '#f43f5e' }}>
                                             {hotel.status}
                                         </span>
@@ -223,7 +226,7 @@ export default function HotelsPage() {
                                     <td style={{ padding: '0.8rem 1rem' }} data-label="Categoría">
                                         <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>{hotel.category}</span>
                                     </td>
-                                    <td style={{ padding: '0.8rem 1rem' }} data-label="Ubicación">
+                                    <td style={{ padding: '0.8rem 1rem' }} data-label={tr("Ubicación")}>
                                         <div style={{ fontSize: '0.9rem' }}>{hotel.city}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{hotel.state}</div>
                                     </td>
@@ -240,10 +243,10 @@ export default function HotelsPage() {
                                             <Link href={`/admin/hotels/${hotel.id}/rooms`} className="btn-secondary" style={{ padding: '0.4rem 0.6rem', borderRadius: '8px', textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem' }}>
                                                 <Bed size={14} /> ({hotel.rooms?.length || 0})
                                             </Link>
-                                            <button onClick={() => handleOpenForm(hotel)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px' }} title="Editar">
+                                            <button onClick={() => handleOpenForm(hotel)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px' }} title={tr("Editar")}>
                                                 <Edit size={14} />
                                             </button>
-                                            <button onClick={() => handleDelete(hotel.id)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px', color: '#f43f5e' }} title="Eliminar">
+                                            <button onClick={() => handleDelete(hotel.id)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px', color: '#f43f5e' }} title={tr("Eliminar")}>
                                                 <Trash2 size={14} />
                                             </button>
                                         </div>
@@ -260,7 +263,7 @@ export default function HotelsPage() {
                 <div className="modal-overlay" onClick={() => setShowFormModal(false)}>
                     <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ overflowY: 'auto', padding: '1.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
-                            <h2 style={{ margin: 0 }}>{formData.id ? 'Editar Hotel' : 'Añadir Hotel'}</h2>
+                            <h2 style={{ margin: 0 }}>{formData.id ? 'Editar Hotel' :tr("Añadir Hotel")}</h2>
                             <button onClick={() => setShowFormModal(false)} className="btn-glass-nav" style={{ border: 'none', padding: '0.3rem' }}><X size={20} /></button>
                         </div>
                         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -285,7 +288,7 @@ export default function HotelsPage() {
                                     <input required type="number" min="1" max="5" value={formData.stars} onChange={e => setFormData({...formData, stars: parseInt(e.target.value)})} />
                                 </div>
                                 <div className="input-group">
-                                    <label>Estado</label>
+                                    <label>{tr("Estado")}</label>
                                     <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                                         <option value="Disponible">Disponible</option>
                                         <option value="Mantenimiento">Mantenimiento</option>
@@ -302,7 +305,7 @@ export default function HotelsPage() {
                             <h3 style={{ fontSize: '1rem', marginTop: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>Ubicación y Contacto</h3>
                             <div className="form-grid">
                                 <div className="input-group">
-                                    <label>Ciudad</label>
+                                    <label>{tr("Ciudad")}</label>
                                     <input required type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
                                 </div>
                                 <div className="input-group">
@@ -318,7 +321,7 @@ export default function HotelsPage() {
                                     <input type="text" value={formData.coordinates} onChange={e => setFormData({...formData, coordinates: e.target.value})} />
                                 </div>
                                 <div className="input-group">
-                                    <label>Teléfono</label>
+                                    <label>{tr("Teléfono")}</label>
                                     <input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                                 </div>
                                 <div className="input-group">
@@ -362,9 +365,9 @@ export default function HotelsPage() {
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="button" onClick={() => setShowFormModal(false)} className="btn-secondary" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Cancelar</button>
+                                <button type="button" onClick={() => setShowFormModal(false)} className="btn-secondary" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>{tr("Cancelar")}</button>
                                 <button type="submit" disabled={saving} className="btn-premium" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>
-                                    {saving ? 'Guardando...' : 'Guardar Hotel'}
+                                    {saving ?tr("Guardando...") : 'Guardar Hotel'}
                                 </button>
                             </div>
                         </form>
@@ -396,7 +399,7 @@ export default function HotelsPage() {
                             ></iframe>
                         </div>
                         <div style={{ padding: '1.5rem', textAlign: 'right' }}>
-                            <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }} onClick={closeModal}>Cerrar Mapa</button>
+                            <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }} onClick={closeModal}>{tr("Cerrar Mapa")}</button>
                         </div>
                     </div>
                 </div>

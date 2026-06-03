@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
     Car, 
@@ -86,10 +87,10 @@ interface Package {
 
 const CATEGORIES = [
     { type: 'aeropuerto', label: 'Vuelos/Aeropuertos', icon: <Plane size={24} /> },
-    { type: 'hotel', label: 'Hoteles', icon: <Hotel size={24} /> },
-    { type: 'restaurante', label: 'Restaurantes', icon: <Utensils size={24} /> },
-    { type: 'playa', label: 'Playas', icon: <Palmtree size={24} /> },
-    { type: 'atraccion', label: 'Atracciones', icon: <Camera size={24} /> },
+    { type: 'hotel', label:tr("Hoteles"), icon: <Hotel size={24} /> },
+    { type: 'restaurante', label:tr("Restaurantes"), icon: <Utensils size={24} /> },
+    { type: 'playa', label:tr("Playas"), icon: <Palmtree size={24} /> },
+    { type: 'atraccion', label:tr("Atracciones"), icon: <Camera size={24} /> },
     { type: 'yate', label: 'Yates/Marina', icon: <Anchor size={24} /> },
 ] as const;
 
@@ -566,6 +567,8 @@ const ImageUploader = ({ value, onChange }: { value: string | null, onChange: (v
 // --- MAIN PAGE COMPONENT ---
 
 export default function PackageBuilderPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [pkg, setPkg] = useState<Package>({
         name: '',
         description: '',
@@ -665,7 +668,7 @@ export default function PackageBuilderPage() {
         }
     };
 
-    if (!mounted) return <div className="loader">Cargando...</div>;
+    if (!mounted) return <div className="loader">{tr("Cargando...")}</div>;
 
     return (
         <div className="builder-wrapper">
@@ -681,7 +684,7 @@ export default function PackageBuilderPage() {
                             <p>Diseña experiencias únicas compuestas por múltiples servicios</p>
                         </div>
                     </div>
-                    {isSaving && <div className="save-badge"><Loader2 size={16} className="animate-spin" /> Guardando...</div>}
+                    {isSaving && <div className="save-badge"><Loader2 size={16} className="animate-spin" /> {tr("Guardando...")}</div>}
                 </header>
 
                 <div className="builder-layout">
@@ -702,7 +705,7 @@ export default function PackageBuilderPage() {
                                         />
                                     </div>
                                     <div className="field-group">
-                                        <label className="field-label">Descripción</label>
+                                        <label className="field-label">{tr("Descripción")}</label>
                                         <textarea 
                                             placeholder="Detalla qué incluye este paquete..." 
                                             rows={3}
@@ -818,7 +821,7 @@ export default function PackageBuilderPage() {
                                         style={{ padding: '0.8rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isSaving ? 0.7 : 1 }}
                                     >
                                         {isSaving ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
-                                        {isSaving ? 'Guardando...' : 'Guardar Paquete'}
+                                        {isSaving ?tr("Guardando...") : 'Guardar Paquete'}
                                     </button>
                                 </div>
                             </div>

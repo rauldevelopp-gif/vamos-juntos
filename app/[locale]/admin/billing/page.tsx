@@ -1,11 +1,14 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import { getGatewaySettings, saveGatewaySettings } from './actions';
 import { CreditCard, Save, Lock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BillingPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -183,7 +186,7 @@ export default function BillingPage() {
 
             <div style={{ marginTop: '3rem', textAlign: 'right' }}>
                 <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1rem' }}>
-                    <Save size={18} /> {saving ? 'Guardando...' : 'Guardar Configuración'}
+                    <Save size={18} /> {saving ?tr("Guardando...") : 'Guardar Configuración'}
                 </button>
             </div>
 

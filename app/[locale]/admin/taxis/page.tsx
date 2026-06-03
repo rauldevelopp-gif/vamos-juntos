@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -39,6 +40,8 @@ interface Taxi {
 }
 
 export default function TaxisPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [fleet, setFleet] = useState<Taxi[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTaxi, setSelectedTaxi] = useState<Taxi | null>(null);
@@ -102,8 +105,8 @@ export default function TaxisPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Car size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay vehículos registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos vehículos aparecerán aquí.</p>
+                        <h3>{tr("No hay vehículos registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos vehículos aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -112,8 +115,8 @@ export default function TaxisPage() {
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Vehículo / Placa</th>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Chofer</th>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Amenidades</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Acciones</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Acciones")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -191,8 +194,8 @@ export default function TaxisPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Car size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay vehículos registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos vehículos aparecerán aquí.</p>
+                        <h3>{tr("No hay vehículos registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos vehículos aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>
@@ -295,7 +298,7 @@ export default function TaxisPage() {
                                     <div style={{ fontWeight: 600 }}>{selectedTaxi.driver.license}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Teléfono</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{tr("Teléfono")}</div>
                                     <div style={{ fontWeight: 600 }}>{selectedTaxi.driver.phone}</div>
                                 </div>
                                 <div>

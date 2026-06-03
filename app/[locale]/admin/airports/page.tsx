@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, MapPin, X, Loader2, Plane } from 'lucide-react';
@@ -17,6 +18,8 @@ interface Airport {
 }
 
 export default function AirportsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [airports, setAirports] = useState<Airport[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
@@ -46,14 +49,14 @@ export default function AirportsPage() {
                             Gestión de Aeropuertos
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Listado oficial de terminales aéreas en México.
+                            {tr("Listado oficial de terminales aéreas en México.")}
                         </p>
                     </div>
                 </div>
                 
                 <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Agregar Terminal</span>
+                    <span className="btn-text-mobile-hide">{tr("Agregar Terminal")}</span>
                 </button>
             </div>
 
@@ -62,25 +65,25 @@ export default function AirportsPage() {
                 {loading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
                         <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-                        <p>Sincronizando aeropuertos...</p>
+                        <p>{tr("Sincronizando aeropuertos...")}</p>
                     </div>
                 ) : airports.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '6rem' }}>
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Plane size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay aeropuertos registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos aeropuertos aparecerán aquí.</p>
+                        <h3>{tr("No hay aeropuertos registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos aeropuertos aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Aeropuerto</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>IATA</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Ubicación</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Mapa</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Aeropuerto")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("IATA")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Ubicación")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Mapa")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -124,15 +127,15 @@ export default function AirportsPage() {
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '4rem' }}>
                         <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
-                        <p style={{ color: 'var(--text-muted)' }}>Cargando terminales...</p>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Cargando terminales...")}</p>
                     </div>
                 ) : airports.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '6rem' }}>
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Plane size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay aeropuertos registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos aeropuertos aparecerán aquí.</p>
+                        <h3>{tr("No hay aeropuertos registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos aeropuertos aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>
@@ -157,7 +160,7 @@ export default function AirportsPage() {
                                 </div>
 
                                 <button onClick={() => setSelectedAirport(airport)} className="btn-premium" style={{ width: '100%', padding: '0.8rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                                    <MapPin size={18} /> Ver Ubicación
+                                    <MapPin size={18} /> {tr("Ver Ubicación")}
                                 </button>
                             </div>
                         ))}
@@ -182,7 +185,7 @@ export default function AirportsPage() {
                             <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={`https://maps.google.com/maps?q=${selectedAirport.coordinates}&t=k&z=15&ie=UTF8&iwloc=&output=embed`} allowFullScreen></iframe>
                         </div>
                         <div style={{ padding: '1.5rem', textAlign: 'right' }}>
-                            <button className="btn-premium" onClick={closeModal}>Cerrar Mapa</button>
+                            <button className="btn-premium" onClick={closeModal}>{tr("Cerrar Mapa")}</button>
                         </div>
                     </div>
                 </div>

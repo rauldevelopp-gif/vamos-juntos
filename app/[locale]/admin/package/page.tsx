@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -487,6 +488,8 @@ const PackageQRCodeModal = ({ pkg, onClose }: { pkg: Package, onClose: () => voi
 };
 
 export default function PackagesPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
@@ -545,10 +548,10 @@ export default function PackagesPage() {
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Nombre del Paquete</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Precio Base</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Ventas</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Acciones</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Precio Base")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Ventas")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Acciones")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -583,8 +586,8 @@ export default function PackagesPage() {
                                     <td style={{ padding: '1.2rem' }}>
                                         <span style={{ 
                                             padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700,
-                                            background: pkg.status === 'Activo' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                                            color: pkg.status === 'Activo' ? '#10b981' : 'var(--text-muted)'
+                                            background: pkg.status === tr("Activo") ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                            color: pkg.status === tr("Activo") ? '#10b981' : 'var(--text-muted)'
                                         }}>
                                             {pkg.status}
                                         </span>

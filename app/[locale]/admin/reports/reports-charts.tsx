@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useRef, useEffect } from 'react';
 import { Terminal, Shield, AlertTriangle, CheckCircle, Info, Copy, Search, Play, RefreshCw } from 'lucide-react';
 

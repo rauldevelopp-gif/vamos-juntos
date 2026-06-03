@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, FileText, CheckCircle2, Search } from 'lucide-react';
@@ -26,6 +27,8 @@ interface ReservationsListProps {
 }
 
 export default function ReservationsList({ reservations }: ReservationsListProps) {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [dateFilter, setDateFilter] = useState('ALL');
@@ -42,9 +45,9 @@ export default function ReservationsList({ reservations }: ReservationsListProps
 
     const getCountdownLabel = (dateString: string) => {
         const days = getDaysDifference(dateString);
-        if (days < 0) return { text: 'Ya pasó', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
-        if (days === 0) return { text: 'Es Hoy', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
-        if (days === 1) return { text: 'Mañana', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
+        if (days < 0) return { text:tr("Ya pasó"), color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
+        if (days === 0) return { text:tr("Es Hoy"), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
+        if (days === 1) return { text:tr("Mañana"), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
         return { text: `Faltan ${days} días`, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' };
     };
 
@@ -85,10 +88,10 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                     </Link>
                     <div>
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Gestión de Reservas
+                            {tr("Gestión de Reservas")}
                         </h1>
                         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Listado completo de reservaciones y seguimiento de tours.
+                            {tr("Listado completo de reservaciones y seguimiento de tours.")}
                         </p>
                     </div>
                 </div>
@@ -105,7 +108,7 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                     <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <input 
                         type="text" 
-                        placeholder="Buscar por cliente, email o paquete..." 
+                        placeholder={tr("Buscar por cliente, email o paquete...")} 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 3rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '14px', color: 'white', outline: 'none', transition: 'border-color 0.2s' }}
@@ -119,9 +122,9 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                         onChange={(e) => setStatusFilter(e.target.value)}
                         style={{ flex: 1, padding: '0.8rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '14px', color: 'white', outline: 'none', cursor: 'pointer' }}
                     >
-                        <option value="ALL" style={{ background: '#111' }}>Todos los Estados</option>
+                        <option value="ALL" style={{ background: '#111' }}>{tr("Todos los Estados")}</option>
                         <option value="Confirmado" style={{ background: '#111' }}>Confirmado</option>
-                        <option value="Pendiente" style={{ background: '#111' }}>Pendiente</option>
+                        <option value={tr("Pendiente")} style={{ background: '#111' }}>{tr("Pendiente")}</option>
                         <option value="Cancelado" style={{ background: '#111' }}>Cancelado</option>
                     </select>
                     
@@ -130,10 +133,10 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                         onChange={(e) => setDateFilter(e.target.value)}
                         style={{ flex: 1, padding: '0.8rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '14px', color: 'white', outline: 'none', cursor: 'pointer' }}
                     >
-                        <option value="ALL" style={{ background: '#111' }}>Todas las Fechas</option>
-                        <option value="TODAY" style={{ background: '#111' }}>Es Hoy</option>
-                        <option value="UPCOMING" style={{ background: '#111' }}>Próximas</option>
-                        <option value="PAST" style={{ background: '#111' }}>Ya Pasaron</option>
+                        <option value="ALL" style={{ background: '#111' }}>{tr("Todas las Fechas")}</option>
+                        <option value="TODAY" style={{ background: '#111' }}>{tr("Es Hoy")}</option>
+                        <option value="UPCOMING" style={{ background: '#111' }}>{tr("Próximas")}</option>
+                        <option value="PAST" style={{ background: '#111' }}>{tr("Ya Pasaron")}</option>
                     </select>
                 </div>
             </div>
@@ -143,18 +146,18 @@ export default function ReservationsList({ reservations }: ReservationsListProps
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Cliente</th>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Tour / Paquete</th>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Fecha de Reserva</th>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Monto</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Cliente")}</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Tour / Paquete")}</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Fecha de Reserva")}</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                            <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Monto")}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredReservations.length === 0 ? (
                             <tr>
                                 <td colSpan={5} style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    No se encontraron reservas con esos filtros.
+                                    {tr("No se encontraron reservas con esos filtros.")}
                                 </td>
                             </tr>
                         ) : (
@@ -215,7 +218,7 @@ export default function ReservationsList({ reservations }: ReservationsListProps
             <div className="mobile-only">
                 {filteredReservations.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                        No hay reservas que coincidan.
+                        {tr("No hay reservas que coincidan.")}
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

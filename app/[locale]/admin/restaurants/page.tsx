@@ -1,5 +1,6 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
+import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, MapPin, X, Loader2, Utensils } from 'lucide-react';
@@ -17,6 +18,8 @@ interface Restaurant {
 }
 
 export default function RestaurantsPage() {
+  const { language } = useLanguage();
+  setLanguage(language);
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
@@ -69,18 +72,18 @@ export default function RestaurantsPage() {
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Utensils size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay restaurantes registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos restaurantes aparecerán aquí.</p>
+                        <h3>{tr("No hay restaurantes registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos restaurantes aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Restaurante / Cocina</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Ubicación</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Ubicación")}</th>
                                 <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Rango Precio</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Estado</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>Mapa</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
+                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Mapa")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,15 +126,15 @@ export default function RestaurantsPage() {
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '4rem' }}>
                         <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
-                        <p style={{ color: 'var(--text-muted)' }}>Cargando restaurantes...</p>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Cargando restaurantes...")}</p>
                     </div>
                 ) : restaurants.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '6rem' }}>
                         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                             <Utensils size={32} color="var(--text-muted)" />
                         </div>
-                        <h3>No hay restaurantes registrados</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>Los nuevos restaurantes aparecerán aquí.</p>
+                        <h3>{tr("No hay restaurantes registrados")}</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>{tr("Los nuevos restaurantes aparecerán aquí.")}</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>
@@ -184,7 +187,7 @@ export default function RestaurantsPage() {
                             <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={`https://maps.google.com/maps?q=${selectedRestaurant.coordinates}&t=k&z=18&ie=UTF8&iwloc=&output=embed`} allowFullScreen></iframe>
                         </div>
                         <div style={{ padding: '1.5rem', textAlign: 'right' }}>
-                            <button className="btn-premium" onClick={closeModal}>Cerrar Mapa</button>
+                            <button className="btn-premium" onClick={closeModal}>{tr("Cerrar Mapa")}</button>
                         </div>
                     </div>
                 </div>

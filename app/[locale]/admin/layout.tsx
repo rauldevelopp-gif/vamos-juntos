@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { LogOut } from 'lucide-react';
 import WarningBanner from '@/components/WarningBanner';
+import AdminTranslator from '@/components/AdminTranslator';
 
 export default async function AdminLayout({
     children,
@@ -59,7 +60,9 @@ export default async function AdminLayout({
 
             {/* Main Content */}
             <main className="main-content" style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
-                {children}
+                <AdminTranslator>
+                    {children}
+                </AdminTranslator>
             </main>
 
             <WarningBanner />
