@@ -25,5 +25,16 @@
   "about_title_accent": "Conoce Nuestra Historia",
   "about_more_btn": "Conocer Más de Nosotros",
   "about_mission_tag": "Nuestra Misión",
-  "about_history_title": "Quiénes Somos"
+  "about_history_title": "Quiénes Somos",
+  "testimonials_title_1": "Lo que dicen ",
+  "testimonials_title_2": "nuestros clientes",
+  "testimonials_subtitle": "Descubre por qué miles de viajeros confían en nosotros para sus mejores experiencias.",
+  "testi_1_text": "\"La gestión de la app es increíblemente intuitiva y fácil de usar. Pude organizar todo mi viaje en cuestión de minutos sin complicaciones. ¡Totalmente recomendada!\"",
+  "testi_1_country": "México",
+  "testi_2_text": "\"Nos lo pasamos genial en las atracciones. La aplicación ofrece opciones espectaculares que no hubiéramos encontrado de otra forma. Una experiencia mágica.\"",
+  "testi_2_country": "España",
+  "testi_3_text": "\"Me sorprendió la seriedad y profesionalismo de los operadores turísticos que ofrecen sus paquetes aquí. Todo se cumplió tal cual lo prometido, sin contratiempos.\"",
+  "testi_3_country": "Colombia",
+  "testi_4_text": "\"La mejor plataforma para planear vacaciones. La combinación de facilidad de uso, excelentes actividades y agencias confiables la hacen inigualable.\"",
+  "testi_4_country": "Argentina"
 }

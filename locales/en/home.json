@@ -25,5 +25,16 @@
   "about_title_accent": "Discover Our Story",
   "about_more_btn": "Learn More About Us",
   "about_mission_tag": "Our Mission",
-  "about_history_title": "About Us"
+  "about_history_title": "About Us",
+  "testimonials_title_1": "What ",
+  "testimonials_title_2": "our clients say",
+  "testimonials_subtitle": "Discover why thousands of travelers trust us for their best experiences.",
+  "testi_1_text": "\"The app management is incredibly intuitive and easy to use. I was able to organize my entire trip in minutes without complications. Highly recommended!\"",
+  "testi_1_country": "Mexico",
+  "testi_2_text": "\"We had a great time at the attractions. The application offers spectacular options that we wouldn't have found otherwise. A magical experience.\"",
+  "testi_2_country": "Spain",
+  "testi_3_text": "\"I was surprised by the seriousness and professionalism of the tour operators offering their packages here. Everything was fulfilled exactly as promised, without setbacks.\"",
+  "testi_3_country": "Colombia",
+  "testi_4_text": "\"The best platform to plan vacations. The combination of ease of use, excellent activities, and reliable agencies makes it unmatched.\"",
+  "testi_4_country": "Argentina"
 }

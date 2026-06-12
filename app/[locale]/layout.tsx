@@ -7,6 +7,7 @@ import { Navbar } from '../../components/Navbar';
 import { getLocalDB } from "@/lib/db-fallback";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import PublicTranslator from '../../components/PublicTranslator';
 
 export const viewport: Viewport = {
   themeColor: "#05070a",
@@ -70,16 +71,18 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
           <LanguageProvider>
-            <PWARegistration />
-            <Navbar session={session} username={username} role={userRole} isAboutUsPublished={isAboutUsPublished} />
+            <PublicTranslator>
+              <PWARegistration />
+              <Navbar session={session} username={username} role={userRole} isAboutUsPublished={isAboutUsPublished} />
 
-            <main style={{ minHeight: 'calc(100vh - 140px)', padding: '2rem 0' }}>
-              {children}
-            </main>
+              <main style={{ minHeight: 'calc(100vh - 140px)', padding: '2rem 0' }}>
+                {children}
+              </main>
 
-            <footer style={{ borderTop: '1px solid var(--border-color)', background: 'var(--bg-card)', padding: '2rem 0', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)' }}>© {new Date().getFullYear()} VamosJuntos. All rights reserved.</p>
-            </footer>
+              <footer style={{ borderTop: '1px solid var(--border-color)', background: 'var(--bg-card)', padding: '2rem 0', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)' }}>© {new Date().getFullYear()} VamosJuntos. All rights reserved.</p>
+              </footer>
+            </PublicTranslator>
           </LanguageProvider>
         </NextIntlClientProvider>
 

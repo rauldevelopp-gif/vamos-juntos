@@ -44,8 +44,9 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #050505 0%, rgba(5,5,5,0.4) 50%, rgba(0,0,0,0.6) 100%)' }} />
                 
                 <div style={{ position: 'absolute', top: '2rem', left: '2rem', zIndex: 10 }}>
-                    <Link href="/hotels" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: 'white', textDecoration: 'none' }}>
+                    <Link href="/hotels" className="btn-glass-nav" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderRadius: '50px', background: 'rgba(15, 23, 42, 0.8)', color: 'white', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', padding: '0.6rem 1.2rem' }}>
                         <ArrowLeft size={20} />
+                        <span style={{ fontWeight: 600 }}>Atrás</span>
                     </Link>
                 </div>
 

@@ -1,7 +1,11 @@
+'use client';
+
+import { useState } from 'react';
 import EntityCard from './EntityCard';
 import Link from 'next/link';
 import { useLanguage } from '../context/LanguageContext';
 import { getTranslatedValue } from '../lib/i18n-utils';
+import EntityModal from './EntityModal';
 
 interface GridItem {
     id: number;
@@ -31,6 +35,7 @@ interface EntityGridProps {
 export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewMoreText, accentColor }: EntityGridProps) {
     const { language } = useLanguage();
     const isEn = language === 'en';
+    const [selectedItem, setSelectedItem] = useState<GridItem | null>(null);
 
     if (!items || items.length === 0) return null;
 
@@ -79,9 +84,10 @@ export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewM
                                     title={cardTitle}
                                     subtitle={cardSubtitle}
                                     priceLabel={priceLabel}
-                                    gallery={item.gallery}
+                                    gallery={item.gallery && item.gallery.length > 0 ? item.gallery : (item.image ? [item.image] : undefined)}
                                     badge={badge?.toUpperCase()}
                                     accentColor={accentColor}
+                                    onClick={() => setSelectedItem(item)}
                                 />
                             </div>
                         );
@@ -96,6 +102,14 @@ export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewM
                     </div>
                 )}
             </div>
+
+            {selectedItem && (
+                <EntityModal 
+                    item={selectedItem} 
+                    onClose={() => setSelectedItem(null)} 
+                    accentColor={accentColor} 
+                />
+            )}
 
             <style jsx>{`
                 .entity-grid {
