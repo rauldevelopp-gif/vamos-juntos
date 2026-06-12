@@ -14,9 +14,22 @@ export default function PWARegistration() {
 
     useEffect(() => {
         if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then((reg) => console.log('SW Registered', reg))
-                .catch((err) => console.log('SW Registration Failed', err));
+            if (process.env.NODE_ENV === 'production') {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('SW Registered', reg))
+                    .catch((err) => console.log('SW Registration Failed', err));
+            } else {
+                // Unregister any active service worker during development to prevent fetch and cache conflicts
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    for (const registration of registrations) {
+                        registration.unregister().then((success) => {
+                            if (success) {
+                                console.log('SW Unregistered in development mode');
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         window.addEventListener('beforeinstallprompt', (e) => {
