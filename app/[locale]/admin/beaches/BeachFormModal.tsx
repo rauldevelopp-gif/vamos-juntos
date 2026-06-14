@@ -1,29 +1,27 @@
 'use client';
-import { useLanguage } from '@/context/LanguageContext';
-import { tr, setLanguage } from '@/lib/tr';
+
 import { useState } from 'react';
-import { X, Upload, Loader2 } from 'lucide-react';
+import { X, Loader2, Upload } from 'lucide-react';
 import { createBeach, updateBeach } from './actions';
+import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 
 interface BeachFormModalProps {
-    beach?: any;
+    beach?: any | null;
     onClose: () => void;
     onSuccess: () => void;
 }
 
 export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormModalProps) {
-  const { language } = useLanguage();
-  setLanguage(language);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: beach?.name || '',
         type: beach?.type || 'Pública',
         city: beach?.city || '',
         state: beach?.state || '',
-        status: beach?.status ||tr("Abierta"),
-        coordinates: beach?.coordinates || '',
+        status: beach?.status || 'Abierta',
         popularity: beach?.popularity || 'Media',
+        coordinates: beach?.coordinates || '',
         description_long: beach?.description_long || '',
         gallery: beach?.gallery || []
     });
@@ -33,6 +31,7 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
         if (!files || files.length === 0) return;
         
         setLoading(true);
+        const loadingToast = toast.loading('Subiendo imágenes...');
         try {
             const uploadedUrls = [...formData.gallery];
             for (let i = 0; i < files.length; i++) {
@@ -51,9 +50,10 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
                 }
             }
             setFormData({ ...formData, gallery: uploadedUrls });
+            toast.success('Imágenes subidas', { id: loadingToast });
         } catch (error) {
             console.error("Upload error", error);
-            alert("Error al subir imágenes");
+            toast.error("Error al subir imágenes", { id: loadingToast });
         } finally {
             setLoading(false);
         }
@@ -68,74 +68,88 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        
+        const loadingToast = toast.loading('Guardando...');
+
         const res = beach 
             ? await updateBeach(beach.id, formData)
             : await createBeach(formData);
 
-        setLoading(false);
         if (res.success) {
+            toast.success('Playa guardada exitosamente', { id: loadingToast });
             onSuccess();
         } else {
-            alert(res.error);
+            toast.error(res.error || 'Error al guardar la playa', { id: loadingToast });
+            setLoading(false);
         }
     };
 
     return (
         <div className="modal-overlay" onClick={onClose} style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 9999, overflowY: 'auto', padding: '2rem'
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem'
         }}>
             <div className="glass-panel" onClick={e => e.stopPropagation()} style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border-glass)',
-                borderRadius: '24px', width: '100%', maxWidth: '800px', maxHeight: '90vh',
-                overflowY: 'auto', padding: '2rem'
+                background: 'var(--bg-card)', width: '100%', maxWidth: '650px', borderRadius: '24px',
+                padding: '2rem', position: 'relative', border: '1px solid var(--border-glass)',
+                maxHeight: '90vh', overflowY: 'auto'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h2 style={{ margin: 0 }}>{beach ? 'Editar Playa' : 'Registrar Nueva Playa'}</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0, color: 'white' }}>
+                        {beach ? 'Editar Playa' : 'Nueva Playa'}
+                    </h2>
+                    <button type="button" onClick={onClose} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', display: 'flex' }}>
                         <X size={24} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                        <div>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                        <div style={{ gridColumn: '1 / -1' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Nombre de la Playa</label>
-                            <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
+                            <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px' }} placeholder="Ej: Playa Delfines" />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Tipo</label>
-                            <input required type="text" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} placeholder="Ej: Pública, Privada, Parque" />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Ciudad")}</label>
-                            <input required type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Estado/Provincia</label>
-                            <input required type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{tr("Coordenadas")}</label>
-                            <input required type="text" value={formData.coordinates} onChange={e => setFormData({...formData, coordinates: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Tipo de Playa</label>
+                            <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(5, 7, 10, 0.9)' }}>
+                                <option value="Pública">Pública</option>
+                                <option value="Privada">Privada</option>
+                                <option value="Virgen">Virgen</option>
+                                <option value="Reserva Natural">Reserva Natural</option>
+                            </select>
                         </div>
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Popularidad</label>
-                            <select value={formData.popularity} onChange={e => setFormData({...formData, popularity: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }}>
-                                <option value="Baja">Baja</option>
+                            <select value={formData.popularity} onChange={e => setFormData({...formData, popularity: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(5, 7, 10, 0.9)' }}>
+                                <option value="Alta">Alta (Muy concurrida)</option>
                                 <option value="Media">Media</option>
-                                <option value="Alta">Alta</option>
-                                <option value="Muy Alta">Muy Alta</option>
+                                <option value="Baja">Baja (Tranquila)</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Descripción Larga</label>
-                        <textarea rows={4} value={formData.description_long} onChange={e => setFormData({...formData, description_long: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white', resize: 'vertical' }} placeholder="Descripción detallada de la playa" />
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Ciudad</label>
+                            <input required type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px' }} />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Estado / Provincia</label>
+                            <input required type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px' }} />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Coordenadas (Lat,Lng)</label>
+                            <input required type="text" value={formData.coordinates} onChange={e => setFormData({...formData, coordinates: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px' }} placeholder="21.0583,-86.7779" />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Estado</label>
+                            <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(5, 7, 10, 0.9)' }}>
+                                <option value="Abierta">Abierta</option>
+                                <option value="Cerrada">Cerrada</option>
+                                <option value="Bandera Roja">Bandera Roja (Peligro)</option>
+                                <option value="Bandera Amarilla">Bandera Amarilla (Precaución)</option>
+                            </select>
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Descripción Larga</label>
+                            <textarea value={formData.description_long} onChange={e => setFormData({...formData, description_long: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', minHeight: '100px', resize: 'vertical' }} placeholder="Descripción atractiva del lugar..."></textarea>
+                        </div>
                     </div>
 
                     <div>
@@ -157,12 +171,30 @@ export default function BeachFormModal({ beach, onClose, onSuccess }: BeachFormM
                         </div>
                     </div>
 
-                    <button type="submit" className="btn-premium" disabled={loading} style={{ padding: '1rem', borderRadius: '12px', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
-                        {loading ? <Loader2 className="animate-spin" size={20} /> : null}
-                        {beach ? 'Guardar Cambios' : 'Registrar Playa'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button type="button" onClick={onClose} className="btn-secondary" style={{ flex: 1, padding: '1rem', borderRadius: '12px' }}>
+                            Cancelar
+                        </button>
+                        <button type="submit" className="btn-premium" disabled={loading} style={{ flex: 2, padding: '1rem', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            {loading ? <Loader2 className="animate-spin" /> : 'Guardar Playa'}
+                        </button>
+                    </div>
                 </form>
             </div>
+            
+            <style jsx>{`
+                .input-glass {
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid var(--border-glass);
+                    color: white;
+                    transition: all 0.2s;
+                }
+                .input-glass:focus {
+                    background: rgba(255,255,255,0.1);
+                    border-color: var(--primary);
+                    outline: none;
+                }
+            `}</style>
         </div>
     );
 }

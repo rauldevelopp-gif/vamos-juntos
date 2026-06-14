@@ -6,21 +6,12 @@ import { getCurrentUser } from '@/lib/auth';
 export async function getBeaches() {
     try {
         const user = await getCurrentUser();
-        
         const whereClause = (!user || user.role === 'ADMIN') ? {} : { userId: user.id };
 
         let beaches = await prisma.beach.findMany({
             where: whereClause,
             orderBy: { name: 'asc' }
         });
-
-        if (beaches.length === 0 && (!user || user.role === 'ADMIN')) {
-            await seedInitialBeaches();
-            beaches = await prisma.beach.findMany({
-                where: whereClause,
-                orderBy: { name: 'asc' }
-            });
-        }
 
         return { success: true, data: beaches };
     } catch (error) {
@@ -29,10 +20,23 @@ export async function getBeaches() {
     }
 }
 
+export async function getPublicBeaches() {
+    try {
+        let beaches = await prisma.beach.findMany({
+            orderBy: { name: 'asc' }
+        });
+        return { success: true, data: beaches };
+    } catch (error) {
+        console.error('Error fetching public beaches:', error);
+        return { success: false, error: 'No se pudieron cargar las playas' };
+    }
+}
+
 export async function createBeach(data: any) {
     try {
         const user = await getCurrentUser();
         if (!user) return { success: false, error: 'No autorizado' };
+        
         const newBeach = await prisma.beach.create({
             data: {
                 ...data,
@@ -41,7 +45,54 @@ export async function createBeach(data: any) {
         });
         return { success: true, data: newBeach };
     } catch (error) {
-        return { success: false, error: 'Error al crear playa' };
+        console.error("Error creating beach:", error);
+        return { success: false, error: 'Error al crear la playa' };
+    }
+}
+
+export async function bulkCreateBeaches(dataArray: any[]) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        // Helper function to find a key regardless of case
+        const findVal = (obj: any, keys: string[]) => {
+            const entry = Object.entries(obj).find(([k]) => keys.includes(k.toLowerCase().trim()));
+            return entry ? entry[1] : undefined;
+        };
+
+        const formattedData = dataArray.map(item => {
+            const name = findVal(item, ['name', 'nombre']) || 'Sin nombre';
+            const type = findVal(item, ['type', 'tipo', 'categoría', 'categoria']) || 'Pública';
+            const city = findVal(item, ['city', 'ciudad']) || 'Desconocido';
+            const state = findVal(item, ['state', 'estado', 'provincia']) || 'Desconocido';
+            const status = findVal(item, ['status', 'estado', 'estatus']) || 'Abierta';
+            const coordinates = findVal(item, ['coordinates', 'coordenadas']) || '';
+            const popularity = findVal(item, ['popularity', 'popularidad']) || 'Media';
+            const description_long = findVal(item, ['description_long', 'descripción', 'descripcion']) || '';
+
+            return {
+                name,
+                type,
+                city,
+                state,
+                status,
+                coordinates,
+                popularity,
+                description_long,
+                userId: user.id
+            };
+        });
+
+        const result = await prisma.beach.createMany({
+            data: formattedData,
+            skipDuplicates: true
+        });
+
+        return { success: true, count: result.count };
+    } catch (error) {
+        console.error("Error in bulk create beaches:", error);
+        return { success: false, error: 'Error al importar datos' };
     }
 }
 
@@ -61,32 +112,27 @@ export async function updateBeach(id: number, data: any) {
         });
         return { success: true, data: updated };
     } catch (error) {
-        return { success: false, error: 'Error al actualizar playa' };
+        console.error("Error updating beach:", error);
+        return { success: false, error: 'Error al actualizar la playa' };
     }
 }
 
-async function seedInitialBeaches() {
-    const user = await getCurrentUser();
-    const beachesData = [
-        { name: 'Playa Delfines', location: 'Blvd. Kukulcan Km 18', city: 'Cancún', state: 'Quintana Roo', status: 'Abierta', coordinates: '21.0602,-86.7806', type: 'Pública', popularity: 'Alta', userId: user?.id },
-        { name: 'Playa Norte', location: 'Extremo norte de la isla', city: 'Isla Mujeres', state: 'Quintana Roo', status: 'Abierta', coordinates: '21.2586,-86.7503', type: 'Turística', popularity: 'Muy Alta', userId: user?.id },
-        { name: 'Playa Paraíso', location: 'Zona Arqueológica Tulum', city: 'Tulum', state: 'Quintana Roo', status: 'Abierta', coordinates: '20.2155,-87.4302', type: 'Parque', popularity: 'Alta', userId: user?.id },
-    ];
-
-    for (const beach of beachesData) {
-        await prisma.beach.create({
-            data: beach
-        });
-    }
-}
-
-export async function getPublicBeaches() {
+export async function deleteBeach(id: number) {
     try {
-        const beaches = await prisma.beach.findMany({
-            orderBy: { name: 'asc' }
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const existing = await prisma.beach.findUnique({ where: { id } });
+        if (!existing || (existing.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.beach.delete({
+            where: { id }
         });
-        return { success: true, data: beaches };
+        return { success: true };
     } catch (error) {
-        return { success: false, error: 'Error al obtener playas' };
+        console.error("Error deleting beach:", error);
+        return { success: false, error: 'Error al eliminar la playa' };
     }
 }

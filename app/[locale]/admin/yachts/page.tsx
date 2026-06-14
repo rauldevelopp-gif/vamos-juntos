@@ -4,9 +4,13 @@ import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Plus, Anchor, Users, X, MapPin, Loader2, Phone, Edit2 } from 'lucide-react';
-import { getYachts } from './actions';
+import { ArrowLeft, Plus, Anchor, Users, X, MapPin, Loader2, Phone, Edit2, Trash2, UserPlus } from 'lucide-react';
+import { getYachts, deleteYacht, deleteCrew } from './actions';
 import YachtFormModal from './YachtFormModal';
+import YachtExcelUpload from './YachtExcelUpload';
+import CrewFormModal from './CrewFormModal';
+import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 interface Crew {
     id: number;
@@ -41,6 +45,11 @@ export default function YachtsPage() {
     const [mapYacht, setMapYacht] = useState<Yacht | null>(null);
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [editYacht, setEditYacht] = useState<Yacht | null>(null);
+    const [confirmModalData, setConfirmModalData] = useState<{ isOpen: boolean, id: number | null, name: string }>({ isOpen: false, id: null, name: '' });
+
+    const [crewFormModalOpen, setCrewFormModalOpen] = useState(false);
+    const [editCrew, setEditCrew] = useState<Crew | null>(null);
+    const [confirmCrewModalData, setConfirmCrewModalData] = useState<{ isOpen: boolean, id: number | null, name: string }>({ isOpen: false, id: null, name: '' });
 
     const fetchYachts = async () => {
         setLoading(true);
@@ -61,6 +70,53 @@ export default function YachtsPage() {
         fetchYachts();
     }, []);
 
+    const confirmDelete = (id: number, name: string) => {
+        setConfirmModalData({ isOpen: true, id, name });
+    };
+
+    const executeDelete = async () => {
+        if (!confirmModalData.id) return;
+        const idToDelete = confirmModalData.id;
+        setConfirmModalData({ isOpen: false, id: null, name: '' });
+        
+        const loadingToast = toast.loading('Eliminando yate y tripulación...');
+        const res = await deleteYacht(idToDelete);
+        
+        if (res.success) {
+            toast.success('Yate eliminado exitosamente', { id: loadingToast });
+            fetchYachts();
+        } else {
+            toast.error(res.error || 'Error al eliminar', { id: loadingToast });
+        }
+    };
+
+    const confirmDeleteCrew = (id: number, name: string) => {
+        setConfirmCrewModalData({ isOpen: true, id, name });
+    };
+
+    const executeDeleteCrew = async () => {
+        if (!confirmCrewModalData.id) return;
+        const idToDelete = confirmCrewModalData.id;
+        setConfirmCrewModalData({ isOpen: false, id: null, name: '' });
+        
+        const loadingToast = toast.loading('Eliminando tripulante...');
+        const res = await deleteCrew(idToDelete);
+        
+        if (res.success) {
+            toast.success('Tripulante eliminado', { id: loadingToast });
+            fetchYachts();
+            // Update selectedYacht locally to avoid closing modal
+            if (selectedYacht) {
+                setSelectedYacht({
+                    ...selectedYacht,
+                    crew: selectedYacht.crew.filter(c => c.id !== idToDelete)
+                });
+            }
+        } else {
+            toast.error(res.error || 'Error al eliminar', { id: loadingToast });
+        }
+    };
+
     const closeModal = () => setSelectedYacht(null);
     const closeMap = () => setMapYacht(null);
 
@@ -72,19 +128,18 @@ export default function YachtsPage() {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Flota de Yates (Elite)
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestión de embarcaciones de lujo y tripulaciones.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Flota de Yates (Elite)")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Gestión de embarcaciones de lujo y tripulaciones.")}</p>
                     </div>
                 </div>
                 
-                <button onClick={() => { setEditYacht(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Registrar Yate</span>
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <YachtExcelUpload onSuccess={fetchYachts} />
+                    <button onClick={() => { setEditYacht(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span className="btn-text-mobile-hide">{tr("Registrar Yate")}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Desktop View */}
@@ -153,8 +208,11 @@ export default function YachtsPage() {
                                             <button onClick={() => setSelectedYacht(yacht)} className="btn-glass-nav" style={{ padding: '0.5rem 1rem', borderRadius: '12px', fontSize: '0.85rem' }}>
                                                 Staff ({yacht.crew.length})
                                             </button>
-                                            <button onClick={() => { setEditYacht(yacht); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px' }}>
+                                            <button onClick={() => { setEditYacht(yacht); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px' }} title="Editar">
                                                 <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => confirmDelete(yacht.id, yacht.name || 'Yate')} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px', color: '#f43f5e' }} title="Eliminar">
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -219,9 +277,17 @@ export default function YachtsPage() {
                                     </div>
                                 </div>
 
-                                <button onClick={() => setSelectedYacht(yacht)} className="btn-premium" style={{ width: '100%', padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                                    <Anchor size={18} /> Gestionar Tripulación ({yacht.crew.length})
-                                </button>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button onClick={() => setSelectedYacht(yacht)} className="btn-premium" style={{ flex: 1, padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                                        <Anchor size={18} /> Staff ({yacht.crew.length})
+                                    </button>
+                                    <button onClick={() => { setEditYacht(yacht); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Edit2 size={18} />
+                                    </button>
+                                    <button onClick={() => confirmDelete(yacht.id, yacht.name || 'Yate')} className="btn-glass-nav" style={{ padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f43f5e' }}>
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -237,53 +303,64 @@ export default function YachtsPage() {
                                 <h2 style={{ fontSize: '1.25rem', margin: 0 }}>🚢 Tripulación: {selectedYacht.name}</h2>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>Personal a bordo calificado</p>
                             </div>
-                            <button onClick={closeModal} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
-                                <X size={24} />
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <button onClick={() => { setEditCrew(null); setCrewFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Añadir Tripulante">
+                                    <UserPlus size={18} />
+                                </button>
+                                <button onClick={closeModal} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem' }}>
+                                    <X size={24} />
+                                </button>
+                            </div>
                         </div>
                         
                         <div style={{ padding: '1.5rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {selectedYacht.crew.map((member) => (
-                                    <div key={member.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid var(--border-glass)' }}>
-                                        <div style={{ width: '60px', height: '60px', borderRadius: '14px', overflow: 'hidden', border: '2px solid var(--border-glass)', flexShrink: 0 }}>
-                                            {member.photo ? (
-                                                <Image 
-                                                    src={member.photo} 
-                                                    alt={member.name} 
-                                                    width={60}
-                                                    height={60}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                    unoptimized 
-                                                />
-                                            ) : (
-                                                <div style={{ width: '100%', height: '100%', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Users size={24} color="var(--text-muted)" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{member.name}</div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600, marginBottom: '0.3rem' }}>{member.role}</div>
-                                            {member.phone && (
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                                    <Phone size={14} /> {member.phone}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Exp: <span style={{ color: 'white', fontWeight: 600 }}>{member.experience}</span></div>
-                                            {member.phone && (
-                                                <a href={`tel:${member.phone}`} style={{ 
-                                                    padding: '0.4rem', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none'
-                                                }}>
-                                                    <Phone size={16} />
-                                                </a>
-                                            )}
-                                        </div>
+                                {selectedYacht.crew.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                                        No hay tripulantes asignados a este yate.
                                     </div>
-                                ))}
+                                ) : (
+                                    selectedYacht.crew.map((member) => (
+                                        <div key={member.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid var(--border-glass)' }}>
+                                            <div style={{ width: '60px', height: '60px', borderRadius: '14px', overflow: 'hidden', border: '2px solid var(--border-glass)', flexShrink: 0 }}>
+                                                {member.photo ? (
+                                                    <Image 
+                                                        src={member.photo} 
+                                                        alt={member.name} 
+                                                        width={60}
+                                                        height={60}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        unoptimized 
+                                                    />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Users size={24} color="var(--text-muted)" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{member.name}</div>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600, marginBottom: '0.3rem' }}>{member.role}</div>
+                                                {member.phone && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                        <Phone size={14} /> {member.phone}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Exp: <span style={{ color: 'white', fontWeight: 600 }}>{member.experience}</span></div>
+                                                <div style={{ display: 'flex', gap: '0.3rem' }}>
+                                                    <button onClick={() => { setEditCrew(member); setCrewFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px' }}>
+                                                        <Edit2 size={14} />
+                                                    </button>
+                                                    <button onClick={() => confirmDeleteCrew(member.id, member.name)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px', color: '#f43f5e' }}>
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                             
                             <button className="btn-premium" style={{ width: '100%', marginTop: '2rem' }} onClick={closeModal}>Cerrar Lista</button>
@@ -332,6 +409,45 @@ export default function YachtsPage() {
                         setFormModalOpen(false);
                         fetchYachts();
                     }} 
+                />
+            )}
+
+            <ConfirmModal
+                isOpen={confirmModalData.isOpen}
+                title="Confirmar Eliminación"
+                message={<>¿Estás seguro de que deseas eliminar el yate <strong>&quot;{confirmModalData.name}&quot;</strong> y toda su tripulación asociada? Esta acción no se puede deshacer.</>}
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmModalData({ isOpen: false, id: null, name: '' })}
+                confirmText="Eliminar Yate"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
+
+            <ConfirmModal
+                isOpen={confirmCrewModalData.isOpen}
+                title="Confirmar Eliminación"
+                message={<>¿Estás seguro de que deseas despedir al tripulante <strong>&quot;{confirmCrewModalData.name}&quot;</strong>?</>}
+                onConfirm={executeDeleteCrew}
+                onCancel={() => setConfirmCrewModalData({ isOpen: false, id: null, name: '' })}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
+
+            {crewFormModalOpen && selectedYacht && (
+                <CrewFormModal 
+                    yachtId={selectedYacht.id}
+                    crewMember={editCrew}
+                    onClose={() => setCrewFormModalOpen(false)}
+                    onSuccess={() => {
+                        setCrewFormModalOpen(false);
+                        fetchYachts();
+                        // Refetching yachts will automatically close the selectedYacht if not handled properly, 
+                        // but since fetchYachts updates the state, we need to update selectedYacht to see new crew
+                        // We will do it locally or just let the user reopen. 
+                        // Let's close the main modal to keep it simple and let them reopen to see updates.
+                        setSelectedYacht(null);
+                    }}
                 />
             )}
 

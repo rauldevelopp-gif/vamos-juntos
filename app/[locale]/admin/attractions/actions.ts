@@ -41,7 +41,56 @@ export async function createAttraction(data: any) {
         });
         return { success: true, data: newAttraction };
     } catch (error) {
+        console.error("Error creating attraction:", error);
         return { success: false, error: 'Error al crear atracción' };
+    }
+}
+
+export async function bulkCreateAttractions(dataArray: any[]) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        // Helper function to find a key regardless of case
+        const findVal = (obj: any, keys: string[]) => {
+            const entry = Object.entries(obj).find(([k]) => keys.includes(k.toLowerCase().trim()));
+            return entry ? entry[1] : undefined;
+        };
+
+        const formattedData = dataArray.map(item => {
+            const name = findVal(item, ['name', 'nombre']) || 'Sin nombre';
+            const category = findVal(item, ['category', 'categoría', 'categoria']) || 'General';
+            const city = findVal(item, ['city', 'ciudad']) || 'Desconocido';
+            const state = findVal(item, ['state', 'estado', 'provincia']) || 'Desconocido';
+            const status = findVal(item, ['status', 'estado operativo', 'estatus']) || 'Abierto';
+            const coordinates = findVal(item, ['coordinates', 'coordenadas']) || '';
+            const recommendedTime = findVal(item, ['recommendedtime', 'tiempo recomendado']) || '2 Horas';
+            const description_long = findVal(item, ['description_long', 'descripción', 'descripcion']) || '';
+            const price = parseFloat(findVal(item, ['price', 'precio', 'precio base'])) || 0;
+
+            return {
+                name,
+                category,
+                city,
+                state,
+                status,
+                coordinates,
+                recommendedTime,
+                description_long,
+                price,
+                userId: user.id
+            };
+        });
+
+        const result = await prisma.attraction.createMany({
+            data: formattedData,
+            skipDuplicates: true
+        });
+
+        return { success: true, count: result.count };
+    } catch (error) {
+        console.error("Error in bulk create:", error);
+        return { success: false, error: 'Error al importar datos' };
     }
 }
 
@@ -61,7 +110,29 @@ export async function updateAttraction(id: number, data: any) {
         });
         return { success: true, data: updated };
     } catch (error) {
+        console.error("Error updating attraction:", error);
+        console.error("Error updating attraction:", error);
         return { success: false, error: 'Error al actualizar atracción' };
+    }
+}
+
+export async function deleteAttraction(id: number) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const existing = await prisma.attraction.findUnique({ where: { id } });
+        if (!existing || (existing.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.attraction.delete({
+            where: { id }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting attraction:", error);
+        return { success: false, error: 'Error al eliminar atracción' };
     }
 }
 

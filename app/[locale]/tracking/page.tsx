@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { getPackagesByClientId } from '../admin/package/actions';
 import { useLanguage } from '../../../context/LanguageContext';
+import { useCurrency } from '../../../context/CurrencyContext';
 import Image from 'next/image';
 import { getTranslatedValue } from '../../../lib/i18n-utils';
 
@@ -93,6 +94,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void }) => {
     const { t, language } = useLanguage();
+    const { formatPrice } = useCurrency();
     const isEn = language === 'en';
 
     const displayPkg = {
@@ -178,7 +180,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
                     <div className="flyer-footer">
                         <div className="price-box">
                             <span className="label">{t('estimated_price') || (isEn ? "ESTIMATED PRICE" : "PRECIO ESTIMADO")}</span>
-                            <span className="value">${displayPkg.total.toLocaleString()} <small>USD</small></span>
+                            <span className="value">{formatPrice(displayPkg.total)}</span>
                         </div>
                         <div className="contact-info">
                             <p>{t('brand_footer_note') || "Vamos Juntos Luxury"}</p>
@@ -295,6 +297,7 @@ const PreviewFlyerModal = ({ pkg, onClose }: { pkg: Package, onClose: () => void
 
 export default function TrackingPage() {
     const { t, language } = useLanguage();
+    const { formatPrice } = useCurrency();
     const isEn = language === 'en';
 
     const [email, setEmail] = useState('');
@@ -446,7 +449,7 @@ export default function TrackingPage() {
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
                                                 <StatusBadge status={pkg.status} />
-                                                <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>${pkg.price.toLocaleString()} USD</div>
+                                                <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>{formatPrice(pkg.price)}</div>
                                             </div>
                                             <div style={{ color: 'var(--text-muted)' }}><Eye size={20} /></div>
                                         </div>
@@ -480,7 +483,7 @@ export default function TrackingPage() {
                                 </div>
                                 <div>
                                     <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontWeight: 800 }}>Total</span>
-                                    <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#10b981' }}>${previewItem.data.totalPrice} USD</div>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#10b981' }}>{formatPrice(previewItem.data.totalPrice)}</div>
                                 </div>
                             </div>
                             <button className="btn-premium" style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}>
@@ -512,7 +515,7 @@ export default function TrackingPage() {
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <StatusBadge status={pkg.status} />
-                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>${pkg.totalPrice} USD</div>
+                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>{formatPrice(pkg.totalPrice)}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -525,7 +528,7 @@ export default function TrackingPage() {
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <StatusBadge status={hot.status} />
-                                            <div style={{ fontWeight: 800, color: '#10b981', marginTop: '0.5rem' }}>${hot.totalPrice} USD</div>
+                                            <div style={{ fontWeight: 800, color: '#10b981', marginTop: '0.5rem' }}>{formatPrice(hot.totalPrice)}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -538,7 +541,7 @@ export default function TrackingPage() {
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <StatusBadge status={pkg.status} />
-                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>${pkg.price.toLocaleString()} USD</div>
+                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>{formatPrice(pkg.price)}</div>
                                         </div>
                                         <div style={{ color: 'var(--text-muted)' }}><Eye size={20} /></div>
                                     </div>
@@ -571,7 +574,7 @@ export default function TrackingPage() {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
                                 <span>Total</span>
-                                <strong style={{ color: '#10b981' }}>${previewItem.data.totalPrice} USD</strong>
+                                <strong style={{ color: '#10b981' }}>{formatPrice(previewItem.data.totalPrice)}</strong>
                             </div>
                         </div>
                         <button onClick={() => setPreviewItem(null)} className="btn-secondary" style={{ width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '12px' }}>{isEn ? "Close" : "Cerrar"}</button>

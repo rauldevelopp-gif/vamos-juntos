@@ -1,31 +1,35 @@
 'use client';
-import { useLanguage } from '@/context/LanguageContext';
-import { tr, setLanguage } from '@/lib/tr';
+
+import { tr } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Loader2, Palmtree, Edit2 } from 'lucide-react';
-import { getBeaches } from './actions';
+import { ArrowLeft, Plus, MapPin, X, Loader2, Edit2, Trash2, Palmtree } from 'lucide-react';
+import { getBeaches, deleteBeach } from './actions';
 import BeachFormModal from './BeachFormModal';
+import BeachExcelUpload from './BeachExcelUpload';
+import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 interface Beach {
     id: number;
     name: string;
-    location: string;
+    type: string;
     city: string;
     state: string;
     status: string;
+    popularity: string;
     coordinates: string;
-    type: string;
+    description_long: string;
 }
 
 export default function BeachesPage() {
-  const { language } = useLanguage();
-  setLanguage(language);
     const [beaches, setBeaches] = useState<Beach[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedBeach, setSelectedBeach] = useState<Beach | null>(null);
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [editBeach, setEditBeach] = useState<Beach | null>(null);
+
+    const [confirmModalData, setConfirmModalData] = useState<{ isOpen: boolean, id: number | null, name: string }>({ isOpen: false, id: null, name: '' });
 
     const fetchBeaches = async () => {
         setLoading(true);
@@ -40,83 +44,108 @@ export default function BeachesPage() {
         fetchBeaches();
     }, []);
 
+    const confirmDelete = (id: number, name: string) => {
+        setConfirmModalData({ isOpen: true, id, name });
+    };
+
+    const executeDelete = async () => {
+        if (!confirmModalData.id) return;
+        const idToDelete = confirmModalData.id;
+        setConfirmModalData({ isOpen: false, id: null, name: '' });
+        
+        const loadingToast = toast.loading('Eliminando...');
+        const res = await deleteBeach(idToDelete);
+        
+        if (res.success) {
+            toast.success('Playa eliminada exitosamente', { id: loadingToast });
+            fetchBeaches();
+        } else {
+            toast.error(res.error || 'Error al eliminar', { id: loadingToast });
+        }
+    };
+
     const closeModal = () => setSelectedBeach(null);
 
     return (
-        <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+        <div className="container" style={{ padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link href="/admin" className="btn-glass-nav" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', textDecoration: 'none', padding: 0 }}>
-                        <ArrowLeft size={20} strokeWidth={2} />
+                    <Link href="/admin" className="btn-glass-nav" style={{ padding: '0.8rem', borderRadius: '12px' }}>
+                        <ArrowLeft size={20} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            {tr("Catálogo de Playas")}
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            {tr("Gestión de destinos costeros y zonas de embarque.")}
-                        </p>
+                        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Playas")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>{tr("Gestiona destinos costeros y playas")}</p>
                     </div>
                 </div>
                 
-                <button onClick={() => { setEditBeach(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">{tr("Añadir Playa")}</span>
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <BeachExcelUpload onSuccess={fetchBeaches} />
+                    <button onClick={() => { setEditBeach(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span className="btn-text-mobile-hide">{tr("Nueva Playa")}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Desktop View */}
-            <div className="desktop-only" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '24px', overflow: 'hidden', minHeight: '200px' }}>
+            <div className="desktop-only" style={{ background: 'rgba(5, 7, 10, 0.6)', border: '1px solid var(--border-glass)', borderRadius: '24px', overflow: 'hidden' }}>
                 {loading ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                        <Loader2 className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-                        <p>{tr("Sincronizando destinos...")}</p>
+                    <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        <Loader2 size={40} className="animate-spin" style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
+                        Cargando playas...
                     </div>
                 ) : beaches.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '6rem' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                            <Palmtree size={32} color="var(--text-muted)" />
-                        </div>
-                        <h3>{tr("No hay playas registradas")}</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>{tr("Las nuevas playas aparecerán aquí.")}</p>
+                    <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        <Palmtree size={48} style={{ margin: '0 auto 1rem', opacity: 0.2 }} />
+                        No hay playas registradas. Comienza agregando una nueva.
                     </div>
                 ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-glass)' }}>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Nombre / Tipo")}</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Ubicación")}</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Estado")}</th>
-                                <th style={{ padding: '1.2rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.9rem' }}>{tr("Mapa")}</th>
+                            <tr style={{ background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid var(--border-glass)' }}>
+                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Nombre</th>
+                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Tipo</th>
+                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Ubicación</th>
+                                <th style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Popularidad</th>
+                                <th style={{ padding: '1.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Estado</th>
+                                <th style={{ padding: '1.5rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {beaches.map((beach) => (
-                                <tr key={beach.id} className="hover-row" style={{ borderBottom: '1px solid var(--border-glass)', transition: 'var(--transition-smooth)' }}>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{beach.name}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 500 }}>{beach.type}</div>
+                                <tr key={beach.id} className="hover-row" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', transition: 'background 0.2s' }}>
+                                    <td style={{ padding: '1.5rem', fontWeight: 600 }}>{beach.name}</td>
+                                    <td style={{ padding: '1.5rem', color: 'var(--text-muted)' }}>{beach.type}</td>
+                                    <td style={{ padding: '1.5rem', color: 'var(--text-muted)' }}>{beach.city}, {beach.state}</td>
+                                    <td style={{ padding: '1.5rem', textAlign: 'center' }}>
+                                        <span style={{
+                                            background: 'rgba(255,255,255,0.05)', padding: '0.3rem 0.8rem', borderRadius: '12px', fontSize: '0.85rem'
+                                        }}>
+                                            {beach.popularity}
+                                        </span>
                                     </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ fontSize: '0.95rem' }}>{beach.city}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{beach.state}</div>
-                                    </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <span style={{ 
-                                            padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', 
-                                            background: beach.status === tr("Abierta") ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                                            color: beach.status === tr("Abierta") ? '#10b981' : '#f43f5e', border: '1px solid rgba(16, 185, 129, 0.2)'
+                                    <td style={{ padding: '1.5rem' }}>
+                                        <span style={{
+                                            padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600,
+                                            background: beach.status === 'Abierta' ? 'rgba(16, 185, 129, 0.1)' : 
+                                                        beach.status === 'Cerrada' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                            color: beach.status === 'Abierta' ? '#10b981' : 
+                                                   beach.status === 'Cerrada' ? '#f43f5e' : '#f59e0b'
                                         }}>
                                             {beach.status}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '1.2rem' }}>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button onClick={() => setSelectedBeach(beach)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <td style={{ padding: '1.5rem' }}>
+                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                            <button onClick={() => setSelectedBeach(beach)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Ver Mapa">
                                                 <MapPin size={16} strokeWidth={2} />
                                             </button>
-                                            <button onClick={() => { setEditBeach(beach); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <button onClick={() => { setEditBeach(beach); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Editar">
                                                 <Edit2 size={16} strokeWidth={2} />
+                                            </button>
+                                            <button onClick={() => confirmDelete(beach.id, beach.name)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f43f5e' }} title="Eliminar">
+                                                <Trash2 size={16} strokeWidth={2} />
                                             </button>
                                         </div>
                                     </td>
@@ -128,70 +157,62 @@ export default function BeachesPage() {
             </div>
 
             {/* Mobile View */}
-            <div className="mobile-only">
+            <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '4rem' }}>
-                        <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--primary)' }} />
-                        <p style={{ color: 'var(--text-muted)' }}>{tr("Cargando playas...")}</p>
-                    </div>
+                    <div style={{ padding: '2rem', textAlign: 'center' }}><Loader2 className="animate-spin" style={{ margin: '0 auto' }} /></div>
                 ) : beaches.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '6rem' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                            <Palmtree size={32} color="var(--text-muted)" />
-                        </div>
-                        <h3>{tr("No hay playas registradas")}</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>{tr("Las nuevas playas aparecerán aquí.")}</p>
-                    </div>
+                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No hay playas registradas.</div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '0.5rem 0' }}>
-                        {beaches.map((beach) => (
-                            <div key={beach.id} className="beach-card-mobile">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
-                                    <div>
-                                        <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '0.2rem' }}>{beach.name}</div>
-                                        <div style={{ fontSize: '0.9rem', color: 'var(--secondary)', fontWeight: 600 }}>{beach.type}</div>
-                                    </div>
-                                    <span style={{ 
-                                        padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700,
-                                        background: beach.status === tr("Abierta") ? 'rgba(16, 185, 129, 0.1)' : '#f43f5e1a',
-                                        color: beach.status === tr("Abierta") ? '#10b981' : '#f43f5e'
-                                    }}>
-                                        {beach.status}
-                                    </span>
+                    beaches.map((beach) => (
+                        <div key={beach.id} className="beach-card-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                    <h3 style={{ margin: '0 0 0.3rem 0', fontSize: '1.3rem', fontWeight: 700 }}>{beach.name}</h3>
+                                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{beach.city}, {beach.state}</p>
+                                    <span style={{ display: 'inline-block', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--primary)' }}>{beach.type} • {beach.popularity}</span>
                                 </div>
-
-                                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '1rem', marginBottom: '1.2rem', border: '1px solid var(--border-glass)' }}>
-                                    <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 500 }}>{beach.city}, {beach.state}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{beach.location}</div>
-                                </div>
-
-                                <button onClick={() => setSelectedBeach(beach)} className="btn-premium" style={{ width: '100%', padding: '0.8rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                                    <MapPin size={18} /> {tr("Ver Costa")}
-                                </button>
                             </div>
-                        ))}
-                    </div>
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                <span style={{
+                                    padding: '0.3rem 0.6rem', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 600,
+                                    background: beach.status === 'Abierta' ? 'rgba(16, 185, 129, 0.1)' : 
+                                                beach.status === 'Cerrada' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                    color: beach.status === 'Abierta' ? '#10b981' : 
+                                           beach.status === 'Cerrada' ? '#f43f5e' : '#f59e0b'
+                                }}>
+                                    {beach.status}
+                                </span>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button onClick={() => { setEditBeach(beach); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px' }}>
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button onClick={() => confirmDelete(beach.id, beach.name)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px', color: '#f43f5e' }}>
+                                        <Trash2 size={16} />
+                                    </button>
+                                    <button onClick={() => setSelectedBeach(beach)} className="btn-premium" style={{ padding: '0.6rem 1rem', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        <MapPin size={16} /> Mapa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))
                 )}
             </div>
 
             {/* Map Modal */}
             {selectedBeach && (
                 <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content glass-panel" onClick={e => e.stopPropagation()}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem' }}>
+                    <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glass)' }}>
+                        <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <h2 style={{ fontSize: '1.2rem', margin: 0 }}>🏖️ Costa: {selectedBeach.name}</h2>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>{selectedBeach.city} - {selectedBeach.type}</p>
+                                <h3 style={{ margin: 0, fontSize: '1.4rem' }}>{selectedBeach.name}</h3>
+                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{selectedBeach.city} - {selectedBeach.status}</p>
                             </div>
-                            <button onClick={closeModal} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
-                                <X size={24} strokeWidth={1.5} />
-                            </button>
+                            <button className="btn-glass-nav" onClick={closeModal} style={{ padding: '0.5rem', borderRadius: '50%' }}><X size={20} /></button>
                         </div>
-                        <div style={{ width: '100%', height: '450px', borderRadius: '15px', overflow: 'hidden', background: '#05070a' }}>
-                            <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={`https://maps.google.com/maps?q=${selectedBeach.coordinates}&t=k&z=17&ie=UTF8&iwloc=&output=embed`} allowFullScreen></iframe>
-                        </div>
-                        <div style={{ padding: '1.5rem', textAlign: 'right' }}>
-                            <button className="btn-premium" onClick={closeModal}>{tr("Cerrar Mapa")}</button>
+                        <div style={{ width: '100%', height: '450px', borderRadius: '0 0 25px 25px', overflow: 'hidden', background: '#05070a' }}>
+                            <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={`https://maps.google.com/maps?q=${selectedBeach.coordinates}&t=k&z=15&ie=UTF8&iwloc=&output=embed`} allowFullScreen></iframe>
                         </div>
                     </div>
                 </div>
@@ -208,6 +229,17 @@ export default function BeachesPage() {
                 />
             )}
 
+            <ConfirmModal
+                isOpen={confirmModalData.isOpen}
+                title="Confirmar Eliminación"
+                message={<>¿Estás seguro de que deseas eliminar la playa <strong>&quot;{confirmModalData.name}&quot;</strong>? Esta acción no se puede deshacer.</>}
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmModalData({ isOpen: false, id: null, name: '' })}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
+
             <style jsx>{`
                 @media (max-width: 768px) {
                     .desktop-only { display: none !important; }
@@ -221,9 +253,8 @@ export default function BeachesPage() {
                 .beach-card-mobile {
                     padding: 1.5rem;
                     border-radius: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-                    background: rgba(255, 255, 255, 0.08) !important;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    background: rgba(255, 255, 255, 0.03) !important;
                 }
                 .modal-overlay {
                     position: fixed; top: 0; left: 0; right: 0; bottom: 0;

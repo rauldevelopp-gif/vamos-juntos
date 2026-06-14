@@ -6,22 +6,12 @@ import { getCurrentUser } from '@/lib/auth';
 export async function getAirports() {
     try {
         const user = await getCurrentUser();
-        if (!user) return { success: false, error: 'No autorizado' };
-        
-        const whereClause = user.role === 'ADMIN' ? {} : { userId: user.id };
+        const whereClause = (!user || user.role === 'ADMIN') ? {} : { userId: user.id };
 
         let airports = await prisma.airport.findMany({
             where: whereClause,
             orderBy: { name: 'asc' }
         });
-
-        if (airports.length === 0 && user.role === 'ADMIN') {
-            await seedInitialAirports();
-            airports = await prisma.airport.findMany({
-                where: whereClause,
-                orderBy: { name: 'asc' }
-            });
-        }
 
         return { success: true, data: airports };
     } catch (error) {
@@ -30,18 +20,103 @@ export async function getAirports() {
     }
 }
 
-async function seedInitialAirports() {
-    const user = await getCurrentUser();
-    const airportsData = [
-        { name: 'Aeropuerto Int. de Cancún', location: 'Carretera Cancún-Chetumal Km 22', iata: 'CUN', city: 'Cancún', state: 'Quintana Roo', status: 'Operativo', coordinates: '21.0367,-86.8770', userId: user?.id },
-        { name: 'Aeropuerto de la Ciudad de México', location: 'Av. Capitán Carlos León s/n', iata: 'MEX', city: 'CDMX', state: 'CDMX', status: 'Operativo', coordinates: '19.4361,-99.0719', userId: user?.id },
-        { name: 'Aeropuerto de Tulum (Felipe Carrillo)', location: 'Ctra. Fed 307 Km 201', iata: 'TQO', city: 'Tulum', state: 'Quintana Roo', status: 'Nuevo', coordinates: '20.1558,-87.6698', userId: user?.id },
-    ];
-
-    for (const airport of airportsData) {
-        await prisma.airport.create({
-            data: airport
+export async function createAirport(data: any) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const iata = (data.iata || '').toUpperCase();
+        
+        const newAirport = await prisma.airport.create({
+            data: {
+                ...data,
+                iata,
+                userId: user.id
+            }
         });
+        return { success: true, data: newAirport };
+    } catch (error: any) {
+        console.error("Error creating airport:", error);
+        if (error.code === 'P2002') {
+            return { success: false, error: 'Ya existe un aeropuerto con ese código IATA' };
+        }
+        return { success: false, error: 'Error al crear aeropuerto' };
+    }
+}
+
+export async function bulkCreateAirports(dataArray: any[]) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        // Helper function to find a key regardless of case
+        const findVal = (obj: any, keys: string[]) => {
+            const entry = Object.entries(obj).find(([k]) => keys.includes(k.toLowerCase().trim()));
+            return entry ? entry[1] : undefined;
+        };
+
+        const formattedData = dataArray.map((item, index) => {
+            const name = findVal(item, ['name', 'nombre']) || 'Sin nombre';
+            const location = findVal(item, ['location', 'ubicación', 'ubicacion', 'direccion']) || 'Desconocido';
+            let iata = (findVal(item, ['iata', 'código iata', 'codigo iata']) || '').toString().toUpperCase().trim();
+            // Fallback for empty IATA so it doesn't collide
+            if (!iata) iata = `XX${index}${Math.floor(Math.random() * 100)}`;
+            
+            const city = findVal(item, ['city', 'ciudad']) || 'Desconocido';
+            const state = findVal(item, ['state', 'estado', 'provincia']) || 'Desconocido';
+            const status = findVal(item, ['status', 'estado operativo', 'estatus']) || 'Operativo';
+            const coordinates = findVal(item, ['coordinates', 'coordenadas']) || '';
+
+            return {
+                name,
+                location,
+                iata,
+                city,
+                state,
+                status,
+                coordinates,
+                userId: user.id
+            };
+        });
+
+        const result = await prisma.airport.createMany({
+            data: formattedData,
+            skipDuplicates: true
+        });
+
+        return { success: true, count: result.count };
+    } catch (error) {
+        console.error("Error in bulk create airports:", error);
+        return { success: false, error: 'Error al importar datos' };
+    }
+}
+
+export async function updateAirport(id: number, data: any) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const existing = await prisma.airport.findUnique({ where: { id } });
+        if (!existing || (existing.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        const iata = (data.iata || '').toUpperCase();
+
+        const updated = await prisma.airport.update({
+            where: { id },
+            data: {
+                ...data,
+                iata
+            }
+        });
+        return { success: true, data: updated };
+    } catch (error: any) {
+        console.error("Error updating airport:", error);
+        if (error.code === 'P2002') {
+            return { success: false, error: 'Ya existe un aeropuerto con ese código IATA' };
+        }
+        return { success: false, error: 'Error al actualizar aeropuerto' };
     }
 }
 
@@ -50,11 +125,9 @@ export async function deleteAirport(id: number) {
         const user = await getCurrentUser();
         if (!user) return { success: false, error: 'No autorizado' };
         
-        if (user.role !== 'ADMIN') {
-            const airport = await prisma.airport.findUnique({ where: { id } });
-            if (!airport || airport.userId !== user.id) {
-                return { success: false, error: 'No autorizado' };
-            }
+        const existing = await prisma.airport.findUnique({ where: { id } });
+        if (!existing || (existing.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, error: 'No autorizado' };
         }
 
         await prisma.airport.delete({
@@ -62,7 +135,7 @@ export async function deleteAirport(id: number) {
         });
         return { success: true };
     } catch (error) {
-        console.error('Error deleting airport:', error);
-        return { success: false, error: 'No se pudo eliminar el aeropuerto' };
+        console.error("Error deleting airport:", error);
+        return { success: false, error: 'Error al eliminar aeropuerto' };
     }
 }

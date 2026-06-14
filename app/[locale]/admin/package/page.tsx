@@ -514,18 +514,14 @@ export default function PackagesPage() {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Paquetes Premium
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestiona el catálogo de experiencias exclusivas disponibles para todos los clientes.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Paquetes Premium")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Gestiona el catálogo de experiencias exclusivas disponibles para todos los clientes.")}</p>
                     </div>
                 </div>
                 
                 <Link href="/admin/build" className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Nuevo Paquete</span>
+                    <span className="btn-text-mobile-hide">{tr("Nuevo Paquete")}</span>
                 </Link>
             </div>
 

@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from '../../navigation';
 import Image from 'next/image';
-import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus, Star, ChevronLeft, ChevronRight, Headphones, Award, CalendarDays } from 'lucide-react';
 import Testimonials from '../../components/Testimonials';
 import { getPackages } from './admin/package/actions';
 import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { BookingWizard, SuccessStep } from './packages/components/BookingWizard';
 import { getTranslatedValue } from '../../lib/i18n-utils';
 import { TourPackage, Booking } from './packages/types';
@@ -95,6 +96,7 @@ const mapApiToFrontend = (apiPkg: any, locale: string): TourPackage => {
 
 export default function Home() {
   const { t, language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [packages, setPackages] = useState<Package[]>([]);
   const [yachts, setYachts] = useState<any[]>([]);
   const [beaches, setBeaches] = useState<any[]>([]);
@@ -199,6 +201,65 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why book with VamosJuntos Section */}
+      <section style={{ padding: '5rem 0', borderBottom: '1px solid var(--border-glass)' }}>
+        <div className="container">
+          <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+            <h2 className="heading-1 float-animation" style={{ fontSize: '2.5rem', textShadow: '0 5px 15px rgba(0,0,0,0.3)' }}>
+              {t('why_book_title')}
+            </h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '3rem', textAlign: 'center' }}>
+            
+            {/* Item 1 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <div className="float-animation" style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(236, 72, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ec4899', marginBottom: '0.5rem', boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.2)' }}>
+                <Headphones size={36} strokeWidth={1.5} />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t('why_book_1_title')}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '280px' }}>
+                {t('why_book_1_desc')}
+              </p>
+            </div>
+
+            {/* Item 2 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <div className="float-animation" style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', marginBottom: '0.5rem', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.2)', animationDelay: '0.2s' }}>
+                <Sparkles size={36} strokeWidth={1.5} />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t('why_book_2_title')}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '280px' }}>
+                {t('why_book_2_desc')}
+              </p>
+            </div>
+
+            {/* Item 3 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <div className="float-animation" style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', marginBottom: '0.5rem', boxShadow: '0 10px 25px -5px rgba(245, 158, 11, 0.2)', animationDelay: '0.4s' }}>
+                <Award size={36} strokeWidth={1.5} />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t('why_book_3_title')}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '280px' }}>
+                {t('why_book_3_desc')}
+              </p>
+            </div>
+
+            {/* Item 4 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <div className="float-animation" style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8', marginBottom: '0.5rem', boxShadow: '0 10px 25px -5px rgba(56, 189, 248, 0.2)', animationDelay: '0.6s' }}>
+                <Compass size={36} strokeWidth={1.5} />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t('why_book_4_title')}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '280px' }}>
+                {t('why_book_4_desc')}
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* Featured Packages */}
       <section style={{ padding: '5rem 0' }}>
         <div className="container">
@@ -244,7 +305,7 @@ export default function Home() {
                     {pkg.description || '...'}
                   </p>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>${pkg.price?.toLocaleString()} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>USD</small></span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>{formatPrice(pkg.price)}</span>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button 
                         onClick={() => setSelectedPkg(mapApiToFrontend(pkg, language))}

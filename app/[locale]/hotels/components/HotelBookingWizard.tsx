@@ -5,11 +5,12 @@ import { Calendar as CalendarIcon, Users, CreditCard, ChevronRight, ArrowLeft, C
 import { createHotelReservation } from '../actions';
 import { validateDiscountCodeForHotel } from '../../admin/discounts/actions';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 // --- Stripe Form ---
 const CheckoutForm = ({ clientSecret, onPaymentSuccess, amount }: any) => {
+    const { formatPrice } = useCurrency();
     const stripe = useStripe();
     const elements = useElements();
     const [error, setError] = useState('');
@@ -46,7 +47,7 @@ const CheckoutForm = ({ clientSecret, onPaymentSuccess, amount }: any) => {
             </div>
             {error && <div style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '0.5rem' }}>{error}</div>}
             <button type="submit" disabled={!stripe || processing} className="btn-premium" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem', borderRadius: '12px' }}>
-                {processing ? 'Procesando...' : `Pagar $${amount.toLocaleString()} USD`}
+                {processing ? 'Procesando...' : `Pagar ${formatPrice(amount)}`}
             </button>
             <style jsx>{`
                 .card-input-container { padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
@@ -57,6 +58,7 @@ const CheckoutForm = ({ clientSecret, onPaymentSuccess, amount }: any) => {
 
 // --- Wizard ---
 export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room: any, onCancel: () => void }) {
+    const { formatPrice } = useCurrency();
     const [step, setStep] = useState(1);
     const [dates, setDates] = useState({ checkIn: '', checkOut: '' });
     const [guests, setGuests] = useState(2);
@@ -135,7 +137,7 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amount: finalPrice,
-                    currency: 'usd',
+                    currency: 'USD',
                     userId: hotel.userId,
                     description: `Reserva Hotel: ${hotel.name} - ${room.type}`
                 })
@@ -222,12 +224,12 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                     {discountInfo && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                             <span style={{ color: '#10b981' }}>Descuento ({discountInfo.code}):</span>
-                            <strong style={{ color: '#10b981' }}>-${discountAmount.toFixed(2)} USD</strong>
+                            <strong style={{ color: '#10b981' }}>-{formatPrice(discountAmount)}</strong>
                         </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'rgba(255,255,255,0.5)' }}>Total Pagado:</span>
-                        <strong>${finalPrice.toLocaleString()} USD</strong>
+                        <strong>{formatPrice(finalPrice)}</strong>
                     </div>
                 </div>
 
@@ -283,18 +285,18 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                 {discountInfo ? (
                     <>
                         <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through' }}>
-                            ${baseTotal.toLocaleString()} USD
+                            {formatPrice(baseTotal)}
                         </div>
                         <div style={{ fontSize: '2rem', fontWeight: 900 }}>
-                            ${finalPrice.toLocaleString()} <small style={{ fontSize: '1rem', fontWeight: 400, opacity: 0.5 }}>USD</small>
+                            {formatPrice(finalPrice)}
                         </div>
                         <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>
-                            Ahorro: ${discountAmount.toFixed(2)} USD ({discountInfo.percentage}%)
+                            Ahorro: {formatPrice(discountAmount)} ({discountInfo.percentage}%)
                         </div>
                     </>
                 ) : (
                     <div style={{ fontSize: '2rem', fontWeight: 900 }}>
-                        ${baseTotal.toLocaleString()} <small style={{ fontSize: '1rem', fontWeight: 400, opacity: 0.5 }}>USD</small>
+                        {formatPrice(baseTotal)}
                     </div>
                 )}
                 {dates.checkIn && dates.checkOut && (

@@ -7,9 +7,13 @@ import Image from 'next/image';
 import { 
     ArrowLeft, Plus, User, Briefcase, X, Star, Car,
     Music, Wind, Dog, Cigarette, GlassWater, Wifi, Smartphone, Loader2,
-    QrCode, Download
+    QrCode, Download, Edit2, Trash2
 } from 'lucide-react';
-import { getTaxis } from './actions';
+import { getTaxis, deleteTaxi } from './actions';
+import TaxiFormModal from './TaxiFormModal';
+import TaxiExcelUpload from './TaxiExcelUpload';
+import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 import { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toPng } from 'html-to-image';
@@ -46,16 +50,21 @@ export default function TaxisPage() {
     const [loading, setLoading] = useState(true);
     const [selectedTaxi, setSelectedTaxi] = useState<Taxi | null>(null);
     const [qrTaxi, setQrTaxi] = useState<Taxi | null>(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [editTaxi, setEditTaxi] = useState<Taxi | null>(null);
+    const [confirmModalData, setConfirmModalData] = useState<{ isOpen: boolean, id: number | null, plate: string }>({ isOpen: false, id: null, plate: '' });
+
+    const fetchFleet = async () => {
+        setLoading(true);
+        const result = await getTaxis();
+        if (result.success && result.data) {
+            // @ts-expect-error - Result data is compatible with Taxi[]
+            setFleet(result.data);
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchFleet = async () => {
-            const result = await getTaxis();
-            if (result.success && result.data) {
-                // @ts-expect-error - Result data is compatible with Taxi[]
-                setFleet(result.data);
-            }
-            setLoading(false);
-        };
         fetchFleet();
     }, []);
 
@@ -68,6 +77,26 @@ export default function TaxisPage() {
         return <Icon size={16} />;
     };
 
+    const confirmDelete = (id: number, plate: string) => {
+        setConfirmModalData({ isOpen: true, id, plate });
+    };
+
+    const executeDelete = async () => {
+        if (!confirmModalData.id) return;
+        const idToDelete = confirmModalData.id;
+        setConfirmModalData({ isOpen: false, id: null, plate: '' });
+        
+        const loadingToast = toast.loading('Eliminando taxi...');
+        const res = await deleteTaxi(idToDelete);
+        
+        if (res.success) {
+            toast.success('Taxi eliminado exitosamente', { id: loadingToast });
+            fetchFleet();
+        } else {
+            toast.error(res.error || 'Error al eliminar', { id: loadingToast });
+        }
+    };
+
     const closeModal = () => setSelectedTaxi(null);
 
     return (
@@ -78,19 +107,18 @@ export default function TaxisPage() {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Gestión de Flota (VIP)
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Control de vehículos, servicios y perfiles de choferes.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Gestión de Flota (VIP)")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Control de vehículos, servicios y perfiles de choferes.")}</p>
                     </div>
                 </div>
                 
-                <button className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Nuevo Vehículo</span>
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <TaxiExcelUpload onSuccess={fetchFleet} />
+                    <button onClick={() => { setEditTaxi(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span className="btn-text-mobile-hide">{tr("Nuevo Vehículo")}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Desktop View */}
@@ -167,11 +195,17 @@ export default function TaxisPage() {
                                     </td>
                                     <td style={{ padding: '1.5rem 1.2rem' }}>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button onClick={() => setSelectedTaxi(taxi)} className="btn-glass-nav" style={{ padding: '0.6rem 1rem', borderRadius: '12px' }}>
-                                                Detalles
+                                            <button onClick={() => setSelectedTaxi(taxi)} className="btn-glass-nav" style={{ padding: '0.6rem 1rem', borderRadius: '12px' }} title="Perfil de Conductor">
+                                                <User size={16} />
                                             </button>
                                             <button onClick={() => setQrTaxi(taxi)} className="btn-glass-nav" style={{ padding: '0.6rem', borderRadius: '12px', color: '#8b5cf6' }} title="Generar QR Sticker">
                                                 <QrCode size={18} />
+                                            </button>
+                                            <button onClick={() => { setEditTaxi(taxi); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.6rem', borderRadius: '12px' }} title="Editar">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => confirmDelete(taxi.id, taxi.plate)} className="btn-glass-nav" style={{ padding: '0.6rem', borderRadius: '12px', color: '#f43f5e' }} title="Eliminar">
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -243,12 +277,18 @@ export default function TaxisPage() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                                     <button onClick={() => setSelectedTaxi(taxi)} className="btn-premium" style={{ flex: 1, padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
                                         <User size={18} /> Perfil
                                     </button>
-                                    <button onClick={() => setQrTaxi(taxi)} className="btn-glass-nav" style={{ padding: '0.9rem', borderRadius: '16px', color: '#8b5cf6', width: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <button onClick={() => setQrTaxi(taxi)} className="btn-glass-nav" style={{ padding: '0.9rem', borderRadius: '16px', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <QrCode size={20} />
+                                    </button>
+                                    <button onClick={() => { setEditTaxi(taxi); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.9rem', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Edit2 size={20} />
+                                    </button>
+                                    <button onClick={() => confirmDelete(taxi.id, taxi.plate)} className="btn-glass-nav" style={{ padding: '0.9rem', borderRadius: '16px', color: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Trash2 size={20} />
                                     </button>
                                 </div>
                             </div>
@@ -312,6 +352,28 @@ export default function TaxisPage() {
                     </div>
                 </div>
             )}
+
+            {formModalOpen && (
+                <TaxiFormModal 
+                    taxi={editTaxi} 
+                    onClose={() => setFormModalOpen(false)} 
+                    onSuccess={() => {
+                        setFormModalOpen(false);
+                        fetchFleet();
+                    }} 
+                />
+            )}
+
+            <ConfirmModal
+                isOpen={confirmModalData.isOpen}
+                title="Confirmar Eliminación"
+                message={<>¿Estás seguro de que deseas eliminar el vehículo placa <strong>&quot;{confirmModalData.plate}&quot;</strong>? Esta acción no se puede deshacer y no eliminará al chofer asociado, solo al vehículo.</>}
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmModalData({ isOpen: false, id: null, plate: '' })}
+                confirmText="Eliminar Vehículo"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
 
             <style jsx>{`
                 @media (max-width: 768px) {

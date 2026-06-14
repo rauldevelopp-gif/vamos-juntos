@@ -88,6 +88,131 @@ export async function updateYacht(id: number, data: any) {
     }
 }
 
+export async function deleteYacht(id: number) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const existing = await prisma.yacht.findUnique({ where: { id } });
+        if (!existing || (existing.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        // Delete associated crew first since there's no cascade delete configured
+        await prisma.crew.deleteMany({
+            where: { yachtId: id }
+        });
+
+        await prisma.yacht.delete({
+            where: { id }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting yacht:", error);
+        return { success: false, error: 'Error al eliminar el yate' };
+    }
+}
+
+export async function bulkCreateYachts(dataArray: any[]) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        const findVal = (obj: any, keys: string[]) => {
+            const entry = Object.entries(obj).find(([k]) => keys.includes(k.toLowerCase().trim()));
+            return entry ? entry[1] : undefined;
+        };
+
+        const formattedData = dataArray.map(item => {
+            const name = findVal(item, ['name', 'nombre']) || 'Sin nombre';
+            const brand = findVal(item, ['brand', 'marca']) || 'Desconocida';
+            const model = findVal(item, ['model', 'modelo']) || 'Desconocido';
+            const year = parseInt(findVal(item, ['year', 'año', 'ano']) || '2023', 10);
+            const length = findVal(item, ['length', 'eslora', 'tamaño']) || '0ft';
+            const capacity = parseInt(findVal(item, ['capacity', 'capacidad', 'pasajeros']) || '10', 10);
+            const price_day = parseFloat(findVal(item, ['price_day', 'precio', 'tarifa', 'precio por día']) || '0');
+            const status = findVal(item, ['status', 'estado', 'estatus']) || 'Disponible';
+            const location = findVal(item, ['location', 'ubicación', 'ubicacion', 'marina']) || 'Desconocida';
+            const coordinates = findVal(item, ['coordinates', 'coordenadas']) || '';
+            const description_long = findVal(item, ['description_long', 'descripción', 'descripcion']) || '';
+
+            return {
+                name,
+                brand,
+                model,
+                year: isNaN(year) ? 2023 : year,
+                length,
+                capacity: isNaN(capacity) ? 10 : capacity,
+                price_day: isNaN(price_day) ? 0 : price_day,
+                status,
+                location,
+                coordinates,
+                description_long,
+                userId: user.id
+            };
+        });
+
+        const result = await prisma.yacht.createMany({
+            data: formattedData,
+            skipDuplicates: true
+        });
+
+        return { success: true, count: result.count };
+    } catch (error) {
+        console.error("Error in bulk create yachts:", error);
+        return { success: false, error: 'Error al importar datos' };
+    }
+}
+
+export async function createCrew(data: any) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+        
+        const newCrew = await prisma.crew.create({
+            data: {
+                ...data,
+                userId: user.id
+            }
+        });
+        return { success: true, data: newCrew };
+    } catch (error) {
+        console.error("Error creating crew:", error);
+        return { success: false, error: 'Error al crear tripulante' };
+    }
+}
+
+export async function updateCrew(id: number, data: any) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        const updated = await prisma.crew.update({
+            where: { id },
+            data
+        });
+        return { success: true, data: updated };
+    } catch (error) {
+        console.error("Error updating crew:", error);
+        return { success: false, error: 'Error al actualizar tripulante' };
+    }
+}
+
+export async function deleteCrew(id: number) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        await prisma.crew.delete({
+            where: { id }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting crew:", error);
+        return { success: false, error: 'Error al eliminar tripulante' };
+    }
+}
+
 async function seedInitialYachts() {
     try {
         const user = await getCurrentUser();

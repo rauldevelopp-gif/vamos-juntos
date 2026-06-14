@@ -105,6 +105,69 @@ export async function deleteHotel(id: number) {
     }
 }
 
+export async function bulkCreateHotels(dataArray: any[]) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        const findVal = (obj: any, keys: string[]) => {
+            const entry = Object.entries(obj).find(([k]) => keys.includes(k.toLowerCase().trim()));
+            return entry ? entry[1] : undefined;
+        };
+
+        const formattedData = [];
+        for (const item of dataArray) {
+            const name = String(findVal(item, ['name', 'nombre', 'hotel']) || `Hotel-${Math.floor(Math.random() * 10000)}`);
+            const city = findVal(item, ['city', 'ciudad']) || 'Desconocida';
+            const state = findVal(item, ['state', 'estado', 'region']) || 'Desconocido';
+            const category = findVal(item, ['category', 'categoría', 'tipo']) || 'Estándar';
+            const stars = parseInt(findVal(item, ['stars', 'estrellas']) || '5', 10);
+            const address = findVal(item, ['address', 'dirección', 'direccion']) || '';
+            const location = findVal(item, ['location', 'ubicación', 'ubicacion']) || `${city}, ${state}`;
+            const coordinates = findVal(item, ['coordinates', 'coordenadas']) || '';
+            const phone = String(findVal(item, ['phone', 'teléfono', 'telefono']) || '');
+            const email = findVal(item, ['email', 'correo']) || '';
+            const description = findVal(item, ['description', 'descripción']) || '';
+            const policies = findVal(item, ['policies', 'políticas', 'politicas']) || '';
+            const checkInTime = findVal(item, ['checkin', 'checkintime', 'check-in']) || '15:00';
+            const checkOutTime = findVal(item, ['checkout', 'checkouttime', 'check-out']) || '12:00';
+            const status = findVal(item, ['status', 'estado', 'estatus']) || 'Disponible';
+
+            formattedData.push({
+                name,
+                city,
+                state,
+                location,
+                category,
+                stars: isNaN(stars) ? 5 : stars,
+                address,
+                coordinates,
+                phone,
+                email,
+                description,
+                policies,
+                checkInTime,
+                checkOutTime,
+                status,
+                gallery: [],
+                amenities: [],
+                userId: user.id
+            });
+        }
+
+        const result = await prisma.hotel.createMany({
+            data: formattedData,
+            skipDuplicates: true
+        });
+
+        revalidatePath('/admin/hotels');
+        return { success: true, count: result.count };
+    } catch (error) {
+        console.error("Error in bulk create hotels:", error);
+        return { success: false, error: 'Error al importar datos' };
+    }
+}
+
 // --- HOTEL ROOMS ---
 
 export async function getHotelRooms(hotelId: number) {

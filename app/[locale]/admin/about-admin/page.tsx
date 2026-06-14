@@ -260,9 +260,7 @@ export default function AboutUsAdminPage() {
                         <Lock size={32} color="var(--accent)" />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Acceso Restringido
-                        </h2>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{tr("Acceso Restringido")}</h2>
                         <div style={{
                             padding: '0.15rem 0.6rem',
                             borderRadius: '4px',

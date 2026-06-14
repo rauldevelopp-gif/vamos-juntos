@@ -102,7 +102,7 @@ export default function BillingPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div className="gateway-icon" style={{ background: '#635BFF' }}>S</div>
                         <div>
-                            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: 'white' }}>Stripe</h2>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: 'white' }}>{tr("Stripe")}</h2>
                             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Acepta tarjetas de crédito y débito globalmente.</p>
                         </div>
                     </div>
@@ -146,7 +146,7 @@ export default function BillingPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div className="gateway-icon" style={{ background: '#003087', color: '#0079C1' }}>P</div>
                         <div>
-                            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: 'white' }}>PayPal</h2>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: 'white' }}>{tr("PayPal")}</h2>
                             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Permite pagos con cuenta PayPal o tarjeta.</p>
                         </div>
                     </div>

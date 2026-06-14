@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, Info, Users, Tag, DollarSign, Activity } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { getTranslatedValue } from '../lib/i18n-utils';
 
 interface EntityModalProps {
@@ -14,6 +15,7 @@ interface EntityModalProps {
 
 export default function EntityModal({ item, onClose, accentColor = 'var(--primary)' }: EntityModalProps) {
     const { language, t } = useLanguage();
+    const { formatPrice } = useCurrency();
     const isEn = language === 'en';
     const images = item.gallery && item.gallery.length > 0 ? item.gallery : (item.image ? [item.image] : ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200&auto=format&fit=crop']);
     const [currentImage, setCurrentImage] = useState(0);
@@ -101,8 +103,7 @@ export default function EntityModal({ item, onClose, accentColor = 'var(--primar
                                     {isEn ? 'Price from' : 'Precio desde'}
                                 </div>
                                 <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <DollarSign size={24} color={accentColor} />
-                                    {price.toLocaleString()} <span style={{ fontSize: '1rem', opacity: 0.6, marginLeft: '4px' }}>USD</span>
+                                    {formatPrice(price)}
                                 </div>
                             </div>
                         )}

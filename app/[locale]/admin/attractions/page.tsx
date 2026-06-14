@@ -3,9 +3,12 @@ import { useLanguage } from '@/context/LanguageContext';
 import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Loader2, Camera, Edit2 } from 'lucide-react';
-import { getAttractions } from './actions';
+import { ArrowLeft, Plus, MapPin, X, Loader2, Camera, Edit2, Trash2 } from 'lucide-react';
+import { getAttractions, deleteAttraction } from './actions';
 import AttractionFormModal from './AttractionFormModal';
+import AttractionExcelUpload from './AttractionExcelUpload';
+import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 interface Attraction {
     id: number;
@@ -28,6 +31,8 @@ export default function AttractionsPage() {
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [editAttraction, setEditAttraction] = useState<Attraction | null>(null);
 
+    const [confirmModalData, setConfirmModalData] = useState<{ isOpen: boolean, id: number | null, name: string }>({ isOpen: false, id: null, name: '' });
+
     const fetchAttractions = async () => {
         setLoading(true);
         const result = await getAttractions();
@@ -41,6 +46,26 @@ export default function AttractionsPage() {
         fetchAttractions();
     }, []);
 
+    const confirmDelete = (id: number, name: string) => {
+        setConfirmModalData({ isOpen: true, id, name });
+    };
+
+    const executeDelete = async () => {
+        if (!confirmModalData.id) return;
+        const idToDelete = confirmModalData.id;
+        setConfirmModalData({ isOpen: false, id: null, name: '' });
+        
+        const loadingToast = toast.loading('Eliminando...');
+        const res = await deleteAttraction(idToDelete);
+        
+        if (res.success) {
+            toast.success('Atracción eliminada exitosamente', { id: loadingToast });
+            fetchAttractions();
+        } else {
+            toast.error(res.error || 'Error al eliminar', { id: loadingToast });
+        }
+    };
+
     const closeModal = () => setSelectedAttraction(null);
 
     return (
@@ -51,19 +76,18 @@ export default function AttractionsPage() {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Experiencias & Tours
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestión de atracciones turísticas y actividades VIP.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Experiencias & Tours")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Gestión de atracciones turísticas y actividades VIP.")}</p>
                     </div>
                 </div>
                 
-                <button onClick={() => { setEditAttraction(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Nueva Actividad</span>
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <AttractionExcelUpload onSuccess={fetchAttractions} />
+                    <button onClick={() => { setEditAttraction(null); setFormModalOpen(true); }} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span className="btn-text-mobile-hide">{tr("Nueva Actividad")}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Desktop View */}
@@ -120,8 +144,11 @@ export default function AttractionsPage() {
                                             <button onClick={() => setSelectedAttraction(attraction)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <MapPin size={16} strokeWidth={2} />
                                             </button>
-                                            <button onClick={() => { setEditAttraction(attraction); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <button onClick={() => { setEditAttraction(attraction); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Editar">
                                                 <Edit2 size={16} strokeWidth={2} />
+                                            </button>
+                                            <button onClick={() => confirmDelete(attraction.id, attraction.name)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f43f5e' }} title="Eliminar">
+                                                <Trash2 size={16} strokeWidth={2} />
                                             </button>
                                         </div>
                                     </td>
@@ -175,9 +202,17 @@ export default function AttractionsPage() {
                                     }}>
                                         {attraction.status}
                                     </span>
-                                    <button onClick={() => setSelectedAttraction(attraction)} className="btn-premium" style={{ padding: '0.8rem 1.2rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                                        <MapPin size={18} /> {tr("Ver Mapa")}
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button onClick={() => { setEditAttraction(attraction); setFormModalOpen(true); }} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px' }}>
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button onClick={() => confirmDelete(attraction.id, attraction.name)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '12px', color: '#f43f5e' }}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                        <button onClick={() => setSelectedAttraction(attraction)} className="btn-premium" style={{ padding: '0.8rem 1.2rem', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                                            <MapPin size={18} /> {tr("Ver Mapa")}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -218,6 +253,17 @@ export default function AttractionsPage() {
                     }} 
                 />
             )}
+
+            <ConfirmModal
+                isOpen={confirmModalData.isOpen}
+                title="Confirmar Eliminación"
+                message={<>¿Estás seguro de que deseas eliminar la atracción <strong>&quot;{confirmModalData.name}&quot;</strong>? Esta acción no se puede deshacer.</>}
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmModalData({ isOpen: false, id: null, name: '' })}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
 
             <style jsx>{`
                 @media (max-width: 768px) {

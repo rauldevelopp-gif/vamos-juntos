@@ -4,6 +4,7 @@ import { useState } from 'react';
 import EntityCard from './EntityCard';
 import Link from 'next/link';
 import { useLanguage } from '../context/LanguageContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { getTranslatedValue } from '../lib/i18n-utils';
 import EntityModal from './EntityModal';
 
@@ -34,6 +35,7 @@ interface EntityGridProps {
 
 export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewMoreText, accentColor }: EntityGridProps) {
     const { language } = useLanguage();
+    const { formatPrice } = useCurrency();
     const isEn = language === 'en';
     const [selectedItem, setSelectedItem] = useState<GridItem | null>(null);
 
@@ -53,7 +55,7 @@ export default function EntityGrid({ title, subtitle, items, viewMoreLink, viewM
                     {items.map((item) => {
                         const price = item.price_day || item.price;
                         const priceLabelText = isEn ? "From" : "Desde";
-                        const priceLabel = price ? `${priceLabelText} $${price} USD` : undefined;
+                        const priceLabel = price ? `${priceLabelText} ${formatPrice(price)}` : undefined;
                         
                         let cardSubtitle = '';
                         const localizedDescription = getTranslatedValue(item.description_long || item.description, language);

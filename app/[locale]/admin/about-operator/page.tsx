@@ -222,7 +222,7 @@ export default function AboutUsOperatorPage() {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem'
                 }}>
                     <Lock size={32} color="var(--accent)" />
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', margin: 0, textTransform: 'uppercase' }}>Acceso Restringido</h2>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', margin: 0, textTransform: 'uppercase' }}>{tr("Acceso Restringido")}</h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>Esta sección requiere un rol de operador o administrador autorizado.</p>
                 </div>
             </div>
@@ -452,7 +452,7 @@ export default function AboutUsOperatorPage() {
                                         type="text" placeholder="Pegar URL de foto..." className="input-admin-premium" style={{ fontSize: '0.8rem', padding: '0.4rem' }}
                                         value={newGalleryItem} onChange={e => setNewGalleryItem(e.target.value)}
                                     />
-                                    <button onClick={addGalleryItem} className="btn-premium" style={{ padding: '0.4rem 1rem', borderRadius: '8px', fontSize: '0.75rem' }}>Añadir</button>
+                                    <button onClick={addGalleryItem} className="btn-premium" style={{ padding: '0.4rem 1rem', borderRadius: '8px', fontSize: '0.75rem' }}>{tr("Añadir")}</button>
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.75rem', marginTop: '0.5rem' }}>
                                     {content.gallery.map((url: string) => (
@@ -487,7 +487,7 @@ export default function AboutUsOperatorPage() {
                                             type="text" placeholder="https://www.youtube.com/watch?v=..." className="input-admin-premium" style={{ fontSize: '0.8rem', padding: '0.4rem' }}
                                             value={newYoutubeEmbed} onChange={e => setNewYoutubeEmbed(e.target.value)}
                                         />
-                                        <button onClick={addYoutubeEmbed} className="btn-premium" style={{ padding: '0.4rem 1rem', borderRadius: '8px', fontSize: '0.75rem' }}>Añadir</button>
+                                        <button onClick={addYoutubeEmbed} className="btn-premium" style={{ padding: '0.4rem 1rem', borderRadius: '8px', fontSize: '0.75rem' }}>{tr("Añadir")}</button>
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                         {content.youtubeEmbeds.map((url: string) => (

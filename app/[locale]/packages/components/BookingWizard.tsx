@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useLanguage } from '../../../../context/LanguageContext';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 interface BookingWizardProps {
   pkg: TourPackage;
@@ -33,6 +34,7 @@ interface BookingWizardProps {
 
 export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, date: string, discountInfo: { code: string, percentage: number } | null }> = ({ pkg, passengers, date, discountInfo }) => {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isEn = language === 'en';
 
   const basePrice = pkg.price;
@@ -71,12 +73,12 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
       </div>
 
       <div className="summary-total-breakdown">
-        <div className="detail-item"><span>{isEn ? "Base Amount" : "Monto Base"}</span><strong>${pkg.price} USD</strong></div>
-        <div className="detail-item"><span>{isEn ? "Operating Fee (5%)" : "Cargo Operativo (5%)"}</span><strong>${(pkg.price * 0.05).toFixed(2)} USD</strong></div>
+        <div className="detail-item"><span>{isEn ? "Base Amount" : "Monto Base"}</span><strong>{formatPrice(pkg.price)}</strong></div>
+        <div className="detail-item"><span>{isEn ? "Operating Fee (5%)" : "Cargo Operativo (5%)"}</span><strong>{formatPrice(pkg.price * 0.05)}</strong></div>
         {discountInfo && (
             <div className="detail-item">
                 <span style={{ color: '#10b981' }}>{isEn ? "Discount" : "Descuento"} ({discountInfo.percentage}%)</span>
-                <strong style={{ color: '#10b981' }}>-${discountAmount.toFixed(2)} USD</strong>
+                <strong style={{ color: '#10b981' }}>-{formatPrice(discountAmount)}</strong>
             </div>
         )}
       </div>
@@ -84,8 +86,7 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
       <div className="summary-total">
         <span>{isEn ? "Total to Pay" : "Total a Pagar"}</span>
         <div className="price-wrap">
-          <span className="amount">${totalPrice.toFixed(2)}</span>
-          <span className="currency">USD</span>
+          <span className="amount">{formatPrice(totalPrice)}</span>
         </div>
       </div>
 
@@ -547,6 +548,7 @@ const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess }: { clientSecret: 
 
 export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = ({ booking, onReset }) => {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isEn = language === 'en';
 
   const [paymentState, setPaymentState] = useState<'pending' | 'processing' | 'success'>('pending');
@@ -572,10 +574,15 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
              
              if (res.data.stripePublicKey) {
                  setStripePromise(loadStripe(res.data.stripePublicKey));
+                 // Passing the currency alongside the USD amount to prepare for future multi-currency charge support
                  fetch('/api/checkout/stripe', {
                      method: 'POST',
                      headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ packageId: booking.packageId, amount: booking.totalPrice })
+                     body: JSON.stringify({ 
+                         packageId: booking.packageId, 
+                         amount: booking.totalPrice,
+                         currency: 'USD' // Base currency, backend will handle conversion if needed
+                     })
                  }).then(r => r.json()).then(data => {
                      if (data.success) setClientSecret(data.clientSecret);
                  });
@@ -668,7 +675,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
               <div>
                 <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{isEn ? "Total to Pay" : "Total a Pagar"}</span>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>
-                  ${(booking as Booking).totalPrice || 0} <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>USD</span>
+                  {formatPrice((booking as Booking).totalPrice || 0)}
                 </div>
               </div>
             </div>
