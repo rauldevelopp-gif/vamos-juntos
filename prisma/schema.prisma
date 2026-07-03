@@ -269,6 +269,18 @@ model Package {
   userId      Int?
   user        User?    @relation(fields: [userId], references: [id])
   packageReservations PackageReservation[]
+  videos      PackageVideo[]
+}
+
+model PackageVideo {
+  id           Int      @id @default(autoincrement())
+  packageId    Int
+  package      Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  title        String
+  videoUrl     String
+  thumbnailUrl String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
 }
 
 model PackageReservation {

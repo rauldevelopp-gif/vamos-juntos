@@ -6,7 +6,7 @@ import {
   Award, ShieldCheck, Heart, Calendar, Users, 
   Settings, Star, Globe, Layers, ArrowRight, Play, CheckCircle2, 
   MapPin, MessageSquare, Briefcase, Smile, Sparkles, BookOpen,
-  Instagram as InstagramLucide, Facebook as FacebookLucide, Video, FileText, Compass, ExternalLink, ShieldAlert
+  Video, FileText, Compass, ExternalLink, ShieldAlert
 } from 'lucide-react';
 import { getLocalDB } from '@/lib/db-fallback';
 import prisma from '@/lib/db';
@@ -95,7 +95,7 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
         </div>
 
         {/* Hero Contents */}
-        <div className="container" style={{ position: 'relative', zIndex: 10, display: 'flex', gap: '2.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }} className="hero-content-flex">
+        <div className="container hero-content-flex" style={{ position: 'relative', zIndex: 10, display: 'flex', gap: '2.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           
           {/* Profile Picture with Marco Iluminado */}
           <div style={{ 
@@ -153,7 +153,7 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
     ),
     bio: (
       <section key="bio" style={{ padding: '5rem 0' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '4rem' }} className="details-grid">
+        <div className="container details-grid" style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '4rem' }}>
           
           {/* Description & Bio */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

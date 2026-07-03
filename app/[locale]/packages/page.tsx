@@ -14,7 +14,9 @@ import {
     Palmtree, 
     Camera, 
     Anchor, 
-    Loader2
+    Loader2,
+    Play,
+    X
 } from 'lucide-react';
 import { getPackages } from '../admin/package/actions';
 import { TourPackage, Booking } from './types';
@@ -23,6 +25,7 @@ import { BookingWizard, SuccessStep } from './components/BookingWizard';
 import Image from 'next/image';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslatedValue } from '../../../lib/i18n-utils';
+import { isYoutubeOrVimeo, getEmbedUrl, getYoutubeId } from '@/components/PromotionVideosComponent';
 
 // --- HELPERS ---
 
@@ -53,6 +56,7 @@ const mapApiToFrontend = (apiPkg: {
   driver?: { id: number; name: string }; 
   items?: unknown; 
   user?: { name: string; email: string; role: string };
+  videos?: Array<{ id: number; title: string; videoUrl: string; thumbnailUrl: string | null; order: number }>;
 }, locale: string): TourPackage => {
   const items = Array.isArray(apiPkg.items) 
     ? apiPkg.items 
@@ -101,7 +105,8 @@ const mapApiToFrontend = (apiPkg: {
         id: idx,
         name: getTranslatedValue(typeof item === 'string' ? item : item.name, locale) || 'Item',
         type: (typeof item === 'string' ? 'atraccion' : item.type) || 'atraccion'
-    }))
+    })),
+    videos: apiPkg.videos || []
   };
 };
 
@@ -162,11 +167,11 @@ function CatalogContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('todos');
-    
     // UI State for New Flow
     const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
     const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
     const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
+    const [playingVideo, setPlayingVideo] = useState<any | null>(null);
 
     const searchParams = useSearchParams();
     const reserveId = searchParams.get('reserve');
@@ -175,7 +180,9 @@ function CatalogContent() {
     useEffect(() => {
         const fetchPackages = async () => {
             const result = await getPackages();
+            console.log('API FETCH RESULT:', result);
             if (result.success && result.data) {
+                console.log('PACKAGES WITH VIDEOS FROM DB:', result.data.map(p => ({ id: p.id, name: p.name, videos: (p as any).videos })));
                 setPackages(result.data as ApiPackage[]);
             }
             setLoading(false);
@@ -310,6 +317,18 @@ function CatalogContent() {
                                     ) : (
                                         <div className="card-img-placeholder"><ImageIcon size={40} opacity={0.1} /></div>
                                     )}
+                                    
+                                    {pkg.videos && pkg.videos.length > 0 && (
+                                        <div className="video-play-overlay" onClick={(e) => {
+                                            e.stopPropagation();
+                                            setPlayingVideo(pkg.videos[0]);
+                                        }}>
+                                            <div className="play-btn-glow-large">
+                                                <Play size={20} fill="currentColor" style={{ marginLeft: '2px' }} />
+                                            </div>
+                                        </div>
+                                    )}
+                                    
                                     <div className="price-tag">${pkg.price?.toLocaleString()} USD</div>
                                 </div>
                                 <div className="card-body">
@@ -386,6 +405,39 @@ function CatalogContent() {
                         setConfirmedBooking(booking);
                     }}
                 />
+            )}
+
+            {playingVideo && (
+                <div className="modal-overlay-video" onClick={() => setPlayingVideo(null)}>
+                    <div className="video-lightbox-container" onClick={e => e.stopPropagation()}>
+                        <button 
+                            className="close-btn-video" 
+                            onClick={() => setPlayingVideo(null)}
+                        >
+                            <X size={20} />
+                        </button>
+                        <div className="video-lightbox-aspect">
+                            {isYoutubeOrVimeo(playingVideo.videoUrl) ? (
+                                <iframe 
+                                    src={getEmbedUrl(playingVideo.videoUrl)}
+                                    title={playingVideo.title}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: '16px' }}
+                                />
+                            ) : (
+                                <video 
+                                    src={playingVideo.videoUrl} 
+                                    controls 
+                                    autoPlay 
+                                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', borderRadius: '16px' }}
+                                />
+                            )}
+                        </div>
+                        <h4 style={{ color: 'white', marginTop: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>{playingVideo.title}</h4>
+                    </div>
+                </div>
             )}
 
             <style jsx>{`

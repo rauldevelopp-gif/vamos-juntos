@@ -12,7 +12,11 @@ export async function getPackages() {
 
         let packages = await prisma.package.findMany({
             where: whereClause,
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -20,7 +24,11 @@ export async function getPackages() {
             await seedPremiumPackages();
             packages = await prisma.package.findMany({
                 where: whereClause,
-                include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+                include: { 
+                    user: { select: { id: true, name: true, email: true, role: true } }, 
+                    driver: { include: { taxis: true } },
+                    videos: { orderBy: { order: 'asc' } }
+                },
                 orderBy: { createdAt: 'desc' }
             });
         }
@@ -42,6 +50,12 @@ export async function createPackage(data: {
     startTime?: string;
     items: unknown;
     driverId?: number;
+    videos?: Array<{
+        title: string;
+        videoUrl: string;
+        thumbnailUrl?: string | null;
+        order: number;
+    }>;
 }) {
     try {
         const user = await getCurrentUser();
@@ -61,7 +75,15 @@ export async function createPackage(data: {
                 driverId: data.driverId ? Number(data.driverId) : null,
                 clientId: data.clientId || null,
                 sales: 0,
-                userId: user.id
+                userId: user.id,
+                videos: data.videos ? {
+                    create: data.videos.map(v => ({
+                        title: v.title,
+                        videoUrl: v.videoUrl,
+                        thumbnailUrl: v.thumbnailUrl || null,
+                        order: v.order
+                    }))
+                } : undefined
             }
         });
         return { success: true, data: newPackage };
@@ -82,7 +104,11 @@ export async function getClientRequests() {
 
         const requests = await prisma.package.findMany({
             where: whereClause,
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
         return { success: true, data: requests };
@@ -96,7 +122,11 @@ export async function getPackagesByClientId(clientId: string) {
     try {
         const packages = await prisma.package.findMany({
             where: { clientId },
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
         return { success: true, data: packages };

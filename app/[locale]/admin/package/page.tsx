@@ -32,15 +32,15 @@ import { toPng } from 'html-to-image';
 
 interface Package {
     id: number;
-    name: string;
-    description?: string;
+    name: string | null;
+    description?: string | null;
     status: string;
     price: number;
     sales: number;
     date: string;
     image: string | null;
     items?: unknown;
-    driverId?: number;
+    driverId?: number | null;
     total?: number;
     driver?: {
         id: number;

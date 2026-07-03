@@ -8,12 +8,14 @@ import {
   ChevronRight, 
   Car, 
   User,
-  Star
+  Star,
+  Play
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '../../../../context/LanguageContext';
 import { useCurrency } from '../../../../context/CurrencyContext';
+import { getYoutubeId, getVimeoId, getEmbedUrl, isYoutubeOrVimeo } from '@/components/PromotionVideosComponent';
 
 export const RouteTimeline: React.FC<{ pkg: TourPackage }> = ({ pkg }) => {
   const { language } = useLanguage();
@@ -79,6 +81,7 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
   const { formatPrice } = useCurrency();
   const isEn = language === 'en';
   const [showOwnerInfo, setShowOwnerInfo] = React.useState(false);
+  const [playingVideo, setPlayingVideo] = React.useState<any | null>(null);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -183,6 +186,42 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
             </div>
           </div>
 
+          {/* Promotional Videos */}
+          {pkg.videos && pkg.videos.length > 0 && (
+            <section style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2.5rem' }}>
+              <h3 className="section-label">{isEn ? "Promotional Videos" : "Videos Promocionales"}</h3>
+              <div className="videos-carousel hide-scrollbar" style={{ display: 'flex', gap: '1.25rem', overflowX: 'auto', paddingBottom: '1.5rem', scrollSnapType: 'x mandatory' }}>
+                {pkg.videos.map((video, idx) => {
+                  const isYt = getYoutubeId(video.videoUrl) !== null;
+                  const isVim = getVimeoId(video.videoUrl) !== null;
+                  return (
+                    <div 
+                      key={video.id || idx} 
+                      className="video-carousel-card" 
+                      onClick={() => setPlayingVideo(video)}
+                    >
+                      <div className="video-card-thumb-wrap">
+                        {video.thumbnailUrl ? (
+                          <img src={video.thumbnailUrl} alt={video.title} className="video-card-img" />
+                        ) : (
+                          <div className="video-card-placeholder">
+                            <Play size={24} color="#8b5cf6" />
+                          </div>
+                        )}
+                        <div className="video-card-overlay">
+                          <div className="play-button-glow">
+                            <Play size={18} fill="currentColor" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="video-card-title">{video.title}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           <div className="pricing-bar">
             <div className="pricing-info">
               <p className="pricing-label">{isEn ? "Total" : "Total"}</p>
@@ -278,7 +317,7 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
         .hero-img { width: 100%; height: 100%; object-fit: cover; }
         .visuals-overlay { position: absolute; inset: 0; background: linear-gradient(to top, #0a0a0a, transparent); }
         .visuals-content { position: absolute; bottom: 3rem; left: 3rem; right: 3rem; }
-        
+
         .rating-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
         .stars { color: #facc15; display: flex; }
         .rating-row span { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); }
@@ -364,7 +403,124 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
             .pricing-bar { flex-direction: column; align-items: stretch; gap: 1.5rem; padding: 1.5rem; }
             .pricing-info { display: flex; justify-content: space-between; align-items: center; }
         }
+
+        .videos-carousel::-webkit-scrollbar { display: none; }
+        .video-carousel-card { 
+            flex-shrink: 0; 
+            width: 220px; 
+            cursor: pointer; 
+            scroll-snap-align: start; 
+            transition: all 0.3s; 
+        }
+        .video-carousel-card:hover { transform: translateY(-4px); }
+        .video-card-thumb-wrap { 
+            position: relative; 
+            height: 124px; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            background: #111; 
+            border: 1px solid rgba(255,255,255,0.06); 
+        }
+        .video-card-img { width: 100%; height: 100%; object-fit: cover; }
+        .video-card-placeholder { 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: linear-gradient(135deg, #151515 0%, #222 100%); 
+        }
+        .video-card-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(0,0,0,0.3); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            opacity: 0.8; 
+            transition: opacity 0.3s; 
+        }
+        .video-carousel-card:hover .video-card-overlay { opacity: 1; background: rgba(0,0,0,0.4); }
+        .play-button-glow { 
+            width: 44px; 
+            height: 44px; 
+            border-radius: 50%; 
+            background: #8b5cf6; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); 
+            transition: all 0.3s; 
+            transform: scale(0.9);
+        }
+        .video-carousel-card:hover .play-button-glow { 
+            transform: scale(1.05); 
+            background: #7c3aed; 
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.8); 
+        }
+        .video-card-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: rgba(255,255,255,0.85); 
+            margin-top: 0.75rem; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            transition: color 0.3s;
+        }
+        .video-carousel-card:hover .video-card-title { color: white; }
+        
+        .video-lightbox-container { 
+            width: 90%; 
+            max-width: 900px; 
+            background: #080808; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 28px; 
+            padding: 2rem; 
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8); 
+        }
+        .video-lightbox-aspect { 
+            position: relative; 
+            padding-top: 56.25%; 
+            background: #000; 
+            border-radius: 16px; 
+            overflow: hidden; 
+        }
       `}</style>
+      {playingVideo && (
+        <div className="modal-overlay" onClick={() => setPlayingVideo(null)} style={{ zIndex: 10002, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(25px)' }}>
+          <div className="video-lightbox-container" onClick={e => e.stopPropagation()}>
+            <button 
+              className="close-btn" 
+              onClick={() => setPlayingVideo(null)}
+              style={{ top: '1.5rem', right: '1.5rem' }}
+            >
+              <X size={20} />
+            </button>
+            <div className="video-lightbox-aspect">
+              {isYoutubeOrVimeo(playingVideo.videoUrl) ? (
+                <iframe 
+                  src={getEmbedUrl(playingVideo.videoUrl)}
+                  title={playingVideo.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: '16px' }}
+                />
+              ) : (
+                <video 
+                  src={playingVideo.videoUrl} 
+                  controls 
+                  autoPlay 
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', borderRadius: '16px' }}
+                />
+              )}
+            </div>
+            <h4 style={{ color: 'white', marginTop: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>{playingVideo.title}</h4>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

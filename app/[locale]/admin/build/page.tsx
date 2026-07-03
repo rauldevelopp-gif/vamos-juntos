@@ -35,6 +35,7 @@ import { getYachts } from '../yachts/actions';
 import { createPackage } from '../package/actions';
 import { getTaxis } from '../taxis/actions';
 import { useRouter } from 'next/navigation';
+import PromotionVideosComponent, { VideoItem } from '@/components/PromotionVideosComponent';
 
 // --- TYPES ---
 
@@ -81,6 +82,7 @@ interface Package {
     total: number;
     driverId?: number;
     startTime: string;
+    videos?: VideoItem[];
 }
 
 // --- MOCK DATA ---
@@ -576,7 +578,8 @@ export default function PackageBuilderPage() {
         items: [],
         total: 0,
         driverId: undefined,
-        startTime: '08:00'
+        startTime: '08:00',
+        videos: []
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -753,6 +756,13 @@ export default function PackageBuilderPage() {
                                     <ImageUploader value={pkg.image} onChange={(v) => setPkg(prev => ({ ...prev, image: v }))} />
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="glass-panel" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <PromotionVideosComponent 
+                                videos={pkg.videos || []} 
+                                onChange={(videos) => setPkg(prev => ({ ...prev, videos }))} 
+                            />
                         </div>
 
                         <div className="itinerary-section">
@@ -1243,8 +1253,18 @@ export default function PackageBuilderPage() {
                 .modal-close-action { width: 100%; margin-top: 2rem; padding: 1rem; }
                 .field-group input { font-size: 1.25rem; font-weight: 700; }
                 
-                .drop-zone {
+                .image-field {
                     height: 100%;
+                }
+                .uploader-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                }
+                .drop-zone {
+                    position: relative;
+                    flex: 1;
+                    min-height: 200px;
                     border: 2px dashed rgba(255,255,255,0.1);
                     border-radius: 1.5rem;
                     display: flex;
@@ -1252,12 +1272,62 @@ export default function PackageBuilderPage() {
                     justify-content: center;
                     cursor: pointer;
                     overflow: hidden;
+                    transition: all 0.2s ease;
+                }
+                .drop-zone:hover {
+                    border-color: #8b5cf6;
+                    background: rgba(139, 92, 246, 0.02);
+                }
+                .preview-wrap {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
                 }
                 .preview-wrap img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    opacity: 0.6;
+                    opacity: 0.8;
+                    transition: opacity 0.2s ease;
+                }
+                .preview-wrap:hover img {
+                    opacity: 0.4;
+                }
+                .preview-wrap .overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.4);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                    color: white;
+                }
+                .preview-wrap:hover .overlay {
+                    opacity: 1;
+                }
+                .empty-zone {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: rgba(255, 255, 255, 0.2);
+                    transition: color 0.2s ease;
+                    width: 100%;
+                    height: 100%;
+                    min-height: 200px;
+                }
+                .drop-zone:hover .empty-zone {
+                    color: #8b5cf6;
+                }
+                @media (max-width: 768px) {
+                    .info-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .drop-zone {
+                        height: 220px;
+                        min-height: 220px;
+                    }
                 }
 
                 /* Package Card */

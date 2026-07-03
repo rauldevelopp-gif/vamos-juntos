@@ -41,6 +41,14 @@ export interface Owner {
   slug?: string;
 }
 
+export interface TourPackageVideo {
+  id: number;
+  title: string;
+  videoUrl: string;
+  thumbnailUrl?: string | null;
+  order: number;
+}
+
 export interface TourPackage {
   id: number;
   name: string;
@@ -59,6 +67,7 @@ export interface TourPackage {
   owner?: Owner;
 
   items: PackageItem[];
+  videos?: TourPackageVideo[];
 }
 
 export interface Booking {
