@@ -4,9 +4,6 @@ import { getLocalDB, writeLocalDB } from '@/lib/db-fallback';
 import { cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
-
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
     try {
         // 1. Try Prisma via getCurrentUser (uses raw SQL internally)
