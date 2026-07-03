@@ -14,7 +14,11 @@ export async function getPackages() {
 
         let packages = await prisma.package.findMany({
             where: whereClause,
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -22,7 +26,11 @@ export async function getPackages() {
             await seedPremiumPackages();
             packages = await prisma.package.findMany({
                 where: whereClause,
-                include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+                include: { 
+                    user: { select: { id: true, name: true, email: true, role: true } }, 
+                    driver: { include: { taxis: true } },
+                    videos: { orderBy: { order: 'asc' } }
+                },
                 orderBy: { createdAt: 'desc' }
             });
         }
@@ -39,7 +47,11 @@ export async function getPublicPackages() {
     try {
         const packages = await prisma.package.findMany({
             where: { clientId: null, status: 'Activo' },
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -48,7 +60,11 @@ export async function getPublicPackages() {
             await seedPremiumPackages();
             const seeded = await prisma.package.findMany({
                 where: { clientId: null, status: 'Activo' },
-                include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+                include: { 
+                    user: { select: { id: true, name: true, email: true, role: true } }, 
+                    driver: { include: { taxis: true } },
+                    videos: { orderBy: { order: 'asc' } }
+                },
                 orderBy: { createdAt: 'desc' }
             });
             return { success: true, data: seeded };
@@ -71,6 +87,12 @@ export async function createPackage(data: {
     startTime?: string;
     items: unknown;
     driverId?: number;
+    videos?: Array<{
+        title: string;
+        videoUrl: string;
+        thumbnailUrl?: string | null;
+        order: number;
+    }>;
 }) {
     try {
         const user = await getCurrentUser();
@@ -90,7 +112,15 @@ export async function createPackage(data: {
                 driverId: data.driverId ? Number(data.driverId) : null,
                 clientId: data.clientId || null,
                 sales: 0,
-                userId: user.id
+                userId: user.id,
+                videos: data.videos ? {
+                    create: data.videos.map(v => ({
+                        title: v.title,
+                        videoUrl: v.videoUrl,
+                        thumbnailUrl: v.thumbnailUrl || null,
+                        order: v.order
+                    }))
+                } : undefined
             }
         });
         revalidatePath('/admin', 'layout');
@@ -112,7 +142,11 @@ export async function getClientRequests() {
 
         const requests = await prisma.package.findMany({
             where: whereClause,
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
         revalidatePath('/admin', 'layout');
@@ -127,7 +161,11 @@ export async function getPackagesByClientId(clientId: string) {
     try {
         const packages = await prisma.package.findMany({
             where: { clientId },
-            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            include: { 
+                user: { select: { id: true, name: true, email: true, role: true } }, 
+                driver: { include: { taxis: true } },
+                videos: { orderBy: { order: 'asc' } }
+            },
             orderBy: { createdAt: 'desc' }
         });
         revalidatePath('/admin', 'layout');
@@ -153,6 +191,18 @@ export async function confirmPackage(id: number, driverId: number) {
         console.error('Error creating package:', error);
         const message = error instanceof Error ? error.message : 'Unknown error';
         return { success: false, error: message };
+    }
+}
+
+export async function deletePackage(id: number) {
+    try {
+        await prisma.package.delete({
+            where: { id }
+        });
+        return { success: true };
+    } catch (error: unknown) {
+        console.error('Error deleting package:', error);
+        return { success: false, error: 'No se puede eliminar porque tiene reservaciones asociadas o ocurrió un error.' };
     }
 }
 
@@ -425,6 +475,89 @@ export async function getDashboardStats() {
     } catch (error) {
         console.error('Error fetching dashboard stats:', error);
         return { success: false, error: 'Failed to fetch stats' };
+    }
+}
+
+export async function getPackageById(id: number) {
+    try {
+        const pkg = await prisma.package.findUnique({
+            where: { id },
+            include: {
+                videos: { orderBy: { order: 'asc' } },
+                packageReservations: true
+            }
+        });
+
+        if (!pkg) return { success: false, error: 'Paquete no encontrado' };
+
+        const today = new Date().toISOString().split('T')[0];
+        const hasPendingReservations = pkg.packageReservations.some(r => r.status === 'Confirmado' && r.date >= today);
+
+        if (hasPendingReservations) {
+            return { success: false, error: 'No se puede editar este paquete porque tiene reservaciones activas pendientes.' };
+        }
+
+        return { success: true, data: pkg };
+    } catch (error) {
+        console.error('Error fetching package by ID:', error);
+        return { success: false, error: 'Error al cargar el paquete' };
+    }
+}
+
+export async function updatePackage(id: number, data: {
+    name: string;
+    description: string;
+    total: number;
+    image: string | null;
+    startTime?: string;
+    items: unknown;
+    driverId?: number;
+    videos?: Array<{
+        title: string;
+        videoUrl: string;
+        thumbnailUrl?: string | null;
+        order: number;
+    }>;
+}) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: 'No autorizado' };
+
+        const pkg = await prisma.package.findUnique({ where: { id }, include: { packageReservations: true } });
+        if (!pkg) return { success: false, error: 'Paquete no encontrado' };
+
+        const today = new Date().toISOString().split('T')[0];
+        const hasPendingReservations = pkg.packageReservations.some(r => r.status === 'Confirmado' && r.date >= today);
+        if (hasPendingReservations) {
+            return { success: false, error: 'No se puede modificar porque tiene reservaciones pendientes.' };
+        }
+
+        const updatedPackage = await prisma.package.update({
+            where: { id },
+            data: {
+                name: data.name,
+                description: data.description,
+                price: Number(data.total) || 0,
+                image: data.image,
+                start_time: data.startTime || "08:00",
+                items: data.items ?? [],
+                driverId: data.driverId ? Number(data.driverId) : null,
+                videos: {
+                    deleteMany: {}, 
+                    create: data.videos ? data.videos.map(v => ({
+                        title: v.title,
+                        videoUrl: v.videoUrl,
+                        thumbnailUrl: v.thumbnailUrl || null,
+                        order: v.order
+                    })) : []
+                }
+            }
+        });
+        return { success: true, data: updatedPackage };
+    } catch (error: unknown) {
+        console.error('Error updating package:', error);
+        const message = error instanceof Error ? error.message : 'Error desconocido';
+        return { success: false, error: 'Error al actualizar el paquete: ' + message };
     }
 }
 

@@ -563,3 +563,98 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover,
 input[type="time"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* Video Play Overlay Card */
+.video-play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+    z-index: 2;
+}
+
+.glass-card:hover .video-play-overlay,
+.catalog-card:hover .video-play-overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.play-btn-glow-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.7);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(0.9);
+}
+
+.video-play-overlay:hover .play-btn-glow-large {
+    transform: scale(1.1);
+    background: #7c3aed;
+    box-shadow: 0 0 35px rgba(139, 92, 246, 0.9);
+}
+
+/* Lightbox Modal */
+.modal-overlay-video { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.95); 
+    backdrop-filter: blur(25px); 
+    z-index: 10005; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 2rem; 
+}
+
+.video-lightbox-container { 
+    width: 90%; 
+    max-width: 900px; 
+    background: #080808; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 28px; 
+    padding: 2rem; 
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8); 
+    position: relative;
+}
+
+.video-lightbox-aspect { 
+    position: relative; 
+    padding-top: 56.25%; 
+    background: #000; 
+    border-radius: 16px; 
+    overflow: hidden; 
+}
+
+.close-btn-video { 
+    position: absolute; 
+    top: 1.5rem; 
+    right: 1.5rem; 
+    z-index: 100; 
+    width: 3rem; 
+    height: 3rem; 
+    background: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 50%; 
+    color: white; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    transition: all 0.3s;
+}
+
+.close-btn-video:hover { 
+    background: white; 
+    color: black; 
+}

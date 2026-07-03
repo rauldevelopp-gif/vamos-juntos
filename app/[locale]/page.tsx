@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from '../../navigation';
 import Image from 'next/image';
-import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus, Star, ChevronLeft, ChevronRight, Headphones, Award, CalendarDays } from 'lucide-react';
+import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus, Star, ChevronLeft, ChevronRight, Headphones, Award, CalendarDays, Play, X } from 'lucide-react';
 import Testimonials from '../../components/Testimonials';
 import { getPackages, getPublicPackages } from './admin/package/actions';
 import { useLanguage } from '../../context/LanguageContext';
@@ -19,6 +19,7 @@ import { getPublicBeaches } from './admin/beaches/actions';
 import { getPublicAttractions } from './admin/attractions/actions';
 import { getPublicHotels } from './hotels/actions';
 import { getAboutUsContentAction } from './admin/about-admin/actions';
+import { isYoutubeOrVimeo, getEmbedUrl } from '@/components/PromotionVideosComponent';
 
 import HotelCard, { WhatsAppIcon } from '../../components/HotelCard';
 
@@ -33,15 +34,15 @@ interface PackageItem {
 
 interface Package {
     id: number;
-    name: string;
-    description?: string;
+    name: string | null;
+    description?: string | null;
     status: string;
     price: number;
     sales: number;
     date: string;
     image: string | null;
-    items?: PackageItem[] | string;
-    driverId?: number;
+    items?: any;
+    driverId?: number | null;
     total?: number;
     driver?: {
         id: number;
@@ -89,7 +90,8 @@ const mapApiToFrontend = (apiPkg: any, locale: string): TourPackage => {
         id: idx,
         name: (typeof item === 'string' ? item : item.name) || 'Item',
         type: (typeof item === 'string' ? 'atraccion' : item.type) || 'atraccion'
-    }))
+    })),
+    videos: apiPkg.videos || []
   };
 };
 
@@ -108,6 +110,7 @@ export default function Home() {
   const [bookingPkg, setBookingPkg] = useState<TourPackage | null>(null);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const [aboutUs, setAboutUs] = useState<any>(null);
+  const [playingVideo, setPlayingVideo] = useState<any | null>(null);
 
   const translatedPackages = packages.map(pkg => ({
     ...pkg,
@@ -395,6 +398,18 @@ export default function Home() {
                       <ImageIcon size={48} opacity={0.1} />
                     </div>
                   )}
+                  
+                  {pkg.videos && pkg.videos.length > 0 && (
+                      <div className="video-play-overlay" onClick={(e) => {
+                          e.stopPropagation();
+                          setPlayingVideo(pkg.videos[0]);
+                      }}>
+                          <div className="play-btn-glow-large">
+                              <Play size={20} fill="currentColor" style={{ marginLeft: '2px' }} />
+                          </div>
+                      </div>
+                  )}
+                  
                   <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 700 }}>
                     {t('exclusive')}
                   </div>
@@ -635,6 +650,39 @@ export default function Home() {
         />
       )}
 
+      {playingVideo && (
+        <div className="modal-overlay-video" onClick={() => setPlayingVideo(null)}>
+          <div className="video-lightbox-container" onClick={e => e.stopPropagation()}>
+            <button 
+              className="close-btn-video" 
+              onClick={() => setPlayingVideo(null)}
+            >
+              <X size={20} />
+            </button>
+            <div className="video-lightbox-aspect">
+              {isYoutubeOrVimeo(playingVideo.videoUrl) ? (
+                <iframe 
+                  src={getEmbedUrl(playingVideo.videoUrl)}
+                  title={playingVideo.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: '16px' }}
+                />
+              ) : (
+                <video 
+                  src={playingVideo.videoUrl} 
+                  controls 
+                  autoPlay 
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', borderRadius: '16px' }}
+                />
+              )}
+            </div>
+            <h4 style={{ color: 'white', marginTop: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>{playingVideo.title}</h4>
+          </div>
+        </div>
+      )}
+
       {/* Admin Quick Access (Floating FAB) */}
       <Link href="/login" className="admin-fab">
         <div className="fab-icon-container">
@@ -642,6 +690,7 @@ export default function Home() {
         </div>
         <span className="fab-text">{t('admin_access')}</span>
       </Link>
+
     </main>
   );
 }

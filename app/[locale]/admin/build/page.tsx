@@ -32,9 +32,10 @@ import { getBeaches } from '../beaches/actions';
 import { getAttractions } from '../attractions/actions';
 import { getRestaurants } from '../restaurants/actions';
 import { getYachts } from '../yachts/actions';
-import { createPackage } from '../package/actions';
+import { createPackage, getPackageById, updatePackage } from '../package/actions';
 import { getTaxis } from '../taxis/actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import PromotionVideosComponent, { VideoItem } from '@/components/PromotionVideosComponent';
 
 // --- TYPES ---
 
@@ -81,6 +82,7 @@ interface Package {
     total: number;
     driverId?: number;
     startTime: string;
+    videos?: VideoItem[];
 }
 
 // --- MOCK DATA ---
@@ -576,7 +578,8 @@ export default function PackageBuilderPage() {
         items: [],
         total: 0,
         driverId: undefined,
-        startTime: '08:00'
+        startTime: '08:00',
+        videos: []
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -585,6 +588,9 @@ export default function PackageBuilderPage() {
     const [activeCatalogType, setActiveCatalogType] = useState<ItemType | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const editId = searchParams.get('id');
+    const [isLoadingEdit, setIsLoadingEdit] = useState(false);
 
     const [dbTaxis, setDbTaxis] = useState<Taxi[]>([]);
 
@@ -595,7 +601,35 @@ export default function PackageBuilderPage() {
             if (res.success && res.data) setDbTaxis(res.data);
         };
         fetchTaxis();
-    }, []);
+
+        if (editId) {
+            const fetchPkg = async () => {
+                setIsLoadingEdit(true);
+                const res = await getPackageById(Number(editId));
+                if (res.success && res.data) {
+                    const data = res.data;
+                    setPkg({
+                        name: data.name || '',
+                        description: data.description || '',
+                        image: data.image || null,
+                        items: (Array.isArray(data.items) ? data.items : []).map((i: any) => ({
+                            ...i,
+                            id: i.id || Math.random().toString(36).substr(2, 9)
+                        })),
+                        total: data.price || 0,
+                        driverId: data.driverId || undefined,
+                        startTime: data.start_time || '08:00',
+                        videos: data.videos || []
+                    });
+                } else {
+                    alert(res.error || 'Error al cargar el paquete');
+                    router.push('/admin/package');
+                }
+                setIsLoadingEdit(false);
+            };
+            fetchPkg();
+        }
+    }, [editId, router]);
 
     const selectedTaxi = useMemo(() => 
         dbTaxis.find((t: Taxi) => t.driver?.id === pkg.driverId)
@@ -643,7 +677,10 @@ export default function PackageBuilderPage() {
         if (!pkg.name) return alert('Asigna un nombre al paquete');
         setIsSaving(true);
         try {
-            const result = await createPackage(pkg);
+            const result = editId 
+                ? await updatePackage(Number(editId), pkg) 
+                : await createPackage(pkg);
+                
             if (result.success) {
                 // Success feedback
                 const notification = document.createElement('div');
@@ -668,7 +705,7 @@ export default function PackageBuilderPage() {
         }
     };
 
-    if (!mounted) return <div className="loader">{tr("Cargando...")}</div>;
+    if (!mounted || isLoadingEdit) return <div className="loader" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>{tr("Cargando...")}</div>;
 
     return (
         <div className="builder-wrapper">
@@ -753,6 +790,13 @@ export default function PackageBuilderPage() {
                                     <ImageUploader value={pkg.image} onChange={(v) => setPkg(prev => ({ ...prev, image: v }))} />
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="glass-panel" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <PromotionVideosComponent 
+                                videos={pkg.videos || []} 
+                                onChange={(videos) => setPkg(prev => ({ ...prev, videos }))} 
+                            />
                         </div>
 
                         <div className="itinerary-section">
@@ -1243,8 +1287,18 @@ export default function PackageBuilderPage() {
                 .modal-close-action { width: 100%; margin-top: 2rem; padding: 1rem; }
                 .field-group input { font-size: 1.25rem; font-weight: 700; }
                 
-                .drop-zone {
+                .image-field {
                     height: 100%;
+                }
+                .uploader-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                }
+                .drop-zone {
+                    position: relative;
+                    flex: 1;
+                    min-height: 200px;
                     border: 2px dashed rgba(255,255,255,0.1);
                     border-radius: 1.5rem;
                     display: flex;
@@ -1252,12 +1306,62 @@ export default function PackageBuilderPage() {
                     justify-content: center;
                     cursor: pointer;
                     overflow: hidden;
+                    transition: all 0.2s ease;
+                }
+                .drop-zone:hover {
+                    border-color: #8b5cf6;
+                    background: rgba(139, 92, 246, 0.02);
+                }
+                .preview-wrap {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
                 }
                 .preview-wrap img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    opacity: 0.6;
+                    opacity: 0.8;
+                    transition: opacity 0.2s ease;
+                }
+                .preview-wrap:hover img {
+                    opacity: 0.4;
+                }
+                .preview-wrap .overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.4);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                    color: white;
+                }
+                .preview-wrap:hover .overlay {
+                    opacity: 1;
+                }
+                .empty-zone {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: rgba(255, 255, 255, 0.2);
+                    transition: color 0.2s ease;
+                    width: 100%;
+                    height: 100%;
+                    min-height: 200px;
+                }
+                .drop-zone:hover .empty-zone {
+                    color: #8b5cf6;
+                }
+                @media (max-width: 768px) {
+                    .info-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .drop-zone {
+                        height: 220px;
+                        min-height: 220px;
+                    }
                 }
 
                 /* Package Card */
