@@ -10,6 +10,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import PublicTranslator from '../../components/PublicTranslator';
 import { Toaster } from 'react-hot-toast';
+import FloatingConcierge from '../../components/FloatingConcierge';
 
 export const viewport: Viewport = {
   themeColor: "#05070a",
@@ -84,6 +85,8 @@ export default async function RootLayout({
                 <main style={{ minHeight: 'calc(100vh - 140px)', padding: '2rem 0' }}>
                   {children}
                 </main>
+
+                <FloatingConcierge />
 
                 <footer style={{ borderTop: '1px solid var(--border-color)', background: 'var(--bg-card)', padding: '2rem 0', textAlign: 'center' }}>
                   <p style={{ color: 'var(--text-muted)' }}>© {new Date().getFullYear()} VamosJuntos. All rights reserved.</p>

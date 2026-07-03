@@ -18,7 +18,7 @@ import {
     Play,
     X
 } from 'lucide-react';
-import { getPackages } from '../admin/package/actions';
+import { getPublicPackages } from '../admin/package/actions';
 import { TourPackage, Booking } from './types';
 import { PackageDetail } from './components/PackageDetail';
 import { BookingWizard, SuccessStep } from './components/BookingWizard';
@@ -179,8 +179,7 @@ function CatalogContent() {
 
     useEffect(() => {
         const fetchPackages = async () => {
-            const result = await getPackages();
-            console.log('API FETCH RESULT:', result);
+            const result = await getPublicPackages();
             if (result.success && result.data) {
                 console.log('PACKAGES WITH VIDEOS FROM DB:', result.data.map(p => ({ id: p.id, name: p.name, videos: (p as any).videos })));
                 setPackages(result.data as ApiPackage[]);

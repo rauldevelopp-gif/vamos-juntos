@@ -82,6 +82,13 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
     const [password, setPassword] = useState('');
     const [claiming, setClaiming] = useState(false);
     const [claimSuccess, setClaimSuccess] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/auth/me').then(r => r.json()).then(data => {
+            if (data.success && data.user) setIsLoggedIn(true);
+        }).catch(() => {});
+    }, []);
 
     // Calc nights & price
     const nights = (dates.checkIn && dates.checkOut)
@@ -233,34 +240,39 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                     </div>
                 </div>
 
-                {!claimSuccess ? (
-                    <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', marginBottom: '2rem' }}>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#8b5cf6', fontSize: '1.1rem' }}>¡Gestiona tu Reserva!</h4>
-                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 1rem 0' }}>Crea una contraseña ahora para guardar tus datos y acceder a un panel privado con tu historial.</p>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input 
-                                type="password" 
-                                placeholder="Crea tu contraseña" 
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-                            />
-                            <button 
-                                onClick={handleClaimAccount}
-                                disabled={claiming}
-                                style={{ padding: '0.8rem 1.5rem', borderRadius: '10px', background: '#8b5cf6', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
-                            >
-                                {claiming ? '...' : 'Crear Cuenta'}
-                            </button>
+                {!isLoggedIn && (
+                    !claimSuccess ? (
+                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', marginBottom: '2rem' }}>
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: '#8b5cf6', fontSize: '1.1rem' }}>¡Gestiona tu Reserva!</h4>
+                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 1rem 0' }}>Crea una contraseña ahora para guardar tus datos y acceder a un panel privado con tu historial.</p>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input 
+                                    type="password" 
+                                    placeholder="Crea tu contraseña" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                />
+                                <button 
+                                    onClick={handleClaimAccount}
+                                    disabled={claiming}
+                                    style={{ padding: '0.8rem 1.5rem', borderRadius: '10px', background: '#8b5cf6', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+                                >
+                                    {claiming ? '...' : 'Crear Cuenta'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', marginBottom: '2rem' }}>
-                        <p style={{ margin: 0, color: '#10b981', fontWeight: 800 }}>¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tu correo.</p>
-                    </div>
+                    ) : (
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', marginBottom: '2rem' }}>
+                            <p style={{ margin: 0, color: '#10b981', fontWeight: 800 }}>¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tu correo.</p>
+                        </div>
+                    )
                 )}
 
-                <button onClick={onCancel} className="btn-premium" style={{ padding: '1rem 2rem', borderRadius: '50px' }}>Volver al Hotel</button>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button onClick={() => window.print()} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '1rem 2rem', borderRadius: '50px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', backdropFilter: 'blur(10px)', transition: 'all 0.3s' }}>Imprimir Voucher</button>
+                    <button onClick={onCancel} className="btn-premium" style={{ padding: '1rem 2rem', borderRadius: '50px' }}>Volver al Hotel</button>
+                </div>
             </div>
         );
     }
