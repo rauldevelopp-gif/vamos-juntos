@@ -26,9 +26,11 @@ import {
     QrCode,
     Download
 } from 'lucide-react';
-import { getPackages, confirmPackage } from './actions';
+import { getPackages, confirmPackage, deletePackage } from './actions';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toPng } from 'html-to-image';
+import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 interface Package {
     id: number;
@@ -494,17 +496,40 @@ export default function PackagesPage() {
     const [loading, setLoading] = useState(true);
     const [previewPkg, setPreviewPkg] = useState<Package | null>(null);
     const [qrPkg, setQrPkg] = useState<Package | null>(null);
+    const [confirmModalData, setConfirmModalData] = useState<{ isOpen: boolean, id: number | null, name: string }>({ isOpen: false, id: null, name: '' });
+
+    const fetchPackages = async () => {
+        setLoading(true);
+        const result = await getPackages();
+        if (result.success && result.data) {
+            setPackages(result.data as Package[]);
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchPackages = async () => {
-            const result = await getPackages();
-            if (result.success && result.data) {
-                setPackages(result.data as Package[]);
-            }
-            setLoading(false);
-        };
         fetchPackages();
     }, []);
+
+    const confirmDelete = (id: number, name: string) => {
+        setConfirmModalData({ isOpen: true, id, name });
+    };
+
+    const executeDelete = async () => {
+        if (!confirmModalData.id) return;
+        const idToDelete = confirmModalData.id;
+        setConfirmModalData({ isOpen: false, id: null, name: '' });
+        
+        const loadingToast = toast.loading('Eliminando paquete...');
+        const res = await deletePackage(idToDelete);
+        
+        if (res.success) {
+            toast.success('Paquete eliminado exitosamente', { id: loadingToast });
+            fetchPackages();
+        } else {
+            toast.error(res.error || 'Error al eliminar', { id: loadingToast });
+        }
+    };
 
     return (
         <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
@@ -621,10 +646,10 @@ export default function PackagesPage() {
                                             <button onClick={() => setQrPkg(pkg)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', color: '#8b5cf6' }} title="Generar QR Marketing">
                                                 <QrCode size={16} />
                                             </button>
-                                            <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px' }}>
+                                            <Link href={`/admin/build?id=${pkg.id}`} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', display: 'flex' }} title="Editar">
                                                 <Edit2 size={16} />
-                                            </button>
-                                            <button className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', color: '#ef4444' }}>
+                                            </Link>
+                                            <button onClick={() => confirmDelete(pkg.id, pkg.name || 'Paquete')} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '10px', color: '#ef4444' }} title="Eliminar">
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
@@ -635,6 +660,17 @@ export default function PackagesPage() {
                     </table>
                 )}
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModalData.isOpen}
+                title="Confirmar Eliminación"
+                message={<>¿Estás seguro de que deseas eliminar el paquete <strong>&quot;{confirmModalData.name}&quot;</strong>? Esta acción no se puede deshacer.</>}
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmModalData({ isOpen: false, id: null, name: '' })}
+                confirmText="Eliminar Paquete"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
 
             <style jsx>{`
                 .hover-row:hover { background: rgba(255, 255, 255, 0.02); }

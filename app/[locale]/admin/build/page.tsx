@@ -32,9 +32,9 @@ import { getBeaches } from '../beaches/actions';
 import { getAttractions } from '../attractions/actions';
 import { getRestaurants } from '../restaurants/actions';
 import { getYachts } from '../yachts/actions';
-import { createPackage } from '../package/actions';
+import { createPackage, getPackageById, updatePackage } from '../package/actions';
 import { getTaxis } from '../taxis/actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PromotionVideosComponent, { VideoItem } from '@/components/PromotionVideosComponent';
 
 // --- TYPES ---
@@ -588,6 +588,9 @@ export default function PackageBuilderPage() {
     const [activeCatalogType, setActiveCatalogType] = useState<ItemType | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const editId = searchParams.get('id');
+    const [isLoadingEdit, setIsLoadingEdit] = useState(false);
 
     const [dbTaxis, setDbTaxis] = useState<Taxi[]>([]);
 
@@ -598,7 +601,35 @@ export default function PackageBuilderPage() {
             if (res.success && res.data) setDbTaxis(res.data);
         };
         fetchTaxis();
-    }, []);
+
+        if (editId) {
+            const fetchPkg = async () => {
+                setIsLoadingEdit(true);
+                const res = await getPackageById(Number(editId));
+                if (res.success && res.data) {
+                    const data = res.data;
+                    setPkg({
+                        name: data.name || '',
+                        description: data.description || '',
+                        image: data.image || null,
+                        items: (Array.isArray(data.items) ? data.items : []).map((i: any) => ({
+                            ...i,
+                            id: i.id || Math.random().toString(36).substr(2, 9)
+                        })),
+                        total: data.price || 0,
+                        driverId: data.driverId || undefined,
+                        startTime: data.start_time || '08:00',
+                        videos: data.videos || []
+                    });
+                } else {
+                    alert(res.error || 'Error al cargar el paquete');
+                    router.push('/admin/package');
+                }
+                setIsLoadingEdit(false);
+            };
+            fetchPkg();
+        }
+    }, [editId, router]);
 
     const selectedTaxi = useMemo(() => 
         dbTaxis.find((t: Taxi) => t.driver?.id === pkg.driverId)
@@ -646,7 +677,10 @@ export default function PackageBuilderPage() {
         if (!pkg.name) return alert('Asigna un nombre al paquete');
         setIsSaving(true);
         try {
-            const result = await createPackage(pkg);
+            const result = editId 
+                ? await updatePackage(Number(editId), pkg) 
+                : await createPackage(pkg);
+                
             if (result.success) {
                 // Success feedback
                 const notification = document.createElement('div');
@@ -671,7 +705,7 @@ export default function PackageBuilderPage() {
         }
     };
 
-    if (!mounted) return <div className="loader">{tr("Cargando...")}</div>;
+    if (!mounted || isLoadingEdit) return <div className="loader" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>{tr("Cargando...")}</div>;
 
     return (
         <div className="builder-wrapper">
