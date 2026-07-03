@@ -86,12 +86,8 @@ export default function HotelReservationsList({ reservations }: Props) {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Reservas de Hoteles
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestión de todas las reservaciones de hospedaje.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Reservas de Hoteles")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Gestión de todas las reservaciones de hospedaje.")}</p>
                     </div>
                 </div>
 

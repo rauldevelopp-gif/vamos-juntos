@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Info, Star, ChevronLeft, ChevronRight, X, MapPin, Clock, Phone, Mail, BedDouble, Users, CheckCircle2, Wifi, Waves, Dumbbell, UtensilsCrossed } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { getTranslatedValue } from '../lib/i18n-utils';
 
 export const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
@@ -30,6 +31,7 @@ const amenityTranslations: Record<string, Record<string, string>> = {
 
 function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void }) {
     const { language } = useLanguage();
+    const { formatPrice } = useCurrency();
     const isEn = language === 'en';
     const [roomImageIndexes, setRoomImageIndexes] = useState<Record<number, number>>({});
 
@@ -192,7 +194,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                     <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>{roomType}</h4>
                                                     <div style={{ textAlign: 'right' }}>
-                                                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'white' }}>${room.basePrice.toLocaleString()}</div>
+                                                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'white' }}>{formatPrice(room.basePrice)}</div>
                                                         <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{isEn ? 'per night' : 'por noche'}</div>
                                                     </div>
                                                 </div>
@@ -239,6 +241,7 @@ function HotelDetailModal({ hotel, onClose }: { hotel: any; onClose: () => void 
 
 export default function HotelCard({ hotel }: { hotel: any }) {
     const { language } = useLanguage();
+    const { formatPrice } = useCurrency();
     const isEn = language === 'en';
 
     const startingPrice = hotel.rooms?.length > 0
@@ -304,7 +307,7 @@ export default function HotelCard({ hotel }: { hotel: any }) {
                     </p>
                     <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                         <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-                            {startingPrice ? `$${startingPrice.toLocaleString()}` : '-'} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>/{isEn ? 'night' : 'noche'}</small>
+                            {startingPrice ? formatPrice(startingPrice) : '-'} <small style={{ fontSize: '0.7rem', opacity: 0.5 }}>/{isEn ? 'night' : 'noche'}</small>
                         </span>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             {/* Info → abre modal */}

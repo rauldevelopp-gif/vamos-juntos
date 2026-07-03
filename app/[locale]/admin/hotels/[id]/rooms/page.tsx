@@ -132,15 +132,13 @@ export default function HotelRoomsPage({ params }: { params: { id: string } }) {
                         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
                             {tr("Habitaciones")}
                         </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestiona el inventario y precios por noche.
-                        </p>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Gestiona el inventario y precios por noche.")}</p>
                     </div>
                 </div>
                 
                 <button onClick={() => handleOpenForm()} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">Añadir Habitación</span>
+                    <span className="btn-text-mobile-hide">{tr("Añadir Habitación")}</span>
                 </button>
             </div>
 

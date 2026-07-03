@@ -3,8 +3,10 @@ import { useLanguage } from '@/context/LanguageContext';
 import { tr, setLanguage } from '@/lib/tr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, X, Star, Loader2, Hotel as HotelIcon, Bed, Edit, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, X, Star, Loader2, Hotel as HotelIcon, Bed, Edit2, Trash2, Upload } from 'lucide-react';
 import { getHotels, saveHotel, deleteHotel } from './actions';
+import ConfirmModal from '@/components/ConfirmModal';
+import HotelExcelUpload from './HotelExcelUpload';
 
 export default function HotelsPage() {
   const { language } = useLanguage();
@@ -18,6 +20,7 @@ export default function HotelsPage() {
     const [showFormModal, setShowFormModal] = useState(false);
     const [selectedHotel, setSelectedHotel] = useState<any | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [confirmModalData, setConfirmModalData] = useState<{ isOpen: boolean, id: number | null, name: string }>({ isOpen: false, id: null, name: '' });
 
     const closeModal = () => {
         setShowMapModal(false);
@@ -138,12 +141,18 @@ export default function HotelsPage() {
         setSaving(false);
     };
 
-    const handleDelete = async (id: number) => {
-        if (confirm('¿Estás seguro de eliminar este hotel? Se eliminarán también todas sus habitaciones.')) {
-            const res = await deleteHotel(id);
-            if (res.success) fetchHotels();
-            else alert(res.error);
-        }
+    const handleDeleteClick = (id: number, name: string) => {
+        setConfirmModalData({ isOpen: true, id, name });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmModalData.id) return;
+        const idToDelete = confirmModalData.id;
+        setConfirmModalData({ isOpen: false, id: null, name: '' });
+        
+        const res = await deleteHotel(idToDelete);
+        if (res.success) fetchHotels();
+        else alert(res.error);
     };
 
     const renderStars = (count: number) => {
@@ -160,19 +169,17 @@ export default function HotelsPage() {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Gestión de Hoteles
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Administra tu portafolio de alojamientos y habitaciones.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Gestión de Hoteles")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Administra tu portafolio de alojamientos y habitaciones.")}</p>
                     </div>
                 </div>
-                
-                <button onClick={() => handleOpenForm()} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span className="btn-text-mobile-hide">{tr("Añadir Hotel")}</span>
-                </button>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <HotelExcelUpload onSuccess={fetchHotels} />
+                    <button onClick={() => handleOpenForm()} className="btn-premium" style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span className="btn-text-mobile-hide">{tr("Añadir Hotel")}</span>
+                    </button>
+                </div>
             </div>
 
             {loading ? (
@@ -235,19 +242,19 @@ export default function HotelsPage() {
                                             <button 
                                                 onClick={() => { setSelectedHotel(hotel); setShowMapModal(true); }}
                                                 className="btn-glass-nav"
-                                                style={{ padding: '0.4rem', borderRadius: '8px', color: '#3b82f6' }}
+                                                style={{ padding: '0.5rem', borderRadius: '8px', color: '#3b82f6' }}
                                                 title="Ver en el mapa"
                                             >
-                                                <MapPin size={14} />
+                                                <MapPin size={16} />
                                             </button>
-                                            <Link href={`/admin/hotels/${hotel.id}/rooms`} className="btn-secondary" style={{ padding: '0.4rem 0.6rem', borderRadius: '8px', textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem' }}>
-                                                <Bed size={14} /> ({hotel.rooms?.length || 0})
+                                            <Link href={`/admin/hotels/${hotel.id}/rooms`} className="btn-secondary" style={{ padding: '0.5rem 0.6rem', borderRadius: '8px', textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem' }}>
+                                                <Bed size={16} /> ({hotel.rooms?.length || 0})
                                             </Link>
-                                            <button onClick={() => handleOpenForm(hotel)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px' }} title={tr("Editar")}>
-                                                <Edit size={14} />
+                                            <button onClick={() => handleOpenForm(hotel)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '8px' }} title={tr("Editar")}>
+                                                <Edit2 size={16} strokeWidth={2} />
                                             </button>
-                                            <button onClick={() => handleDelete(hotel.id)} className="btn-glass-nav" style={{ padding: '0.4rem', borderRadius: '8px', color: '#f43f5e' }} title={tr("Eliminar")}>
-                                                <Trash2 size={14} />
+                                            <button onClick={() => handleDeleteClick(hotel.id, hotel.name)} className="btn-glass-nav" style={{ padding: '0.5rem', borderRadius: '8px', color: '#f43f5e' }} title={tr("Eliminar")}>
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -367,7 +374,7 @@ export default function HotelsPage() {
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
                                 <button type="button" onClick={() => setShowFormModal(false)} className="btn-secondary" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>{tr("Cancelar")}</button>
                                 <button type="submit" disabled={saving} className="btn-premium" style={{ padding: '0.8rem 1.5rem', borderRadius: '12px' }}>
-                                    {saving ?tr("Guardando...") : 'Guardar Hotel'}
+                                    {saving ?tr("Guardando...") : tr('Guardar Hotel')}
                                 </button>
                             </div>
                         </form>
@@ -404,6 +411,14 @@ export default function HotelsPage() {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModalData.isOpen}
+                title={tr("Confirmar Eliminación")}
+                message={<>{tr("¿Estás seguro de que deseas eliminar el hotel")} <strong>"{confirmModalData.name}"</strong>? {tr("Se eliminarán también todas sus habitaciones. Esta acción no se puede deshacer.")}</>}
+                onConfirm={confirmDelete}
+                onCancel={() => setConfirmModalData({ isOpen: false, id: null, name: '' })}
+            />
 
             <style jsx>{`
                 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 9999; }

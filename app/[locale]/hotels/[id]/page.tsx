@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { ArrowLeft, MapPin, Star, CheckCircle2, Clock, Phone, Mail, Loader2, BedDouble, User } from 'lucide-react';
 import { getHotelById } from '../actions';
 import { HotelBookingWizard } from '../components/HotelBookingWizard';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 export default function HotelDetailPage({ params }: { params: { id: string } }) {
+    const { formatPrice } = useCurrency();
     const [hotel, setHotel] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [selectedRoom, setSelectedRoom] = useState<any>(null);
@@ -139,7 +141,7 @@ export default function HotelDetailPage({ params }: { params: { id: string } }) 
                                         </div>
                                     </div>
                                     <div className="room-price" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>${room.basePrice.toLocaleString()}</div>
+                                        <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>{formatPrice(room.basePrice)}</div>
                                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '1rem' }}>por noche</div>
                                         <button onClick={() => {
                                             setSelectedRoom(room);

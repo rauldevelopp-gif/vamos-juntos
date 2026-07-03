@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TourPackage, Booking } from '../types';
+import Link from 'next/link';
 import { createPackageReservation } from '../../admin/package/actions';
 import { validateDiscountCode } from '../../admin/discounts/actions';
 import { loadStripe } from '@stripe/stripe-js';
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useLanguage } from '../../../../context/LanguageContext';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 interface BookingWizardProps {
   pkg: TourPackage;
@@ -33,6 +35,7 @@ interface BookingWizardProps {
 
 export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, date: string, discountInfo: { code: string, percentage: number } | null }> = ({ pkg, passengers, date, discountInfo }) => {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isEn = language === 'en';
 
   const basePrice = pkg.price;
@@ -71,12 +74,12 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
       </div>
 
       <div className="summary-total-breakdown">
-        <div className="detail-item"><span>{isEn ? "Base Amount" : "Monto Base"}</span><strong>${pkg.price} USD</strong></div>
-        <div className="detail-item"><span>{isEn ? "Operating Fee (5%)" : "Cargo Operativo (5%)"}</span><strong>${(pkg.price * 0.05).toFixed(2)} USD</strong></div>
+        <div className="detail-item"><span>{isEn ? "Base Amount" : "Monto Base"}</span><strong>{formatPrice(pkg.price)}</strong></div>
+        <div className="detail-item"><span>{isEn ? "Operating Fee (5%)" : "Cargo Operativo (5%)"}</span><strong>{formatPrice(pkg.price * 0.05)}</strong></div>
         {discountInfo && (
             <div className="detail-item">
                 <span style={{ color: '#10b981' }}>{isEn ? "Discount" : "Descuento"} ({discountInfo.percentage}%)</span>
-                <strong style={{ color: '#10b981' }}>-${discountAmount.toFixed(2)} USD</strong>
+                <strong style={{ color: '#10b981' }}>-{formatPrice(discountAmount)}</strong>
             </div>
         )}
       </div>
@@ -84,8 +87,7 @@ export const BookingSummary: React.FC<{ pkg: TourPackage, passengers: number, da
       <div className="summary-total">
         <span>{isEn ? "Total to Pay" : "Total a Pagar"}</span>
         <div className="price-wrap">
-          <span className="amount">${totalPrice.toFixed(2)}</span>
-          <span className="currency">USD</span>
+          <span className="amount">{formatPrice(totalPrice)}</span>
         </div>
       </div>
 
@@ -547,6 +549,7 @@ const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess }: { clientSecret: 
 
 export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = ({ booking, onReset }) => {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isEn = language === 'en';
 
   const [paymentState, setPaymentState] = useState<'pending' | 'processing' | 'success'>('pending');
@@ -559,6 +562,13 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
   const [password, setPassword] = useState('');
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+      fetch('/api/auth/me').then(r => r.json()).then(data => {
+          if (data.success && data.user) setIsLoggedIn(true);
+      }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch(`/api/checkout/config?packageId=${booking.packageId}`)
@@ -572,10 +582,15 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
              
              if (res.data.stripePublicKey) {
                  setStripePromise(loadStripe(res.data.stripePublicKey));
+                 // Passing the currency alongside the USD amount to prepare for future multi-currency charge support
                  fetch('/api/checkout/stripe', {
                      method: 'POST',
                      headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ packageId: booking.packageId, amount: booking.totalPrice })
+                     body: JSON.stringify({ 
+                         packageId: booking.packageId, 
+                         amount: booking.totalPrice,
+                         currency: 'USD' // Base currency, backend will handle conversion if needed
+                     })
                  }).then(r => r.json()).then(data => {
                      if (data.success) setClientSecret(data.clientSecret);
                  });
@@ -668,7 +683,7 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
               <div>
                 <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{isEn ? "Total to Pay" : "Total a Pagar"}</span>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>
-                  ${(booking as Booking).totalPrice || 0} <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>USD</span>
+                  {formatPrice((booking as Booking).totalPrice || 0)}
                 </div>
               </div>
             </div>
@@ -829,54 +844,55 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
             </div>
           </div>
 
-          <div style={{ padding: '0 2rem 2rem' }}>
+          <div style={{ padding: '0 2rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <button 
               onClick={handleDownloadPDF}
-              className="btn-primary" 
-              style={{ width: '100%', marginBottom: '1.5rem', background: '#1f1f1f', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="btn-glass" 
             >
+              <FileText size={18} />
               {isEn ? "Print Voucher / Receipt" : "Imprimir Voucher / Recibo"}
             </button>
             <Link 
               href="/"
-              className="btn-primary" 
-              style={{ width: '100%', background: '#8b5cf6', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+              className="btn-premium" 
             >
               <Home size={18} /> {isEn ? "Back to Homepage" : "Volver al Inicio"}
             </Link>
           </div>
 
           {/* Account Persistency Block for Claiming */}
-          {!claimSuccess ? (
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem', background: 'rgba(255,255,255,0.01)', borderRadius: '0 0 32px 32px' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', fontWeight: 800 }}>{isEn ? "Create your Account" : "Crea tu Cuenta"}</h4>
-                  <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
-                      {isEn 
-                        ? "Save a password to track this reservation, request changes, and buy premium products."
-                        : "Guarda una contraseña para dar seguimiento a esta reserva, solicitar cambios y comprar productos premium."}
-                  </p>
-                  <div style={{ display: 'flex', gap: '0.75rem', flexDirection: 'column' }}>
-                      <input 
-                          type="password" 
-                          placeholder={isEn ? "Minimum 6 characters" : "Mínimo 6 caracteres"}
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          style={{ width: '100%', padding: '0.8rem 1rem', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'white', fontSize: '0.9rem', outline: 'none' }}
-                      />
-                      <button 
-                          onClick={handleClaimAccount}
-                          disabled={claiming || !password}
-                          style={{ width: '100%', padding: '0.8rem', background: '#8b5cf6', border: 'none', borderRadius: '12px', color: 'white', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem' }}
-                      >
-                          {claiming ? '...' : (isEn ? 'Save Password & Create Account' : 'Guardar y Crear Cuenta')}
-                      </button>
+          {!isLoggedIn && (
+              !claimSuccess ? (
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem', background: 'rgba(255,255,255,0.01)', borderRadius: '0 0 32px 32px' }}>
+                      <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', fontWeight: 800 }}>{isEn ? "Create your Account" : "Crea tu Cuenta"}</h4>
+                      <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+                          {isEn 
+                            ? "Save a password to track this reservation, request changes, and buy premium products."
+                            : "Guarda una contraseña para dar seguimiento a esta reserva, solicitar cambios y comprar productos premium."}
+                      </p>
+                      <div style={{ display: 'flex', gap: '0.75rem', flexDirection: 'column' }}>
+                          <input 
+                              type="password" 
+                              placeholder={isEn ? "Minimum 6 characters" : "Mínimo 6 caracteres"}
+                              value={password}
+                              onChange={e => setPassword(e.target.value)}
+                              style={{ width: '100%', padding: '0.8rem 1rem', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'white', fontSize: '0.9rem', outline: 'none' }}
+                          />
+                          <button 
+                              onClick={handleClaimAccount}
+                              disabled={claiming || !password}
+                              style={{ width: '100%', padding: '0.8rem', background: '#8b5cf6', border: 'none', borderRadius: '12px', color: 'white', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem' }}
+                          >
+                              {claiming ? '...' : (isEn ? 'Save Password & Create Account' : 'Guardar y Crear Cuenta')}
+                          </button>
+                      </div>
                   </div>
-              </div>
-          ) : (
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 1.5rem', background: 'rgba(16, 185, 129, 0.03)', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#10b981', fontSize: '0.85rem', fontWeight: 700 }}>
-                  <CheckCircle2 size={16} />
-                  <span>{isEn ? "Account created successfully! You can now log in." : "¡Cuenta creada con éxito! Ya puedes iniciar sesión."}</span>
-              </div>
+              ) : (
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '2rem 1.5rem', background: 'rgba(16, 185, 129, 0.03)', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#10b981', fontSize: '0.85rem', fontWeight: 700 }}>
+                      <CheckCircle2 size={16} />
+                      <span>{isEn ? "Account created successfully! You can now log in." : "¡Cuenta creada con éxito! Ya puedes iniciar sesión."}</span>
+                  </div>
+              )
           )}
         </div>
       </div>
@@ -903,6 +919,12 @@ export const SuccessStep: React.FC<{ booking: Booking; onReset: () => void }> = 
         
         .btn-primary { color: white; border: none; padding: 1.1rem; border-radius: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; }
         .btn-primary:hover { transform: translateY(-2px); }
+
+        .btn-premium { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; padding: 1.1rem; border-radius: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; text-decoration: none; box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.5); }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(139, 92, 246, 0.6); }
+
+        .btn-glass { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 1.1rem; border-radius: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; backdrop-filter: blur(10px); }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
       `}</style>
     </div>
   );

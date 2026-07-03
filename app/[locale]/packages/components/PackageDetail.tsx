@@ -13,6 +13,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '../../../../context/LanguageContext';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 export const RouteTimeline: React.FC<{ pkg: TourPackage }> = ({ pkg }) => {
   const { language } = useLanguage();
@@ -75,6 +76,7 @@ interface PackageDetailProps {
 
 export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onContinue }) => {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isEn = language === 'en';
   const [showOwnerInfo, setShowOwnerInfo] = React.useState(false);
 
@@ -185,7 +187,7 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
             <div className="pricing-info">
               <p className="pricing-label">{isEn ? "Total" : "Total"}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <h3 className="price-value">${pkg.price} <small>USD</small></h3>
+                <h3 className="price-value" style={{ fontSize: '2rem' }}>{formatPrice(pkg.price)}</h3>
               </div>
             </div>
             <button 
@@ -346,7 +348,6 @@ export const PackageDetail: React.FC<PackageDetailProps> = ({ pkg, onClose, onCo
         .pricing-bar { display: flex; align-items: center; justify-content: space-between; background: #8b5cf6; padding: 1.5rem 2.5rem; border-radius: 24px; color: white; box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3); margin-top: 3rem; }
         .pricing-label { font-size: 0.7rem; font-weight: 900; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.2rem; }
         .price-value { font-size: 2rem; font-weight: 900; margin: 0; display: flex; align-items: baseline; gap: 0.2rem; }
-        .price-value small { font-size: 0.9rem; font-weight: 700; opacity: 0.8; text-transform: uppercase; }
         
         .continue-btn-inline { background: white; color: #8b5cf6; border: none; padding: 1rem 2rem; border-radius: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; }
         .continue-btn-inline:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }

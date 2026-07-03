@@ -1,0 +1,94 @@
+=========================================================
+      VAMOS JUNTOS - REGISTRO DE MEJORAS Y CAMBIOS
+=========================================================
+Fecha de última actualización: 13 de Junio de 2026
+
+A continuación, se detalla el registro de las implementaciones 
+y características que hemos incorporado exitosamente al sistema:
+
+1. ARQUITECTURA MULTI-MONEDA (USD, EUR, MXN)
+---------------------------------------------------------
+- Implementación del `CurrencyContext` con persistencia de selección en `localStorage`.
+- Integración de API de tasas de cambio (ExchangeRate-API) con fallback seguro.
+- Creación de la función global `formatPrice` y el componente cliente `PriceDisplay` para conversiones dinámicas automáticas en todo el frontend sin afectar los cálculos base del servidor (que se mantienen en USD).
+
+2. REFACCIONAMIENTO DE INTERFAZ Y COMPONENTES
+---------------------------------------------------------
+- Actualización de `EntityModal` (vista de detalles de Yates y Atracciones) para eliminar precios estáticos hardcodeados en USD y adoptar la nueva función dinámica multi-moneda.
+- Integración multi-moneda en las tarjetas de `Hoteles`, `Paquetes` y el módulo de `Tracking` (Panel de Reservas del usuario).
+- **Navbar Unificado:** Fusión de los selectores de Idioma y Moneda en un solo menú desplegable estilo "Amazon" de alta calidad. Incluye banderas, botones de radio (radio buttons) y diseño con efecto glassmorphism para optimizar espacio.
+
+3. GESTIÓN ADMINISTRATIVA DE ATRACCIONES (BACKEND & UI)
+---------------------------------------------------------
+- **Actualización de Base de Datos:** Modificación del esquema de Prisma para incluir la columna `price` en el modelo de Atracciones.
+- **Formulario Mejorado:** Agregado el campo de "Precio Base (USD)" al modal de creación y edición (`AttractionFormModal`).
+- **Eliminación Segura:** Creación del endpoint `deleteAttraction` en `actions.ts` y del botón de "Papelera" en las vistas de tabla y tarjetas móviles.
+- **Importación Masiva (Excel):** Instalación de la librería `xlsx`. Creación del componente `AttractionExcelUpload.tsx` que permite descargar una plantilla base y procesar cientos de registros en lote (`createMany`) con un solo clic.
+
+4. SISTEMA GLOBAL DE NOTIFICACIONES Y ALERTAS
+---------------------------------------------------------
+- Sustitución completa de las alertas nativas del navegador (`alert()` y `confirm()`) que rompían la estética.
+- Instalación de `react-hot-toast` configurado a nivel global en `layout.tsx` con un tema personalizado "Dark Glass" (fondo oscuro, bordes translúcidos).
+- Creación del componente genérico y reutilizable `ConfirmModal.tsx` con animaciones suaves (`slideUp`), íconos de advertencia dinámicos y esquema de colores semánticos (Rojo para eliminar, Verde para confirmar) aplicable a cualquier módulo del sistema.
+
+5. GESTIÓN ADMINISTRATIVA DE AEROPUERTOS (CRUD COMPLETADO)
+---------------------------------------------------------
+- Implementación completa del módulo de aeropuertos en `/admin/airports`.
+- Creación de interfaz de administración con visualización en tabla (Desktop) y tarjetas (Móvil).
+- Integración de modal dinámico para Agregar y Editar terminales asegurando IATA en mayúsculas.
+- Inserción de importación masiva por Excel (`plantilla_aeropuertos.xlsx`) saltando duplicados.
+- Eliminación segura con el sistema global `ConfirmModal` y notificaciones `Hot-Toast`.
+
+6. GESTIÓN ADMINISTRATIVA DE PLAYAS (CRUD COMPLETADO)
+---------------------------------------------------------
+- Creación del módulo completo de gestión en `/admin/beaches`.
+- Diseño estético premium integrado con componentes de tipo "Glassmorphism" (Glass Panels, botones semi-transparentes).
+- Integración de la funcionalidad de Importación Masiva (Excel) con analizador inteligente de cabeceras tolerante a errores ortográficos.
+- Formulario modal avanzado (`BeachFormModal`) con selector de tipos de playa, estados de bandera de seguridad (Verde, Amarilla, Roja) e índices de popularidad.
+- Funcionalidad de eliminación reforzada utilizando el componente global `ConfirmModal`.
+
+7. GESTIÓN ADMINISTRATIVA DE RESTAURANTES (CRUD COMPLETADO)
+---------------------------------------------------------
+- Implementación del módulo administrativo en `/admin/restaurants`.
+- Formulario adaptado (`RestaurantFormModal`) para registrar tipos de cocina (Italiana, Mexicana, Mariscos) y Rango de Precios ($, $$, $$$, $$$$).
+- Configuración de carga masiva adaptada a las columnas de Restaurantes con descarga de plantilla dedicada (`plantilla_restaurantes.xlsx`).
+- Visualización de la oferta gastronómica y ubicación interactiva en Google Maps incrustado (Iframe modal).
+
+8. GESTIÓN ADMINISTRATIVA DE YATES (CRUD COMPLETADO)
+---------------------------------------------------------
+- Refactorización de la página `/admin/yachts` para incorporar CRUD completo y visualización avanzada.
+- Inserción de importación masiva por Excel (`plantilla_yates.xlsx`) con analizador inteligente de datos tolerante a errores de escritura.
+- Implementación de submódulo de **Tripulación (Crew)**: Ahora es posible gestionar completamente la tripulación (Capitán, Chef, Marineros) directamente desde la lista de Staff del yate (Agregar, Editar, Eliminar y Subir fotografía).
+- Funcionalidad de eliminación en cascada: Al eliminar un yate utilizando el `ConfirmModal`, se elimina automáticamente su tripulación asociada para mantener la integridad referencial en Prisma.
+- Interfaz mejorada con botones consistentes para ver el mapa satelital, gestionar staff, editar y eliminar, tanto en la versión Desktop como en Mobile.
+
+9. GESTIÓN ADMINISTRATIVA DE TAXIS / VEHÍCULOS VIP (CRUD COMPLETADO)
+---------------------------------------------------------
+- Implementación del CRUD administrativo en `/admin/taxis` para vehículos y conductores unificados.
+- Creación de importación masiva por Excel (`plantilla_taxis.xlsx`) capaz de crear o asociar automáticamente a los conductores (`Driver`) si estos son especificados, o asignar a un conductor por defecto para evitar problemas de relacionalidad.
+- UI rediseñada para Taxis que incluye visualización del sticker QR, perfil del conductor, edición del vehículo, y eliminación del vehículo.
+- Formulario de vehículos inteligente (`TaxiFormModal`) unificado que permite registrar y editar simultáneamente los detalles de la unidad y de su chofer asociado.
+- Subida de imágenes integradas: Permite cargar una **galería de fotos del auto** y la **fotografía del chofer**.
+- Control estricto de licencias mediante el nuevo campo de **fecha de vencimiento** de licencia de conducir.
+- Sustitución de los campos de texto por una cuadrícula interactiva de iconos para la selección rápida de las amenidades del vehículo (A/C, WiFi, Mascotas, etc.).
+
+---------------------------------------------------------
+
+10. GESTI�N ADMINISTRATIVA DE HOTELES (CRUD Y MEJORAS)
+- Homogeneizaci�n de iconos de acci�n (Editar, Eliminar, Ver Mapa, Habitaciones) alineando sus tama�os y paddings al dise�o global.
+- Implementaci�n de 'ConfirmModal' para confirmar la eliminaci�n de hoteles evitando clics accidentales.
+- Implementaci�n de m�dulo de importaci�n masiva por Excel ('HotelExcelUpload') con plantilla predefinida y validaciones.
+
+11. HOMOLOGACIÓN DE INTERNACIONALIZACIÓN (i18n) EN PANELES ADMINISTRATIVOS
+---------------------------------------------------------
+- Revisión exhaustiva de todas las vistas del panel de administración (app/[locale]/admin).
+- Envoltura reactiva con la función tr() para todos los títulos, subtítulos descriptivos y botones de acción ("Añadir Hotel", "Añadir Playa", etc.).
+- Traducción dinámica de los componentes de subida masiva por Excel (HotelExcelUpload, TaxiExcelUpload, YachtExcelUpload, etc.), asegurando que los botones "Plantilla", "Importar", "Cargando..." y los mensajes de estado (Toasts) respondan instantáneamente al cambio de idioma.
+- Extracción e inyección de más de 30 nuevas frases al diccionario maestro bilingüe (lib/tr.ts) para lograr un backend multi-idioma 100% integral.
+
+12. REDISEÑO Y MEJORAS EN LA VISTA PRINCIPAL (HOME FRONTEND)
+---------------------------------------------------------
+- Integración del conversor multi-moneda formatPrice en la visualización de los "Paquetes Destacados", unificando el formato de precios con el resto de la plataforma.
+- Implementación de la nueva sección "Por qué reservar con Vamos Juntos" (Why book with VamosJuntos).
+- Diseño visual moderno mediante cuadrículas (CSS Grid) y tarjetas con animaciones flotantes (float-animation) e iconos vectoriales iluminados estilo glassmorphism.
+- Internacionalización completa de los títulos y descripciones de la nueva sección conectada directamente al LanguageContext.

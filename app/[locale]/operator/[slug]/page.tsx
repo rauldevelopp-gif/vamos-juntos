@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { getLocalDB } from '@/lib/db-fallback';
 import prisma from '@/lib/db';
+import PriceDisplay from '@/components/PriceDisplay';
 
 // Dynamic SEO Metadata from fallback database for Operator
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -268,7 +269,7 @@ export default async function OperatorProfilePage({ params }: { params: { slug: 
                       <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContext: 'center' }}><Compass size={40} opacity={0.1} /></div>
                     )}
                     <span style={{ position: 'absolute', bottom: '1.25rem', right: '1.25rem', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '10px', fontWeight: 900, fontSize: '1rem', border: '1px solid var(--border-glass)' }}>
-                      ${pkg.price?.toLocaleString()} USD
+                      <PriceDisplay amount={pkg.price || 0} />
                     </span>
                   </div>
                   <div style={{ padding: '1.75rem' }}>

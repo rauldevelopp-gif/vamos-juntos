@@ -4,6 +4,7 @@ import React from 'react';
 import { Link, usePathname, useRouter } from '../navigation';
 import { Home, Package, LogOut, User, Search, ChevronDown, Key, LayoutDashboard, Hotel, Info } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useCurrency, Currency } from '../context/CurrencyContext';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -19,8 +20,11 @@ export const Navbar = ({
   isAboutUsPublished?: boolean; 
 }) => {
   const { t, language, setLanguage } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -28,6 +32,9 @@ export const Navbar = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
+        setIsSettingsMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -86,16 +93,16 @@ export const Navbar = ({
               <span className="btn-text-mobile-hide">{t('about_history_title')}</span>
             </Link>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.5rem' }}>
+          <div style={{ position: 'relative', marginLeft: '0.5rem' }} ref={settingsMenuRef}>
             <button
-              onClick={handleLanguageSwitch}
+              onClick={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
               style={{
                 background: 'rgba(255,255,255,0.05)',
                 border: '1px solid var(--border-glass)',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.5rem',
                 padding: '0.4rem 0.6rem',
                 cursor: 'pointer',
                 color: 'white',
@@ -103,7 +110,7 @@ export const Navbar = ({
                 fontSize: '0.8rem',
                 transition: 'all 0.2s'
               }}
-              title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+              title={language === 'es' ? 'Configuración Regional' : 'Regional Settings'}
             >
               <Image 
                 src={language === 'es' ? 'https://flagcdn.com/w20/es.png' : 'https://flagcdn.com/w20/us.png'} 
@@ -114,7 +121,57 @@ export const Navbar = ({
                 unoptimized
               />
               <span>{language === 'es' ? 'ES' : 'EN'}</span>
+              <span style={{ opacity: 0.3 }}>|</span>
+              <span>{currency}</span>
+              <ChevronDown size={12} style={{ opacity: 0.7, transform: isSettingsMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
+
+            {isSettingsMenuOpen && (
+              <div style={{
+                  position: 'absolute',
+                  top: '120%',
+                  right: 0,
+                  width: '240px',
+                  padding: '1rem',
+                  zIndex: 1000,
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '16px',
+                  animation: 'fadeIn 0.2s ease',
+                  background: 'rgba(5, 7, 10, 0.98)',
+                  backdropFilter: 'blur(24px)'
+              }}>
+                 <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{language === 'es' ? 'Cambiar idioma' : 'Change language'}</div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', padding: '0.4rem 0', color: 'white' }}>
+                        <input type="radio" name="lang" checked={language === 'en'} onChange={() => { if(language !== 'en') handleLanguageSwitch(); setIsSettingsMenuOpen(false); }} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} />
+                        <span style={{ fontSize: '0.95rem' }}>English - EN</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', padding: '0.4rem 0', color: 'white' }}>
+                        <input type="radio" name="lang" checked={language === 'es'} onChange={() => { if(language !== 'es') handleLanguageSwitch(); setIsSettingsMenuOpen(false); }} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} />
+                        <span style={{ fontSize: '0.95rem' }}>Español - ES</span>
+                    </label>
+                 </div>
+                 
+                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '1rem 0' }}></div>
+                 
+                 <div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{language === 'es' ? 'Cambiar moneda' : 'Change currency'}</div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', padding: '0.4rem 0', color: 'white' }}>
+                        <input type="radio" name="curr" checked={currency === 'USD'} onChange={() => { setCurrency('USD'); setIsSettingsMenuOpen(false); }} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} />
+                        <span style={{ fontSize: '0.95rem' }}>$ - USD - dólar</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', padding: '0.4rem 0', color: 'white' }}>
+                        <input type="radio" name="curr" checked={currency === 'EUR'} onChange={() => { setCurrency('EUR'); setIsSettingsMenuOpen(false); }} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} />
+                        <span style={{ fontSize: '0.95rem' }}>€ - EUR - euro</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', padding: '0.4rem 0', color: 'white' }}>
+                        <input type="radio" name="curr" checked={currency === 'MXN'} onChange={() => { setCurrency('MXN'); setIsSettingsMenuOpen(false); }} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} />
+                        <span style={{ fontSize: '0.95rem' }}>$ - MXN - peso</span>
+                    </label>
+                 </div>
+              </div>
+            )}
           </div>
           
           {session ? (

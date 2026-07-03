@@ -25,7 +25,8 @@ export default function AttractionFormModal({ attraction, onClose, onSuccess }: 
         coordinates: attraction?.coordinates || '',
         recommendedTime: attraction?.recommendedTime || '2 Horas',
         description_long: attraction?.description_long || '',
-        gallery: attraction?.gallery || []
+        gallery: attraction?.gallery || [],
+        price: attraction?.price || 0
     });
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +126,10 @@ export default function AttractionFormModal({ attraction, onClose, onSuccess }: 
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Tiempo Recomendado</label>
                             <input required type="text" value={formData.recommendedTime} onChange={e => setFormData({...formData, recommendedTime: e.target.value})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} placeholder="Ej: 4 Horas" />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Precio Base (USD)</label>
+                            <input required type="number" step="0.01" min="0" value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value) || 0})} className="input-glass" style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white' }} />
                         </div>
                     </div>
 

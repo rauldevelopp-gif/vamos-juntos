@@ -680,7 +680,7 @@ export default function PackageBuilderPage() {
                             <ArrowLeft size={24} />
                         </Link>
                         <div>
-                            <h1 className="text-gradient">Package Builder</h1>
+                            <h1 className="text-gradient">{tr("Package Builder")}</h1>
                             <p>Diseña experiencias únicas compuestas por múltiples servicios</p>
                         </div>
                     </div>
@@ -1339,7 +1339,7 @@ export default function PackageBuilderPage() {
                 <div className="modal-overlay" onClick={() => setIsDriverModalOpen(false)}>
                     <div className="modal-content glass-panel" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">🚖 Seleccionar Chofer</h2>
+                            <h2 className="modal-title">{tr("🚖 Seleccionar Chofer")}</h2>
                             <button className="close-btn" onClick={() => setIsDriverModalOpen(false)}>
                                 <X size={24} />
                             </button>

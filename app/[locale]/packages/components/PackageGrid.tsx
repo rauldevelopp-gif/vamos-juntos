@@ -2,6 +2,7 @@ import React from 'react';
 import { TourPackage } from '../types';
 import { Clock, Users, MapPin, ArrowRight, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 interface PackageCardProps {
   pkg: TourPackage;
@@ -10,6 +11,7 @@ interface PackageCardProps {
 }
 
 export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onSelect, onBook }) => {
+  const { formatPrice } = useCurrency();
   return (
     <div className="group relative bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-[32px] overflow-hidden hover:border-violet-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/10">
       {/* Image Section */}
@@ -30,8 +32,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onSelect, onBook 
         </div>
 
         <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
-          <span className="text-xl font-black text-white">${pkg.price}</span>
-          <span className="text-[10px] text-white/60 ml-1 font-bold uppercase">USD</span>
+          <span className="text-xl font-black text-white">{formatPrice(pkg.price)}</span>
         </div>
       </div>
 

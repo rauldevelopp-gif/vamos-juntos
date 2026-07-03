@@ -5,11 +5,12 @@ import { Calendar as CalendarIcon, Users, CreditCard, ChevronRight, ArrowLeft, C
 import { createHotelReservation } from '../actions';
 import { validateDiscountCodeForHotel } from '../../admin/discounts/actions';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { useCurrency } from '../../../../context/CurrencyContext';
 
 // --- Stripe Form ---
 const CheckoutForm = ({ clientSecret, onPaymentSuccess, amount }: any) => {
+    const { formatPrice } = useCurrency();
     const stripe = useStripe();
     const elements = useElements();
     const [error, setError] = useState('');
@@ -46,7 +47,7 @@ const CheckoutForm = ({ clientSecret, onPaymentSuccess, amount }: any) => {
             </div>
             {error && <div style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '0.5rem' }}>{error}</div>}
             <button type="submit" disabled={!stripe || processing} className="btn-premium" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem', borderRadius: '12px' }}>
-                {processing ? 'Procesando...' : `Pagar $${amount.toLocaleString()} USD`}
+                {processing ? 'Procesando...' : `Pagar ${formatPrice(amount)}`}
             </button>
             <style jsx>{`
                 .card-input-container { padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
@@ -57,6 +58,7 @@ const CheckoutForm = ({ clientSecret, onPaymentSuccess, amount }: any) => {
 
 // --- Wizard ---
 export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room: any, onCancel: () => void }) {
+    const { formatPrice } = useCurrency();
     const [step, setStep] = useState(1);
     const [dates, setDates] = useState({ checkIn: '', checkOut: '' });
     const [guests, setGuests] = useState(2);
@@ -80,6 +82,13 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
     const [password, setPassword] = useState('');
     const [claiming, setClaiming] = useState(false);
     const [claimSuccess, setClaimSuccess] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/auth/me').then(r => r.json()).then(data => {
+            if (data.success && data.user) setIsLoggedIn(true);
+        }).catch(() => {});
+    }, []);
 
     // Calc nights & price
     const nights = (dates.checkIn && dates.checkOut)
@@ -135,7 +144,7 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amount: finalPrice,
-                    currency: 'usd',
+                    currency: 'USD',
                     userId: hotel.userId,
                     description: `Reserva Hotel: ${hotel.name} - ${room.type}`
                 })
@@ -222,43 +231,48 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                     {discountInfo && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                             <span style={{ color: '#10b981' }}>Descuento ({discountInfo.code}):</span>
-                            <strong style={{ color: '#10b981' }}>-${discountAmount.toFixed(2)} USD</strong>
+                            <strong style={{ color: '#10b981' }}>-{formatPrice(discountAmount)}</strong>
                         </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'rgba(255,255,255,0.5)' }}>Total Pagado:</span>
-                        <strong>${finalPrice.toLocaleString()} USD</strong>
+                        <strong>{formatPrice(finalPrice)}</strong>
                     </div>
                 </div>
 
-                {!claimSuccess ? (
-                    <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', marginBottom: '2rem' }}>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#8b5cf6', fontSize: '1.1rem' }}>¡Gestiona tu Reserva!</h4>
-                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 1rem 0' }}>Crea una contraseña ahora para guardar tus datos y acceder a un panel privado con tu historial.</p>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input 
-                                type="password" 
-                                placeholder="Crea tu contraseña" 
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-                            />
-                            <button 
-                                onClick={handleClaimAccount}
-                                disabled={claiming}
-                                style={{ padding: '0.8rem 1.5rem', borderRadius: '10px', background: '#8b5cf6', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
-                            >
-                                {claiming ? '...' : 'Crear Cuenta'}
-                            </button>
+                {!isLoggedIn && (
+                    !claimSuccess ? (
+                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'left', marginBottom: '2rem' }}>
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: '#8b5cf6', fontSize: '1.1rem' }}>¡Gestiona tu Reserva!</h4>
+                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 1rem 0' }}>Crea una contraseña ahora para guardar tus datos y acceder a un panel privado con tu historial.</p>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input 
+                                    type="password" 
+                                    placeholder="Crea tu contraseña" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    style={{ flex: 1, padding: '0.8rem', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                />
+                                <button 
+                                    onClick={handleClaimAccount}
+                                    disabled={claiming}
+                                    style={{ padding: '0.8rem 1.5rem', borderRadius: '10px', background: '#8b5cf6', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+                                >
+                                    {claiming ? '...' : 'Crear Cuenta'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', marginBottom: '2rem' }}>
-                        <p style={{ margin: 0, color: '#10b981', fontWeight: 800 }}>¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tu correo.</p>
-                    </div>
+                    ) : (
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', marginBottom: '2rem' }}>
+                            <p style={{ margin: 0, color: '#10b981', fontWeight: 800 }}>¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tu correo.</p>
+                        </div>
+                    )
                 )}
 
-                <button onClick={onCancel} className="btn-premium" style={{ padding: '1rem 2rem', borderRadius: '50px' }}>Volver al Hotel</button>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button onClick={() => window.print()} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '1rem 2rem', borderRadius: '50px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', backdropFilter: 'blur(10px)', transition: 'all 0.3s' }}>Imprimir Voucher</button>
+                    <button onClick={onCancel} className="btn-premium" style={{ padding: '1rem 2rem', borderRadius: '50px' }}>Volver al Hotel</button>
+                </div>
             </div>
         );
     }
@@ -283,18 +297,18 @@ export function HotelBookingWizard({ hotel, room, onCancel }: { hotel: any, room
                 {discountInfo ? (
                     <>
                         <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through' }}>
-                            ${baseTotal.toLocaleString()} USD
+                            {formatPrice(baseTotal)}
                         </div>
                         <div style={{ fontSize: '2rem', fontWeight: 900 }}>
-                            ${finalPrice.toLocaleString()} <small style={{ fontSize: '1rem', fontWeight: 400, opacity: 0.5 }}>USD</small>
+                            {formatPrice(finalPrice)}
                         </div>
                         <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>
-                            Ahorro: ${discountAmount.toFixed(2)} USD ({discountInfo.percentage}%)
+                            Ahorro: {formatPrice(discountAmount)} ({discountInfo.percentage}%)
                         </div>
                     </>
                 ) : (
                     <div style={{ fontSize: '2rem', fontWeight: 900 }}>
-                        ${baseTotal.toLocaleString()} <small style={{ fontSize: '1rem', fontWeight: 400, opacity: 0.5 }}>USD</small>
+                        {formatPrice(baseTotal)}
                     </div>
                 )}
                 {dates.checkIn && dates.checkOut && (

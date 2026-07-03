@@ -218,7 +218,7 @@ const AssignDriverModal = ({ pkg, taxis, onClose, onAssign, isAssigning }: {
             <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%', padding: '2rem', maxHeight: '85vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 99991 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem' }} className="text-gradient">Asignar Chófer</h2>
+                        <h2 style={{ margin: 0, fontSize: '1.5rem' }} className="text-gradient">{tr("Asignar Chófer")}</h2>
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0.3rem 0 0 0' }}>Selecciona un profesional para la solicitud #{pkg.id}</p>
                     </div>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={24} /></button>
@@ -418,12 +418,8 @@ export default function RequestsPage() {
                         <ArrowLeft size={20} strokeWidth={2} />
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">
-                            Solicitudes de Clientes
-                        </h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>
-                            Gestión y confirmación de paquetes personalizados creados por los clientes.
-                        </p>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }} className="text-gradient">{tr("Solicitudes de Clientes")}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>{tr("Gestión y confirmación de paquetes personalizados creados por los clientes.")}</p>
                     </div>
                 </div>
                 

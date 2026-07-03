@@ -54,6 +54,7 @@ model Driver {
 }
 
 model Taxi {
+  gallery      String[] @default([])
   id           Int      @id @default(autoincrement())
   plate        String   @unique
   brand        String
@@ -184,6 +185,7 @@ model Attraction {
   recommendedTime String   @default("2 Horas")
   description_long String?
   gallery         String[] @default([])
+  price           Float    @default(0)
   reservations    ReservationService[]
   userId          Int?
   user            User?    @relation(fields: [userId], references: [id])
