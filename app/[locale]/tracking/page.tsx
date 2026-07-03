@@ -318,7 +318,7 @@ export default function TrackingPage() {
     useEffect(() => {
         const checkUserSession = async () => {
             try {
-                const res = await fetch('/api/auth/session');
+                const res = await fetch('/api/auth/me');
                 const data = await res.json();
                 
                 if (data.success && data.user) {
@@ -494,7 +494,50 @@ export default function TrackingPage() {
                 )}
 
                 {viewMode === 'dashboard' && (
-                    <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        {/* HERO: Próximo Viaje / Next Trip */}
+                        {(() => {
+                            const allTrips = [
+                                ...userReservations.packages.map(p => ({ ...p, type: 'package', title: p.package.name, dt: new Date(p.date) })),
+                                ...userReservations.hotels.map(h => ({ ...h, type: 'hotel', title: h.hotel.name, dt: new Date(h.checkInDate) }))
+                            ].filter(t => t.dt.getTime() > new Date().getTime() - 86400000).sort((a, b) => a.dt.getTime() - b.dt.getTime());
+                            
+                            const nextTrip = allTrips[0];
+                            
+                            if (nextTrip) {
+                                const daysLeft = Math.max(0, Math.ceil((nextTrip.dt.getTime() - new Date().getTime()) / (1000 * 3600 * 24)));
+                                return (
+                                    <div className="next-trip-hero" style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(217, 70, 239, 0.05))', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '25px', padding: '2.5rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center' }}>
+                                        <div style={{ flex: '1 1 300px' }}>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.15em', color: 'var(--primary)', marginBottom: '0.5rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Plane size={16} /> {isEn ? "Your Next Adventure" : "Tu Próxima Aventura"}
+                                            </div>
+                                            <h2 style={{ fontSize: '2.2rem', margin: '0 0 1.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{getTranslatedValue(nextTrip.title, language)}</h2>
+                                            <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.3rem' }}>{isEn ? "Countdown" : "Cuenta Regresiva"}</div>
+                                                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'white' }}>{daysLeft} <span style={{ fontSize: '1rem', fontWeight: 500 }}>{isEn ? "Days" : "Días"}</span></div>
+                                                </div>
+                                                <div style={{ width: '1px', height: '50px', background: 'rgba(255,255,255,0.1)' }}></div>
+                                                <div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.3rem' }}>{isEn ? "Weather Forecast" : "Clima Esperado"}</div>
+                                                    <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        ☀️ 28°C
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <StatusBadge status={nextTrip.status} />
+                                        </div>
+                                        <div style={{ background: 'white', padding: '1rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+                                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${nextTrip.locatorCode}`} alt="QR Code" style={{ width: '130px', height: '130px' }} />
+                                            <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '0.15em' }}>{nextTrip.locatorCode}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
                         {userReservations.packages.length === 0 && userReservations.hotels.length === 0 && customPackages.length === 0 ? (
                             <div style={{ textAlign: 'center', padding: '4rem' }}>
                                 <div style={{ background: 'rgba(255,255,255,0.03)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -505,47 +548,64 @@ export default function TrackingPage() {
                                 <Link href="/" className="btn-premium" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>{isEn ? "View Catalog" : "Ver Catálogo"}</Link>
                             </div>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {userReservations.packages.map(pkg => (
-                                    <div key={pkg.id} className="tracking-card" onClick={() => setPreviewItem({ type: 'package', data: pkg })} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer' }}>
-                                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '1rem', borderRadius: '12px' }}><Palmtree color="#8b5cf6" /></div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{getTranslatedValue(pkg.package.name, language)}</div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{pkg.date}</div>
+                            <div>
+                                <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', color: 'rgba(255,255,255,0.9)' }}>{isEn ? "All your reservations" : "Todas tus reservas"}</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                    {userReservations.packages.map(pkg => (
+                                        <div key={pkg.id} className="tracking-card" onClick={() => setPreviewItem({ type: 'package', data: pkg })} style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}></div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative' }}>
+                                                <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '0.8rem', borderRadius: '12px' }}><Palmtree color="#8b5cf6" size={24} /></div>
+                                                <StatusBadge status={pkg.status} />
+                                            </div>
+                                            <div style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem', lineHeight: 1.3 }}>{getTranslatedValue(pkg.package.name, language)}</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={14}/> {pkg.date}</div>
+                                            <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.2rem' }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', fontWeight: 800, marginBottom: '0.2rem' }}>{isEn ? "LOCATOR" : "LOCALIZADOR"}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>{pkg.locatorCode}</div>
+                                                </div>
+                                                <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--primary)' }}>{formatPrice(pkg.totalPrice)}</div>
+                                            </div>
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <StatusBadge status={pkg.status} />
-                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>{formatPrice(pkg.totalPrice)}</div>
+                                    ))}
+                                    {userReservations.hotels.map(hot => (
+                                        <div key={hot.id} className="tracking-card" onClick={() => setPreviewItem({ type: 'hotel', data: hot })} style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}></div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative' }}>
+                                                <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '0.8rem', borderRadius: '12px' }}><Hotel color="#10b981" size={24} /></div>
+                                                <StatusBadge status={hot.status} />
+                                            </div>
+                                            <div style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem', lineHeight: 1.3 }}>{getTranslatedValue(hot.hotel.name, language)}</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={14}/> {hot.checkInDate} a {hot.checkOutDate}</div>
+                                            <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.2rem' }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', fontWeight: 800, marginBottom: '0.2rem' }}>{isEn ? "LOCATOR" : "LOCALIZADOR"}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>{hot.locatorCode}</div>
+                                                </div>
+                                                <div style={{ fontWeight: 900, fontSize: '1.2rem', color: '#10b981' }}>{formatPrice(hot.totalPrice)}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                                {userReservations.hotels.map(hot => (
-                                    <div key={hot.id} className="tracking-card" onClick={() => setPreviewItem({ type: 'hotel', data: hot })} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer' }}>
-                                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '12px' }}><Hotel color="#10b981" /></div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{getTranslatedValue(hot.hotel.name, language)}</div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{hot.checkInDate} a {hot.checkOutDate}</div>
+                                    ))}
+                                    {customPackages.map((pkg) => (
+                                        <div key={`custom-${pkg.id}`} className="tracking-card" onClick={() => setPreviewPkg(pkg)} style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}></div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative' }}>
+                                                <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '0.8rem', borderRadius: '12px' }}><Info color="#f59e0b" size={24} /></div>
+                                                <StatusBadge status={pkg.status} />
+                                            </div>
+                                            <div style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem', lineHeight: 1.3 }}>{getTranslatedValue(pkg.name, language)}</div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={14}/> {isEn ? "Custom Itinerary" : "Itinerario a medida"}</div>
+                                            <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.2rem' }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', fontWeight: 800, marginBottom: '0.2rem' }}>{t('created_at')}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>{new Date(pkg.createdAt).toLocaleDateString()}</div>
+                                                </div>
+                                                <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--primary)' }}>{formatPrice(pkg.price)}</div>
+                                            </div>
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <StatusBadge status={hot.status} />
-                                            <div style={{ fontWeight: 800, color: '#10b981', marginTop: '0.5rem' }}>{formatPrice(hot.totalPrice)}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                                {customPackages.map((pkg) => (
-                                    <div key={`custom-${pkg.id}`} className="tracking-card" onClick={() => setPreviewPkg(pkg)} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: '1.25rem', cursor: 'pointer', transition: 'all 0.3s' }}>
-                                        <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '1rem', borderRadius: '12px' }}><Info color="#f59e0b" /></div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{getTranslatedValue(pkg.name, language)} {isEn ? "(Custom)" : "(Personalizado)"}</div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{t('created_at')} {new Date(pkg.createdAt).toLocaleDateString()}</div>
-                                        </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <StatusBadge status={pkg.status} />
-                                            <div style={{ fontWeight: 800, color: 'var(--primary)', marginTop: '0.5rem' }}>{formatPrice(pkg.price)}</div>
-                                        </div>
-                                        <div style={{ color: 'var(--text-muted)' }}><Eye size={20} /></div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>

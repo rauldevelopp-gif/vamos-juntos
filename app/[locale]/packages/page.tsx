@@ -16,7 +16,7 @@ import {
     Anchor, 
     Loader2
 } from 'lucide-react';
-import { getPackages } from '../admin/package/actions';
+import { getPublicPackages } from '../admin/package/actions';
 import { TourPackage, Booking } from './types';
 import { PackageDetail } from './components/PackageDetail';
 import { BookingWizard, SuccessStep } from './components/BookingWizard';
@@ -174,7 +174,7 @@ function CatalogContent() {
 
     useEffect(() => {
         const fetchPackages = async () => {
-            const result = await getPackages();
+            const result = await getPublicPackages();
             if (result.success && result.data) {
                 setPackages(result.data as ApiPackage[]);
             }

@@ -4,7 +4,7 @@ import { Link } from '../../navigation';
 import Image from 'next/image';
 import { Compass, Info, ArrowRight, Settings, Sparkles, Image as ImageIcon, Loader2, Plus, Star, ChevronLeft, ChevronRight, Headphones, Award, CalendarDays } from 'lucide-react';
 import Testimonials from '../../components/Testimonials';
-import { getPackages } from './admin/package/actions';
+import { getPackages, getPublicPackages } from './admin/package/actions';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { BookingWizard, SuccessStep } from './packages/components/BookingWizard';
@@ -13,6 +13,7 @@ import { TourPackage, Booking } from './packages/types';
 import { PackageDetail } from './packages/components/PackageDetail';
 import Carousel from '../../components/Carousel';
 import EntityGrid from '../../components/EntityGrid';
+import ExploreMap from '../../components/ExploreMap';
 import { getPublicYachts } from './admin/yachts/actions';
 import { getPublicBeaches } from './admin/beaches/actions';
 import { getPublicAttractions } from './admin/attractions/actions';
@@ -139,10 +140,92 @@ export default function Home() {
     description_long: getTranslatedValue(a.description_long, language)
   }));
 
+  const parseCoords = (coordsStr: string) => {
+      if (!coordsStr) return null;
+      const parts = coordsStr.split(',');
+      if (parts.length === 2) {
+          const lat = parseFloat(parts[0].trim());
+          const lng = parseFloat(parts[1].trim());
+          if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
+      return null;
+  };
+
+  const mapLocations: any[] = [];
+  translatedHotels.forEach(h => {
+      const coords = parseCoords(h.coordinates);
+      if (coords) {
+          const startingPrice = h.rooms?.length > 0 ? Math.min(...h.rooms.map((r: any) => r.basePrice)) : 0;
+          mapLocations.push({
+              id: `hotel-${h.id}`,
+              lat: coords.lat,
+              lng: coords.lng,
+              title: h.name,
+              descEs: h.description || h.location,
+              descEn: h.description || h.location,
+              typeEs: h.category || 'Hotel',
+              typeEn: h.category || 'Hotel',
+              price: startingPrice > 0 ? formatPrice(startingPrice) : '',
+              link: `/hotels/${h.id}`
+          });
+      }
+  });
+  translatedAttractions.forEach(a => {
+      const coords = parseCoords(a.coordinates);
+      if (coords) {
+          mapLocations.push({
+              id: `attr-${a.id}`,
+              lat: coords.lat,
+              lng: coords.lng,
+              title: a.name,
+              descEs: a.description_long || '',
+              descEn: a.description_long || '',
+              typeEs: a.category || 'Atracción',
+              typeEn: 'Attraction',
+              price: a.price > 0 ? formatPrice(a.price) : 'Gratis',
+              link: `/packages`
+          });
+      }
+  });
+  translatedYachts.forEach(y => {
+      const coords = parseCoords(y.coordinates);
+      if (coords) {
+          mapLocations.push({
+              id: `yacht-${y.id}`,
+              lat: coords.lat,
+              lng: coords.lng,
+              title: y.name,
+              descEs: y.description_long || '',
+              descEn: y.description_long || '',
+              typeEs: 'Yate',
+              typeEn: 'Yacht',
+              price: y.price_day > 0 ? formatPrice(y.price_day) : '',
+              link: `/packages`
+          });
+      }
+  });
+  translatedBeaches.forEach(b => {
+      const coords = parseCoords(b.coordinates);
+      if (coords) {
+          mapLocations.push({
+              id: `beach-${b.id}`,
+              lat: coords.lat,
+              lng: coords.lng,
+              title: b.name,
+              descEs: b.description_long || '',
+              descEn: b.description_long || '',
+              typeEs: 'Playa',
+              typeEn: 'Beach',
+              price: 'Acceso Libre',
+              link: `/packages`
+          });
+      }
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       const [pkgRes, yachtRes, beachRes, attrRes, hotelRes, aboutUsRes] = await Promise.all([
-        getPackages(),
+        getPublicPackages(),
         getPublicYachts(),
         getPublicBeaches(),
         getPublicAttractions(),
@@ -257,6 +340,23 @@ export default function Home() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* Interactive Explore Map Section */}
+      <section style={{ padding: '5rem 0', background: 'rgba(255,255,255,0.01)', borderBottom: '1px solid var(--border-glass)' }}>
+        <div className="container">
+          <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+            <h2 className="heading-1 float-animation" style={{ fontSize: '2.5rem', marginBottom: '1rem', textShadow: '0 5px 15px rgba(0,0,0,0.3)' }}>
+              {language === 'en' ? "Explore the Luxury Caribbean" : "Explora el Caribe de Lujo"}
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+              {language === 'en' 
+                  ? "Discover the Riviera Maya through our interactive booking map." 
+                  : "Descubre la Riviera Maya a través de nuestro mapa interactivo de reservas."}
+            </p>
+          </div>
+          <ExploreMap locations={mapLocations} />
         </div>
       </section>
 

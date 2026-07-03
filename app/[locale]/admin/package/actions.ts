@@ -32,6 +32,32 @@ export async function getPackages() {
     }
 }
 
+export async function getPublicPackages() {
+    try {
+        const packages = await prisma.package.findMany({
+            where: { clientId: null, status: 'Activo' },
+            include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        if (packages.length === 0) {
+            // Failsafe in case the DB is empty
+            await seedPremiumPackages();
+            const seeded = await prisma.package.findMany({
+                where: { clientId: null, status: 'Activo' },
+                include: { user: { select: { id: true, name: true, email: true, role: true } }, driver: { include: { taxis: true } } },
+                orderBy: { createdAt: 'desc' }
+            });
+            return { success: true, data: seeded };
+        }
+
+        return { success: true, data: packages };
+    } catch (error) {
+        console.error('Error fetching public packages:', error);
+        return { success: false, error: 'No se pudieron cargar los paquetes públicos' };
+    }
+}
+
 export async function createPackage(data: {
     name: string;
     description: string;
