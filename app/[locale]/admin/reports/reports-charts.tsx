@@ -17,9 +17,10 @@ interface TimelineAreaChartProps {
     data: TimelineData[];
     series: { key: string; color: string; label: string }[];
     height?: number;
+    isCurrency?: boolean;
 }
 
-export function TimelineAreaChart({ data, series, height = 300 }: TimelineAreaChartProps) {
+export function TimelineAreaChart({ data, series, height = 300, isCurrency = true }: TimelineAreaChartProps) {
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
     const [activeSeries, setActiveSeries] = useState<string[]>(series.map(s => s.key));
@@ -168,7 +169,10 @@ export function TimelineAreaChart({ data, series, height = 300 }: TimelineAreaCh
                                 fontWeight="600"
                                 textAnchor="end"
                             >
-                                {val >= 1000 ? `$${(val/1000).toFixed(1)}k` : `$${val.toLocaleString()}`}
+                                {isCurrency
+                                    ? (val >= 1000 ? `$${(val/1000).toFixed(1)}k` : `$${val.toLocaleString()}`)
+                                    : (val >= 1000 ? `${(val/1000).toFixed(1)}k` : val.toLocaleString())
+                                }
                             </text>
                         </g>
                     );
@@ -302,7 +306,10 @@ export function TimelineAreaChart({ data, series, height = 300 }: TimelineAreaCh
                                     {s.label}
                                 </span>
                                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>
-                                    {typeof val === 'number' ? (val > 999 ? '$' + val.toLocaleString() : val) : val}
+                                    {typeof val === 'number'
+                                        ? (isCurrency ? `$${val.toLocaleString()}` : val.toLocaleString())
+                                        : val
+                                    }
                                 </span>
                             </div>
                         );

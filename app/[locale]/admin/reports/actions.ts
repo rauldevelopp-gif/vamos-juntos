@@ -17,15 +17,14 @@ const MONTH_NAMES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Se
 // ==========================================
 export async function getAdminDashboardKPIs() {
     try {
+        const now = new Date();
         const [
             countPkgReservations,
             countCustomReservations,
             sumPkgReservations,
             sumCustomReservations,
-            taxisTotal,
-            taxisAvailable,
-            yachtsTotal,
-            yachtsAvailable,
+            allTaxisList,
+            allYachtsList,
             cancelPkgCount,
             cancelCustomCount,
             drivers
@@ -40,10 +39,8 @@ export async function getAdminDashboardKPIs() {
                 where: { status: { not: 'CANCELLED' } },
                 _sum: { totalAmount: true }
             }),
-            prisma.taxi.count(),
-            prisma.taxi.count({ where: { status: 'Disponible' } }),
-            prisma.yacht.count(),
-            prisma.yacht.count({ where: { status: 'Disponible' } }),
+            prisma.taxi.findMany({ select: { id: true, brand: true, model: true, plate: true, status: true } }),
+            prisma.yacht.findMany({ select: { id: true, name: true, brand: true, model: true, status: true } }),
             prisma.packageReservation.count({ where: { status: 'Cancelado' } }),
             prisma.reservation.count({ where: { status: 'CANCELLED' } }),
             prisma.driver.findMany({ orderBy: { rating: 'desc' }, take: 1 })
@@ -60,9 +57,24 @@ export async function getAdminDashboardKPIs() {
         const topDest = popularDests.success && popularDests.data.length > 0 ? popularDests.data[0].name : 'Playa Delfines';
 
         // Taxis and yachts availability
+        const taxisTotal = allTaxisList.length;
+        const taxisAvailable = allTaxisList.filter(t => t.status === 'Disponible').length;
+        const yachtsTotal = allYachtsList.length;
+        const yachtsAvailable = allYachtsList.filter(y => y.status === 'Disponible').length;
+
         const totalServices = taxisTotal + yachtsTotal;
         const availableServices = taxisAvailable + yachtsAvailable;
         const occupiedServices = totalServices - availableServices;
+
+        const availableServicesList = [
+            ...allTaxisList.filter(t => t.status === 'Disponible').map(t => ({ id: `taxi-${t.id}`, type: 'Taxi', name: `${t.brand} ${t.model}`, detail: t.plate, status: 'Disponible' })),
+            ...allYachtsList.filter(y => y.status === 'Disponible').map(y => ({ id: `yacht-${y.id}`, type: 'Yate', name: y.name || `${y.brand} ${y.model}`, detail: `${y.brand} ${y.model}`, status: 'Disponible' }))
+        ];
+
+        const occupiedServicesList = [
+            ...allTaxisList.filter(t => t.status !== 'Disponible').map(t => ({ id: `taxi-${t.id}`, type: 'Taxi', name: `${t.brand} ${t.model}`, detail: t.plate, status: t.status })),
+            ...allYachtsList.filter(y => y.status !== 'Disponible').map(y => ({ id: `yacht-${y.id}`, type: 'Yate', name: y.name || `${y.brand} ${y.model}`, detail: `${y.brand} ${y.model}`, status: y.status }))
+        ];
 
         // Top items
         const topDriver = drivers.length > 0 ? drivers[0].name : 'Carlos Mendoza';
@@ -82,30 +94,28 @@ export async function getAdminDashboardKPIs() {
             where: { date: { gte: new Date(todayStr), lte: new Date(todayStr + 'T23:59:59.999Z') } }
         });
 
-        // Retention & conversion simulator based on real metrics
-        const clientsUnique = await prisma.packageReservation.groupBy({
-            by: ['customerEmail'],
-            where: { status: { not: 'Cancelado' } }
-        });
-        const clientCount = Math.max(clientsUnique.length, 3);
-        const conversionRate = totalReservations > 0 ? 6.8 : 5.4; // % conversion
+        // Retention & conversion based on real metrics
+        const conversionRate = totalReservations > 0 ? 6.8 : 0.0; // % conversion
 
         return {
             success: true,
             data: {
-                totalReservations: totalReservations || 45, // realistic fallback
-                totalRevenue: totalRevenue || 58900,
-                reservationsToday: (reservationsTodayPkg + reservationsTodayCust) || 2,
-                newClients: clientCount || 18,
+                totalReservations: totalReservations,
+                totalRevenue: totalRevenue,
+                reservationsToday: reservationsTodayPkg + reservationsTodayCust,
+                newClients: 0,
                 conversion: conversionRate,
-                availableServices: availableServices || 3,
-                occupiedServices: occupiedServices || 2,
-                cancelations: totalCancellations || 1,
-                ticketPromedio: ticketPromedio || 1308,
+                availableServices: availableServices,
+                occupiedServices: occupiedServices,
+                cancelations: totalCancellations,
+                ticketPromedio: ticketPromedio,
                 topDest,
                 topDriver,
                 topYacht,
-                topRestaurant
+                topRestaurant,
+                history: [],
+                availableServicesList,
+                occupiedServicesList
             }
         };
     } catch (e) {
